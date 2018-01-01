@@ -94,7 +94,7 @@
 			function getCardData(){
 				var request = new XMLHttpRequest();
 				request.onreadystatechange = function(){
-					if(request.readyState == 4){
+					if( request.readyState == 4 ){
 						cardData = JSON.parse( request.responseText );
 						mainList = new CardList( 
 							document.getElementById( "cardList"), 
@@ -105,7 +105,7 @@
 					}
 				};
 				// DATA SOURCE: https://mtgjson.com/json/AllSets-x.json.zip 12/31/17
-				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/cards.json", true );
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/data.json", true );
 				request.send();			
 			}
 				
@@ -136,7 +136,7 @@
 					text:{ type:"match" },
 					colors:{ type:"color" },
 					colorIdentity:{ type:"color" },
-					legalities:{ type:"format", populate:true }
+					legalities:{ type:"list", populate:true }
 				};
 				
 				listElement.cardList = this;
@@ -379,11 +379,11 @@
 				<span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
 				<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><br>
 				<span class="filterGroup colors"><span class="filterLabel">Color:</span>
-					<span class="filterSublable">White</span><select class="filterField" filterType="colors" manaColor="White"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Blue</span><select class="filterField" filterType="colors" manaColor="Blue"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Black</span><select class="filterField" filterType="colors" manaColor="Black"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Red</span><select class="filterField" filterType="colors" manaColor="Red"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Green</span><select class="filterField" filterType="colors" manaColor="Green"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">White</span><select class="filterField" filterType="colors" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Blue</span><select class="filterField" filterType="colors" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Black</span><select class="filterField" filterType="colors" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Red</span><select class="filterField" filterType="colors" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Green</span><select class="filterField" filterType="colors" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
 				</span><br>
 				<span class="filterGroup colorIdentity"><span class="filterLabel">Identity:</span>
 					<span class="filterSublable">White</span><select class="filterField" filterType="colorIdentity" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
