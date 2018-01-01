@@ -1,0 +1,79 @@
+<html>
+	<head>
+	
+		<script>
+		
+			cards = null;
+			sets = null;
+			function start(){
+				
+				getData( "https://chainsawxiv.github.io/deckbuilder/cards.json", function(){
+					cards = JSON.parse( request.responseText );
+					if ( sets ) stitch();
+				} );
+				getData( "https://chainsawxiv.github.io/deckbuilder/sets.json", function(){
+					sets = JSON.parse( request.responseText );
+					if ( cards ) stitch();
+				} );
+				
+			}
+		
+			function getData( url, callback ){
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = callback();
+				request.open( "GET", url, true );
+				request.send();			
+			}
+			
+			function stitch(){
+			
+				for ( var cardName in cards ){
+					var baseCard = cards[ cardName ];
+					var firstSet = baseCard.printings[ 0 ];
+					var setCards = sets[ firstSet ].cards;
+					for ( var i = 0; i < setCards.length; i++ ){
+						var setCard = setCards[ i ];
+						if ( setCard.name == cardName ){
+							baseCard.multiverseid = setCard.multiverseid;
+							baseCard.rarity = setCard.rarity;
+							delete baseCard[ "imageName" ];
+							delete baseCard[ "printings" ];
+							delete baseCard[ "rulings" ];
+							if ( baseCard.colors ){
+								for ( var c = 0; c < baseCard.colors.length; c++ ){
+									if ( baseCard.colors[ c ] == White ) baseCard.colors[ c ] = "W";
+									else if ( baseCard.colors[ c ] == Black ) baseCard.colors[ c ] = "B";
+									else if ( baseCard.colors[ c ] == Red ) baseCard.colors[ c ] = "R";
+									else if ( baseCard.colors[ c ] == Blue ) baseCard.colors[ c ] = "U";
+									else if ( baseCard.colors[ c ] == Green ) baseCard.colors[ c ] = "G";
+								}
+							}
+							if ( baseCard.legalities ){
+								for ( var f = 0; f < baseCard.legalities.length; f++ ){
+									if ( baseCard.legalities[ f ].legality == "Legal" || baseCard.legalities[ f ].legality == "Restricted" ){
+										baseCard.formats = baseCard.formats || [];
+										baseCard.formats.push( baseCard.legalities[ f ].format );
+									}
+									if ( baseCard.legalities[ f ].legality == "Restricted" ){
+										baseCard.restricted = baseCard.restricted || [];
+										baseCard.restricted.push( baseCard.legalities[ f ].format );
+									}
+								}
+								delete baseCard[ "legalities" ];
+							}
+							break;
+						}
+					}
+				}
+				
+				body.innerHTML = JSON.stringify( cards );
+			
+			}
+		
+		</script>
+	
+	</head>
+	</body onload="start();">
+	
+	</body>
+</html>
