@@ -79,12 +79,13 @@
 								delete baseCard[ "legalities" ];
 							}
 							progressCount++;
-							document.title = "Stitching " + progressCount + "/" + cardCount + "(" + ( Math.floor( progressCount / cardCount * 100 ) ) + "%)";
+							document.body.innerHTML = "Stitching " + progressCount + "/" + cardCount + "(" + ( Math.floor( progressCount / cardCount * 100 ) ) + "%)";
 							break;
 						}
 					}
 				}
 				
+				document.body.innerHTML = "Conversion complete."
 				exportFile( JSON.stringify( cards ) );
 			
 			}
@@ -102,6 +103,6 @@
 	
 	</head>
 	<body onload="start();">
-		<textarea id="buffer"></textarea>
+		Working...
 	</body>
 </html>
