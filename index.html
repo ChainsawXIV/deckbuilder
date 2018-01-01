@@ -19,7 +19,7 @@
 				position:relative;
 			}
 			body{
-				background-color:#383838;
+				background-color:#red;
 			}
 			
 			html,body,div,span,input,select,table,img{
@@ -28,8 +28,9 @@
 				box-sizing:border-box;
 			}
 			
-			#searchFrame{
-				width:40%;
+			#searchFrame,
+			#deckFrame{
+				width:100%;
 				height:100%;
 				position:relative;
 				background-color:#383838;
@@ -47,12 +48,28 @@
 				border-radius:0.2em;
 			}
 			
+			#masterTable{
+				width:100%;
+				height:100%;
+				border-collapse:collapse;
+			}
+			#masterTable td{
+				padding:0em;
+			}
+			#masterTable .searchContainer,
+			#masterTable .deckContainer{
+				width:40%;
+			}
+			#masterTable .overviewContainer{
+				width:20%;
+			}
+			
 		</style>
 		
 		<!-- Filter Section Layout -->
 		<style>
 			
-			#cardListFilters{
+			.filterSection{
 				position:relative;
 				background-color:#444;
 				z-index:10;
@@ -145,7 +162,7 @@
 				margin-bottom:0.15em;
 			}
 			
-			#cardListFilters .bottomTab{
+			.filterSection .bottomTab{
 				position:absolute;
 				bottom:-1.6em;
 				right:4.35em;
@@ -159,20 +176,20 @@
 				padding:0.0em 1em 0.2em 1em;
 				cursor:pointer;
 			}
-			.hideFilters #cardListFilters .bottomTab.hide{
+			.hideFilters .filterSection .bottomTab.hide{
 				display:none;
 			}
-			#cardListFilters .bottomTab.show{
+			.filterSection .bottomTab.show{
 				display:none;
 			}
-			.hideFilters #cardListFilters .bottomTab.show{
+			.hideFilters .filterSection .bottomTab.show{
 				display:block;
 				bottom:-1.5em;
 			}
-			.hideFilters #cardListFilters .filterGroup{
+			.hideFilters .filterSection .filterGroup{
 				display:none;
 			}
-			.hideFilters #cardListFilters{
+			.hideFilters .filterSection{
 				height:0.5em;
 				padding:0em;
 			}
@@ -182,7 +199,7 @@
 		<!-- Page Navigation Layout -->
 		<style>
 		
-			#cardListNav{
+			.navSection{
 				position:absolute;
 				bottom:0.35em;
 				right:1.5em;
@@ -191,7 +208,7 @@
 				z-index:9;
 			}
 			
-			#cardListNav .topTab{
+			.navSection .topTab{
 				border:1px solid black;
 				border-bottom:none;
 				border-radius:0.2em 0.2em 0em 0em;
@@ -201,7 +218,7 @@
 				font-size:0.9em;
 			}
 			
-			#bottomLine{
+			.navBottom{
 				position:absolute;
 				bottom:0em;
 				width:100%;
@@ -211,7 +228,7 @@
 				z-index:8;
 			}
 			
-			#cardListNav a{
+			.navSection a{
 				display:inline-block;
 				cursor:pointer;
 				border:1px solid black;
@@ -224,7 +241,7 @@
 				position:relative;
 				top:-0.1em;
 			}
-			#cardListNav a:hover{
+			.navSection a:hover{
 				background-color:#AAA;
 			}
 		
@@ -233,7 +250,7 @@
 		<!-- Card List Layout -->
 		<style>
 			
-			#cardListArea{
+			.listSection{
 				position:absolute;
 				width:100%;
 				top:9em;
@@ -244,55 +261,55 @@
 				margin-top:0.4em;
 				background-color:#383838;
 			}
-			.hideFilters #cardListArea{
+			.hideFilters .listSection{
 				top:0.35em;
 			}
 			
-			#cardList{
+			.listTable{
 				border-collapse:collapse;
 				margin-bottom:2em;
 			}
-			#cardList tr:nth-of-type(odd) td{
+			.listTable tr:nth-of-type(odd) td{
 				background-color:rgba(0,0,0,0.2);
 			}
-			#cardList td:nth-of-type(1){
+			#masterTable .listTable td:nth-of-type(1){
 				padding:0.5em 0.3em 0.2em 0.5em;
 				vertical-align:top;
 			}
-			#cardList td:nth-of-type(2){
+			#masterTable .listTable td:nth-of-type(2){
 				padding:0.5em 1.5em 0.5em 0.5em;
 				vertical-align:top;
 			}
-			#cardList span{
+			.listTable span{
 				color:#c5c5c5;
 				font-size:0.9em;
 				font-weight:600;
 			}
-			#cardList .cardTitle{
+			.listTable .cardTitle{
 				font-weight:600;
 				font-size:0.95em;
 				margin-right:0.2em;
 				color:#c5c5c5;
 				text-decoration:none;
 			}
-			#cardList .cardTitle:hover{
+			.listTable .cardTitle:hover{
 				text-decoration:underline;
 			}
-			#cardList .cardManaCost{
+			.listTable .cardManaCost{
 				margin-right:0.2em;
 			}
-			#cardList .cardType{
+			.listTable .cardType{
 				margin-right:0.2em;
 			}
-			#cardList .cardText{
+			.listTable .cardText{
 				color:#FFF;
 			}
-			#cardList .symbol{
+			.listTable .symbol{
 				height:1em;
 				position:relative;
 				top:0.25em;
 			}
-			#cardList .cardImage{
+			.listTable .cardImage{
 				width:95px;
 				border-radius:6px;
 				
@@ -304,9 +321,15 @@
 		
 			cardData = null;
 			mainList = null;
+			deckList = null;
 			function start(){
 				
 				getCardData();
+				deckList = new CardList(
+					document.getElementById( "deckList"), 
+					document.getElementById( "deckListNav"),
+					document.getElementById( "deckListFilters" )
+				);
 				
 			}
 			
@@ -588,26 +611,55 @@
 	</head>
 	<body onload="start();">
 	
-		<div id="searchFrame" class="">
-		
-			<div id="cardListFilters">
-				<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><span class="filterGroup formats"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
-				<span class="filterGroup supertypes"><span class="filterLabel">Supertype:</span><select class="filterField" filterType="supertypes"></select></span><span class="filterGroup types"><span class="filterLabel">Type:</span><select class="filterField" filterType="types"></select></span><span class="filterGroup subtypes"><span class="filterLabel">Subtype:</span><select class="filterField" filterType="subtypes"></select></span><br>
-				<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><br>
-				<span class="filterGroup colors"><span class="filterLabel">Color:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
-				<span class="filterGroup colorIdentity"><span class="filterLabel">Identity:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
-				<div class="bottomTab hide" onclick="toggleFilters( 'searchFrame', false );">HIDE FILTER SETTINGS</div>
-				<div class="bottomTab show" onclick="toggleFilters( 'searchFrame', true );">SHOW FILTER SETTINGS</div>
-			</div>
+		<table id="masterTable"><tr>
+	
+			<td class="searchContainer"><div id="searchFrame" class="">
 			
-			<div id="cardListArea">
-				<table id="cardList"></table>
-			</div>
+				<div id="cardListFilters" class="filterSection">
+					<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><span class="filterGroup formats"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
+					<span class="filterGroup supertypes"><span class="filterLabel">Supertype:</span><select class="filterField" filterType="supertypes"></select></span><span class="filterGroup types"><span class="filterLabel">Type:</span><select class="filterField" filterType="types"></select></span><span class="filterGroup subtypes"><span class="filterLabel">Subtype:</span><select class="filterField" filterType="subtypes"></select></span><br>
+					<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><br>
+					<span class="filterGroup colors"><span class="filterLabel">Color:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
+					<span class="filterGroup colorIdentity"><span class="filterLabel">Identity:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
+					<div class="bottomTab hide" onclick="toggleFilters( 'searchFrame', false );">HIDE FILTER SETTINGS</div>
+					<div class="bottomTab show" onclick="toggleFilters( 'searchFrame', true );">SHOW FILTER SETTINGS</div>
+				</div>
+				
+				<div id="cardListArea" class="listSection">
+					<table id="cardList" class="listTable"></table>
+				</div>
 
-			<div id="cardListNav"></div>
-			<div id="bottomLine"></div>
+				<div id="cardListNav" class="navSection"></div>
+				<div id="cardListBottom" class="navBottom"></div>
+				
+			</div></td>
+
+			<td class="deckContainer"><div id="deckFrame" class="">
 			
-		</div>
+				<div id="deckListFilters" class="filterSection">
+					<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><span class="filterGroup formats"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
+					<span class="filterGroup supertypes"><span class="filterLabel">Supertype:</span><select class="filterField" filterType="supertypes"></select></span><span class="filterGroup types"><span class="filterLabel">Type:</span><select class="filterField" filterType="types"></select></span><span class="filterGroup subtypes"><span class="filterLabel">Subtype:</span><select class="filterField" filterType="subtypes"></select></span><br>
+					<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><br>
+					<span class="filterGroup colors"><span class="filterLabel">Color:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
+					<span class="filterGroup colorIdentity"><span class="filterLabel">Identity:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
+					<div class="bottomTab hide" onclick="toggleFilters( 'deckFrame', false );">HIDE FILTER SETTINGS</div>
+					<div class="bottomTab show" onclick="toggleFilters( 'deckFrame', true );">SHOW FILTER SETTINGS</div>
+				</div>
+				
+				<div id="deckListArea" class="listSection">
+					<table id="deckList" class="listTable"></table>
+				</div>
+
+				<div id="deckListNav" class="navSection"></div>
+				<div id="deckListBottom" class="navBottom"></div>
+				
+			</div></td>
+			
+			<td class="overviewContainer">
+			
+			</td>
+			
+		</tr></table>
 	
 	</body>
 </html>
