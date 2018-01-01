@@ -1,0 +1,44 @@
+<html>
+	<head>
+
+		<style>
+		
+			.hidden{
+				display:none;
+			}
+		
+		</style>
+		
+		<script>
+		
+			function getCardData(){
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = function(){
+					if(request.readyState == 4){
+						processCardData( request.responseText );
+					}
+				};
+				// DATA SOURCE: https://mtgjson.com/json/AllCards-x.json.zip 12/31/17
+				request.open( "GET", "http://tools.omnichron.net/deckbuilder/cards.json", true );
+				request.send();			
+			}
+		
+			cardData = null;
+			function processCardData( data ){
+				cardData = JSON.parse( data );
+				var list = document.getElementById( "cardList" );
+				for ( var name in cardData ){
+					list.innerHTML += '<tr><td>' + name + '</td></tr>';
+				}
+			}
+		
+		</script>
+		
+	</head>
+	<body onload="getCardData();">
+		<table id="cardList">
+		
+		</table>
+	
+	</body>
+</html>
