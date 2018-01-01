@@ -551,6 +551,7 @@
 					var list = '';
 					for ( var i = minIndex; i <= maxIndex; i++ ){
 						var card = context.sortedCards[ i ];
+						var key = card.name.replace( /"/g, "" );
 						var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 						var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
 						if ( !card.multiverseid ){
@@ -558,7 +559,7 @@
 							link = 'http://gatherer.wizards.com/Pages/Default.aspx';
 						}
 						
-						list += '<tr><td>';
+						list += '<tr><td key="' + key + '">';
 						list += '<a href="' + link + '"><img class="cardImage" src="' + image + '" /></a>';
 						list += '</td><td>';
 						list += '<a class="cardTitle" href="' + link + '" target="_blank">' + card.name + '</a>';
