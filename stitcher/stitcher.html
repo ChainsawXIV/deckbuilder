@@ -1,0 +1,107 @@
+<html>
+	<head>
+	
+		<title>Sticher</title>
+		<script src="jszip.js"></script>
+		<script src="filesaver.js"></script>
+		<script>
+		
+			cards = null;
+			sets = null;
+			function start(){
+				
+				getCards();
+				getSets();
+				
+			}
+		
+			function getCards(){
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = function(){
+					if( request.readyState == 4 ){
+						cards = JSON.parse( request.responseText );
+						if ( sets ) stitch();
+					}
+				};
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/stitcher/cards.json", true );
+				request.send();			
+			}
+			
+			function getSets(){
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = function(){
+					if( request.readyState == 4 ){
+						sets = JSON.parse( request.responseText );
+						if ( cards ) stitch();
+					}
+				};
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/stitcher/sets.json", true );
+				request.send();			
+			}
+			
+			function stitch(){
+			
+				var cardCount = Object.keys( cards ).length;
+				var progressCount = 0;
+				
+				for ( var cardName in cards ){
+					var baseCard = cards[ cardName ];
+					var firstSet = baseCard.printings[ 0 ];
+					var setCards = sets[ firstSet ].cards;
+					for ( var i = 0; i < setCards.length; i++ ){
+						var setCard = setCards[ i ];
+						if ( setCard.name == cardName ){
+							baseCard.multiverseid = setCard.multiverseid;
+							baseCard.rarity = setCard.rarity;
+							delete baseCard[ "imageName" ];
+							delete baseCard[ "printings" ];
+							delete baseCard[ "rulings" ];
+							if ( baseCard.colors ){
+								for ( var c = 0; c < baseCard.colors.length; c++ ){
+									if ( baseCard.colors[ c ] == "White" ) baseCard.colors[ c ] = "W";
+									else if ( baseCard.colors[ c ] == "Black" ) baseCard.colors[ c ] = "B";
+									else if ( baseCard.colors[ c ] == "Red" ) baseCard.colors[ c ] = "R";
+									else if ( baseCard.colors[ c ] == "Blue" ) baseCard.colors[ c ] = "U";
+									else if ( baseCard.colors[ c ] == "Green" ) baseCard.colors[ c ] = "G";
+								}
+							}
+							if ( baseCard.legalities ){
+								for ( var f = 0; f < baseCard.legalities.length; f++ ){
+									if ( baseCard.legalities[ f ].legality == "Legal" || baseCard.legalities[ f ].legality == "Restricted" ){
+										baseCard.formats = baseCard.formats || [];
+										baseCard.formats.push( baseCard.legalities[ f ].format );
+									}
+									if ( baseCard.legalities[ f ].legality == "Restricted" ){
+										baseCard.restricted = baseCard.restricted || [];
+										baseCard.restricted.push( baseCard.legalities[ f ].format );
+									}
+								}
+								delete baseCard[ "legalities" ];
+							}
+							progressCount++;
+							document.title = "Stitching " + progressCount + "/" + cardCount + "(" + ( Math.floor( progressCount / cardCount * 100 ) ) + "%)";
+							break;
+						}
+					}
+				}
+				
+				exportFile( JSON.stringify( cards ) );
+			
+			}
+			
+			function exportFile( data ){
+			
+				var archive = new JSZip();
+				archive.file( "data.json", data );
+				var content = archive.generate( { type: "blob" } );
+				saveAs( content, "stitched-cards.zip" );
+			
+			}
+		
+		</script>
+	
+	</head>
+	<body onload="start();">
+		<textarea id="buffer"></textarea>
+	</body>
+</html>
