@@ -1,44 +1,402 @@
 <html>
 	<head>
-
+	
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700" rel="stylesheet">
+		
 		<style>
 		
-			.hidden{
-				display:none;
+			body,table,tr,td{
+				font-family: 'Open Sans', sans-serif;
+				font-size:11pt;
+				background-color:#444;
+				font-weight:600;
+				color:#FFF;
+			}
+			
+			html,body,div,span,input,select,table{
+				margin:0em;
+				padding:0em;
+			}
+			
+			#searchFrame{
+				width:40%;
+			}
+			
+			.filterGroup .filterLabel{
+				display:inline-block;
+				width:6em;
+			}
+			.filterGroup .filterSublable{
+				display:inline-block;
+				width:4em;
+			}
+			
+			.filterGroup input,
+			.filterGroup select{
+				width:46em;
+			}
+			
+			.filterGroup.colors select,
+			.filterGroup.colorIdentity select{
+				width:5em;
+			}
+			
+			.filterGroup.supertypes select,
+			.filterGroup.types select,
+			.filterGroup.subtypes select,
+			.filterGroup.cmc input{
+				width:7em;
+			}
+			
+			#cardList tr:nth-of-type(odd) td{
+				background-color:#333;
+			}
+			#cardList td{
+				padding:0.3em 1.5em 0.5em 0.5em;
+			}
+			#cardList span{
+				color:#c5c5c5;
+				font-size:0.9em;
+				font-weight:600;
+			}
+			#cardList .cardTitle{
+				font-weight:600;
+				font-size:0.95em;
+				margin-right:0.2em;
+			}
+			#cardList .cardManaCost{
+				margin-right:0.2em;
+			}
+			#cardList .cardType{
+				margin-right:0.2em;
+			}
+			#cardList .cardText{
+				color:#FFF;
+			}
+			#cardList .symbol{
+				height:1em;
+				position:relative;
+				top:0.25em;
 			}
 		
 		</style>
 		
 		<script>
 		
+			cardData = null;
+			mainList = null;
+			function start(){
+				
+				getCardData();
+				
+			}
+			
 			function getCardData(){
 				var request = new XMLHttpRequest();
 				request.onreadystatechange = function(){
 					if(request.readyState == 4){
-						processCardData( request.responseText );
+						cardData = JSON.parse( request.responseText );
+						mainList = new CardList( 
+							document.getElementById( "cardList"), 
+							document.getElementById( "cardListNav"),
+							document.getElementById( "cardListFilters" )
+						);
+						mainList.setCards( cardData );
 					}
 				};
-				// DATA SOURCE: https://mtgjson.com/json/AllCards-x.json.zip 12/31/17
-				request.open( "GET", "http://tools.omnichron.net/deckbuilder/cards.json", true );
+				// DATA SOURCE: https://mtgjson.com/json/AllSets-x.json.zip 12/31/17
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/cards.json", true );
 				request.send();			
 			}
-		
-			cardData = null;
-			function processCardData( data ){
-				cardData = JSON.parse( data );
-				var list = document.getElementById( "cardList" );
-				for ( var name in cardData ){
-					list.innerHTML += '<tr><td>' + name + '</td></tr>';
+				
+			function CardList( listElement, navElement, filtersElement ){
+			
+				var context = this;
+				
+				this.listElement = listElement;
+				this.navElement = navElement;
+				this.filtersElement = filtersElement;
+				this.pageLength = 100;
+				this.filterParameters = {};
+				this.filterTimer = null;
+				this.sortProperty = 'name';
+				this.sortDescending = false;
+				this.cards = {};
+				this.sortedCards = null;
+				this.cardCount = 0;
+				this.currentPage = 0;
+				this.pageCount = 0;
+				
+				this.filterTypes = {
+					name:{ type:"match" },
+					cmc:{ type:"number" },
+					supertypes:{ type:"list", populate:true },
+					types:{ type:"list", populate:true },
+					subtypes:{ type:"list", populate:true },
+					text:{ type:"match" },
+					colors:{ type:"color" },
+					colorIdentity:{ type:"color" },
+					legalities:{ type:"format", populate:true }
+				};
+				
+				listElement.cardList = this;
+				navElement.cardList = this;
+				filtersElement.cardList = this;
+				
+				var filterFields = filtersElement.querySelectorAll( ".filterField" );
+				for ( var i = 0; i < filterFields.length; i++ )
+					setupField( filterFields[ i ] );
+					
+				function setupField( element ){
+					
+					var field = element.getAttribute( "filterType" );
+					if ( context.filterTypes[ field ] ){
+						var type = context.filterTypes[ field ].type;
+						
+						// Listen for updates and schedule list refresh
+						if ( type == "match" || type == "number" ){
+							element.addEventListener( "keyup", function(){
+								context.filterParameters[ field ] = this.value;
+								if ( this.value == "" ) delete context.filterParameters[ field ];
+								context.scheduleFilterUpdate( 200 );
+							} );
+						}
+						if ( type == "list" || type == "format" ){
+							element.addEventListener( "change", function(){
+								context.filterParameters[ field ] = this.value;
+								if ( this.value == "" ) delete context.filterParameters[ field ];
+								context.scheduleFilterUpdate( 500 );
+							} );
+						}
+						else if ( type == "color" ){
+							element.addEventListener( "change", function(){
+								var color = this.getAttribute( "manaColor" );
+								context.filterParameters[ field ] = context.filterParameters[ field ] || {};
+								context.filterParameters[ field ][ color ] = this.value;
+								if ( this.value == "allowed" ) delete context.filterParameters[ field ][ color ];
+								if ( Object.keys( context.filterParameters[ field ] ).length === 0 ) delete context.filterParameters[ field ];
+								context.scheduleFilterUpdate( 500 );
+							} );
+						}
+						
+						// Match elements back to their filter types
+						if ( context.filterTypes[ field ].populate )
+							context.filterTypes[ field ].element = element;
+							
+					}
+					
 				}
+				
+				this.setListOptions = function(){
+				
+					// Harvest data for populating filter lists
+					for ( var field in context.filterTypes )
+						if ( context.filterTypes[ field ].populate ) context.filterTypes[ field ].options = [];
+
+					for ( var cardName in context.cards ){
+						var card = context.cards[ cardName ];
+						for ( var field in context.filterTypes ){
+							var type = context.filterTypes[ field ];
+							if ( type.populate && card[ field ] ){
+								for ( var entry = 0; entry < card[ field ].length; entry++ ){
+									if ( field == "legalities" ){
+										var format = card[ field ].format;
+										if ( card[ field ][ entry ].legality == "Legal" || card[ field ][ entry ].legality == "Restricted" ){
+											if ( type.options.indexOf( card[ field ][ entry ].format ) < 0 )
+												type.options.push( card[ field ][ entry ].format );
+										}
+									}
+									else{
+										if ( type.options.indexOf( card[ field ][ entry ] ) < 0 )
+										 type.options.push( card[ field ][ entry ] );
+									}
+								}
+							}
+						}
+					}
+
+					for ( var field in context.filterTypes ){
+						if ( context.filterTypes[ field ].options && context.filterTypes[ field ].element ){
+							var options = context.filterTypes[ field ].options;
+							var content = "";
+							options.sort();
+							options.unshift( "" );
+							for ( var i = 0; i < options.length; i++ )
+								content += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
+							context.filterTypes[ field ].element.innerHTML = content;
+						}
+					}
+					
+				}
+
+				this.scheduleFilterUpdate = function( delay ){
+					window.clearTimeout( context.filterTimer );
+					context.filterTimer = window.setTimeout( function(){
+						context.filterCards();
+					}, delay );
+				}
+				
+				this.setCards = function( cards ){
+					context.cards = cards;
+					context.currentPage = 0;
+					context.setListOptions();
+					context.filterCards();
+				};
+				
+				this.filterCards = function( filterParameters ){
+					var fp = filterParameters || context.filterParameters;
+					context.sortedCards = [];
+					
+					for ( var name in context.cards ){
+						var card = context.cards[ name ];
+						
+						var include = true;
+						for ( var key in fp ){
+							if ( context.filterTypes[ key ] ){
+								var type = context.filterTypes[ key ].type;
+								if ( card[ key ] === undefined )
+									include = false;
+								else if ( type == "match" && !card[ key ].match( new RegExp( fp[ key ], "i" ) ) )
+									include = false;
+								else if ( type == "number" && card[ key ] != parseInt( fp[ key ] ) )
+									include = false;
+								else if ( type == "list" && card[ key ].indexOf( fp[ key ] ) < 0 )
+									include = false;
+								else if ( type == "color" ){
+									for ( var color in fp[ key ] ){
+										if ( fp[ key ][ color ] == "required" && card[ key ].indexOf( color ) < 0 ){
+											include = false;
+											break;
+										};
+										if ( fp[ key ][ color ] == "excluded" && card[ key ].indexOf( color ) >= 0 ){
+											include = false;
+											break;
+										};
+									}
+								}
+								else if ( type == "format" ){
+									var legal = false;
+									if ( card.legalities ){
+										for ( var i = 0; i < card.legalities.length; i++ ){
+											if ( card.legalities[ i ].format == fp.legalities && ( card.legalities[ i ].legality == "Legal" || card.legalities[ i ].legality == "Restricted" ) ){
+												legal = true;
+												break;
+											}
+										}
+									}
+									if ( !legal ) include = false;
+								}
+								if ( !include ) break;
+							}
+						}
+						if ( !include ) continue;
+						
+						// Add the card to the sorted card list
+						context.sortedCards.push( context.cards[ name ] );
+						
+					}
+					
+					context.cardCount = context.sortedCards.length;
+					context.pageCount = Math.ceil( context.cardCount / context.pageLength );
+					context.sortCards();
+				}
+
+				this.sortCards = function( property, descending ){
+					var property = property || context.sortProperty;
+					var descending = descending || context.sortDescending;
+					context.sortedCards.sort( function( a, b ){
+						if ( descending ){
+							if ( a[ property ] > b[ property ] ) return -1;
+							else if ( a[ property ] < b[ property ] ) return 1;
+							else return 0;
+						}
+						else{
+							if ( a[ property ] > b[ property ] ) return 1;
+							else if ( a[ property ] < b[ property ] ) return -1;
+							else return 0;
+						}
+					} );
+					context.updateList();
+				};
+				
+				this.setPage = function( page ){
+					context.currentPage = Math.max( 0, Math.min( page, context.pageCount ) );
+					context.updateList();
+				};
+				
+				this.updateList = function(){
+					var minIndex = context.pageLength * context.currentPage;
+					var maxIndex = Math.min( minIndex + context.pageLength, context.cardCount - 1 );
+					var list = '';
+					for ( var i = minIndex; i <= maxIndex; i++ ){
+						var card = context.sortedCards[ i ];
+						list += '<tr><td>';
+						list += '<span class="cardTitle">' + card.name + '</span>';
+						if ( card.manaCost )
+							list += '<span class="cardManaCost">' + card.manaCost + '</span>';
+						list += '<span class="cardCMC">(' + card.cmc + ')</span><br>';
+						list += '<span class="cardType">' + card.type + '</span>';
+						if ( card.power !== undefined && card.toughness !== undefined )
+							list += '<span class="cardStats">(<span class="cardPower">' + card.power + '</span>/<span class="cardToughness">' + card.toughness + '</span>)</span>';
+						list += '<br><span class="cardText">' + card.text + '</span>';
+						list += '</td></tr>';
+					}
+					context.listElement.innerHTML = replaceSymbols( list );
+					context.updateNavigation();
+				}
+				
+				function replaceSymbols( text ){
+					
+					return text.replace( /\{([\w\d]+)\}/g, function( match, p1 ){
+						if ( p1 == "T" ) p1 = "tap";
+						return '<img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=' + p1 + '&type=symbol" />';
+					} );
+				
+				}
+				
+				this.updateNavigation = function(){
+					context.navElement.innerHTML = '<a onclick="this.parentNode.cardList.setPage(0)">First</a> ';
+					context.navElement.innerHTML += '<a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage - 1 ) + ')">Previous</a> ';
+					context.navElement.innerHTML += 'Page ' + ( context.currentPage + 1 ) + ' of ' + ( context.pageCount );
+					context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage + 1 ) + ')">Next</a>';
+					context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.pageCount - 1 ) + ')">Last</a>';
+				}
+				
+				return this;
+				
 			}
 		
 		</script>
 		
 	</head>
-	<body onload="getCardData();">
-		<table id="cardList">
-		
-		</table>
+	<body onload="start();">
+		<div id="searchFrame">
+			<div id="cardListFilters">
+				<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><br>
+				<span class="filterGroup supertypes"><span class="filterLabel">Supertype:</span><select class="filterField" filterType="supertypes"></select></span>
+				<span class="filterGroup types"><span class="filterLabel">Type:</span><select class="filterField" filterType="types"></select></span>
+				<span class="filterGroup subtypes"><span class="filterLabel">Subtype:</span><select class="filterField" filterType="subtypes"></select></span>
+				<span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
+				<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><br>
+				<span class="filterGroup colors"><span class="filterLabel">Color:</span>
+					<span class="filterSublable">White</span><select class="filterField" filterType="colors" manaColor="White"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Blue</span><select class="filterField" filterType="colors" manaColor="Blue"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Black</span><select class="filterField" filterType="colors" manaColor="Black"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Red</span><select class="filterField" filterType="colors" manaColor="Red"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Green</span><select class="filterField" filterType="colors" manaColor="Green"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+				</span><br>
+				<span class="filterGroup colorIdentity"><span class="filterLabel">Identity:</span>
+					<span class="filterSublable">White</span><select class="filterField" filterType="colorIdentity" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Blue</span><select class="filterField" filterType="colorIdentity" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Black</span><select class="filterField" filterType="colorIdentity" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Red</span><select class="filterField" filterType="colorIdentity" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+					<span class="filterSublable">Green</span><select class="filterField" filterType="colorIdentity" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
+				</span><br>
+				<span class="filterGroup legalities"><span class="filterLabel">Format:</span><select class="filterField" filterType="legalities"></select></span>
+			</div>
+			<div id="cardListNav"></div>
+			<table id="cardList"></table>
+		</div>
 	
 	</body>
 </html>
