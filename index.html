@@ -1,58 +1,265 @@
+<!DOCTYPE html>
 <html>
 	<head>
 	
 		<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700" rel="stylesheet">
 		
+		<!-- Main Page Layout -->
 		<style>
 		
 			body,table,tr,td{
 				font-family: 'Open Sans', sans-serif;
 				font-size:11pt;
-				background-color:#444;
 				font-weight:600;
 				color:#FFF;
 			}
+			body,html{
+				height:100%;
+				width:100%;
+				position:relative;
+			}
+			body{
+				background-color:#383838;
+			}
 			
-			html,body,div,span,input,select,table{
+			html,body,div,span,input,select,table,img{
 				margin:0em;
 				padding:0em;
+				box-sizing:border-box;
 			}
 			
 			#searchFrame{
 				width:40%;
+				height:100%;
+				position:relative;
 			}
 			
-			.filterGroup .filterLabel{
-				display:inline-block;
-				width:6em;
+			::-webkit-scrollbar{
+				width:0.5em;
 			}
+			::-webkit-scrollbar-track{
+				background-color:rgba(0,0,0,0.2);
+				border-radius:0.2em;
+			}
+			::-webkit-scrollbar-thumb{
+				background-color:rgba(0,0,0,0.5);
+				border-radius:0.2em;
+			}
+			
+		</style>
+		
+		<!-- Filter Section Layout -->
+		<style>
+			
+			#cardListFilters{
+				position:relative;
+				background-color:#444;
+				z-index:10;
+				padding:0.4em 0em 0.3em 0.3em;
+				border-bottom:1px solid black;
+				background-color:#444;
+			}
+			
+			.filterGroup .filterLabel,
 			.filterGroup .filterSublable{
+				font-weight:400;
 				display:inline-block;
-				width:4em;
+				padding-left:0.1em;
+				color:#c5c5c5;
 			}
-			
 			.filterGroup input,
 			.filterGroup select{
-				width:46em;
+				font-family:'Open Sans', sans-serif;
+				color:#ffffff;
+				background-color:rgba(0,0,0,0.3);
+				border:1px solid rgba(0,0,0,0.5);
+				border-radius:0.2em;
+				margin:0.1em 0em 0.1em 0em;
+			}
+			.filterGroup option{
+				background-color:rgba(0,0,0,0.6);
 			}
 			
-			.filterGroup.colors select,
-			.filterGroup.colorIdentity select{
-				width:5em;
+			.filterGroup.name .filterLabel{
+				width:13%;
+			}
+			.filterGroup.name input{
+				width:31%;
+			}
+			.filterGroup.formats .filterLabel{
+				padding-left:0.5em;
+				width:10.5%;
+			}
+			.filterGroup.formats select{
+				width:17.5%;
+			}
+			.filterGroup.cmc .filterLabel{
+				padding-left:0.5em;
+				width:14%;
+			}
+			.filterGroup.cmc input{
+				width:14%;
 			}
 			
+			.filterGroup.supertypes .filterLabel{
+				width:13%;
+			}
+			.filterGroup.types .filterLabel{
+				padding-left:0.5em;
+				width:7.7%;
+			}
+			.filterGroup.subtypes .filterLabel{
+				padding-left:0.5em;
+				width:11.5%;
+			}
 			.filterGroup.supertypes select,
 			.filterGroup.types select,
-			.filterGroup.subtypes select,
-			.filterGroup.cmc input{
-				width:7em;
+			.filterGroup.subtypes select{
+				width:22.6%;
 			}
 			
-			#cardList tr:nth-of-type(odd) td{
-				background-color:#333;
+			.filterGroup.text .filterLabel{
+				width:13%;
 			}
-			#cardList td{
-				padding:0.3em 1.5em 0.5em 0.5em;
+			.filterGroup.text input{
+				margin-top:0.2em;
+				margin-bottom:0.25em;
+				width:87%;
+			}
+			
+			.filterGroup.colors .filterLabel,
+			.filterGroup.colorIdentity .filterLabel{
+				width:13%;
+			}
+			.filterGroup.colors .filterSublable,
+			.filterGroup.colorIdentity .filterSublable{
+				width:3%;
+				position:relative;
+				top:0.2em;
+				left:0.05em;
+			}
+			.filterGroup.colors select,
+			.filterGroup.colorIdentity select{
+				width:14.4%;
+				margin-bottom:0.15em;
+			}
+			
+			#cardListFilters .bottomTab{
+				position:absolute;
+				bottom:-1.6em;
+				right:4.35em;
+				background-color:#444;
+				border:1px solid black;
+				border-top:none;
+				border-radius:0.0em 0.0em 0.2em 0.2em;
+				font-weight:600;
+				font-size:0.8em;
+				color:#DDD;
+				padding:0.0em 1em 0.2em 1em;
+				cursor:pointer;
+			}
+			.hideFilters #cardListFilters .bottomTab.hide{
+				display:none;
+			}
+			#cardListFilters .bottomTab.show{
+				display:none;
+			}
+			.hideFilters #cardListFilters .bottomTab.show{
+				display:block;
+				bottom:-1.5em;
+			}
+			.hideFilters #cardListFilters .filterGroup{
+				display:none;
+			}
+			.hideFilters #cardListFilters{
+				height:0.5em;
+				padding:0em;
+			}
+			
+		</style>
+
+		<!-- Page Navigation Layout -->
+		<style>
+		
+			#cardListNav{
+				position:absolute;
+				bottom:0.35em;
+				right:1.5em;
+				font-weight:400;
+				font-size:1.0em;
+				z-index:9;
+			}
+			
+			#cardListNav .topTab{
+				border:1px solid black;
+				border-bottom:none;
+				border-radius:0.2em 0.2em 0em 0em;
+				padding:0.35em 0.7em;
+				background-color:#444;
+				font-weight:400;
+				font-size:0.9em;
+			}
+			
+			#bottomLine{
+				position:absolute;
+				bottom:0em;
+				width:100%;
+				background-color:#444;
+				border-top:1px solid black;
+				height:0.4em;
+				z-index:8;
+			}
+			
+			#cardListNav a{
+				display:inline-block;
+				cursor:pointer;
+				border:1px solid black;
+				border-radius:10em;
+				width:1.55em;
+				height:1.5em;
+				text-align:center;
+				padding-bottom:0.1em;
+				background-color:#888;
+				position:relative;
+				top:-0.1em;
+			}
+			#cardListNav a:hover{
+				background-color:#AAA;
+			}
+		
+		</style>
+		
+		<!-- Card List Layout -->
+		<style>
+			
+			#cardListArea{
+				position:absolute;
+				width:100%;
+				top:9em;
+				bottom:0.1em;
+				overflow-y:scroll;
+				box-sizing:content-box;
+				z-index:5;
+				margin-top:0.4em;
+				background-color:#383838;
+			}
+			.hideFilters #cardListArea{
+				top:0.35em;
+			}
+			
+			#cardList{
+				border-collapse:collapse;
+			}
+			#cardList tr:nth-of-type(odd) td{
+				background-color:rgba(0,0,0,0.2);
+			}
+			#cardList td:nth-of-type(1){
+				padding:0.5em 0.3em 0.2em 0.5em;
+				vertical-align:top;
+			}
+			#cardList td:nth-of-type(2){
+				padding:0.5em 1.5em 0.5em 0.5em;
+				vertical-align:top;
 			}
 			#cardList span{
 				color:#c5c5c5;
@@ -63,6 +270,11 @@
 				font-weight:600;
 				font-size:0.95em;
 				margin-right:0.2em;
+				color:#c5c5c5;
+				text-decoration:none;
+			}
+			#cardList .cardTitle:hover{
+				text-decoration:underline;
 			}
 			#cardList .cardManaCost{
 				margin-right:0.2em;
@@ -77,6 +289,11 @@
 				height:1em;
 				position:relative;
 				top:0.25em;
+			}
+			#cardList .cardImage{
+				width:95px;
+				border-radius:6px;
+				
 			}
 		
 		</style>
@@ -136,7 +353,7 @@
 					text:{ type:"match" },
 					colors:{ type:"color" },
 					colorIdentity:{ type:"color" },
-					legalities:{ type:"list", populate:true }
+					formats:{ type:"list", populate:true }
 				};
 				
 				listElement.cardList = this;
@@ -161,7 +378,7 @@
 								context.scheduleFilterUpdate( 200 );
 							} );
 						}
-						if ( type == "list" || type == "format" ){
+						if ( type == "list" ){
 							element.addEventListener( "change", function(){
 								context.filterParameters[ field ] = this.value;
 								if ( this.value == "" ) delete context.filterParameters[ field ];
@@ -199,17 +416,8 @@
 							var type = context.filterTypes[ field ];
 							if ( type.populate && card[ field ] ){
 								for ( var entry = 0; entry < card[ field ].length; entry++ ){
-									if ( field == "legalities" ){
-										var format = card[ field ].format;
-										if ( card[ field ][ entry ].legality == "Legal" || card[ field ][ entry ].legality == "Restricted" ){
-											if ( type.options.indexOf( card[ field ][ entry ].format ) < 0 )
-												type.options.push( card[ field ][ entry ].format );
-										}
-									}
-									else{
-										if ( type.options.indexOf( card[ field ][ entry ] ) < 0 )
-										 type.options.push( card[ field ][ entry ] );
-									}
+									if ( type.options.indexOf( card[ field ][ entry ] ) < 0 )
+									 type.options.push( card[ field ][ entry ] );
 								}
 							}
 						}
@@ -274,18 +482,6 @@
 										};
 									}
 								}
-								else if ( type == "format" ){
-									var legal = false;
-									if ( card.legalities ){
-										for ( var i = 0; i < card.legalities.length; i++ ){
-											if ( card.legalities[ i ].format == fp.legalities && ( card.legalities[ i ].legality == "Legal" || card.legalities[ i ].legality == "Restricted" ) ){
-												legal = true;
-												break;
-											}
-										}
-									}
-									if ( !legal ) include = false;
-								}
 								if ( !include ) break;
 							}
 						}
@@ -330,8 +526,17 @@
 					var list = '';
 					for ( var i = minIndex; i <= maxIndex; i++ ){
 						var card = context.sortedCards[ i ];
+						var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
+						var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
+						if ( !card.multiverseid ){
+							image = 'https://chainsawxiv.github.io/deckbuilder/cardback.jpg';
+							link = 'http://gatherer.wizards.com/Pages/Default.aspx';
+						}
+						
 						list += '<tr><td>';
-						list += '<span class="cardTitle">' + card.name + '</span>';
+						list += '<a href="' + link + '"><img class="cardImage" src="' + image + '" /></a>';
+						list += '</td><td>';
+						list += '<a class="cardTitle" href="' + link + '" target="_blank">' + card.name + '</a>';
 						if ( card.manaCost )
 							list += '<span class="cardManaCost">' + card.manaCost + '</span>';
 						list += '<span class="cardCMC">(' + card.cmc + ')</span><br>';
@@ -355,14 +560,24 @@
 				}
 				
 				this.updateNavigation = function(){
-					context.navElement.innerHTML = '<a onclick="this.parentNode.cardList.setPage(0)">First</a> ';
-					context.navElement.innerHTML += '<a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage - 1 ) + ')">Previous</a> ';
-					context.navElement.innerHTML += 'Page ' + ( context.currentPage + 1 ) + ' of ' + ( context.pageCount );
-					context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage + 1 ) + ')">Next</a>';
-					context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.pageCount - 1 ) + ')">Last</a>';
+					context.navElement.innerHTML = '<a onclick="this.parentNode.cardList.setPage(0)" title="First Page">&#x23EE;</a> ';
+					context.navElement.innerHTML += '<a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage - 1 ) + ')" title="Previous Page">&#x23F4</a> ';
+					context.navElement.innerHTML += '<span class="topTab"> Page ' + ( context.currentPage + 1 ) + ' of ' + ( context.pageCount ) + '</span>';
+					context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage + 1 ) + ')" title="Next Page">&#x23F5</a>';
+					context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.pageCount - 1 ) + ')" title="Last Page">&#x23ED</a>';
 				}
 				
 				return this;
+				
+			}
+		
+			function toggleFilters( groupId, show ){
+				
+				var element = document.getElementById( groupId );
+				if ( show )
+					element.className = element.className.replace( / hideFilters/g, '' );
+				else
+					element.className += ' hideFilters';
 				
 			}
 		
@@ -370,32 +585,26 @@
 		
 	</head>
 	<body onload="start();">
-		<div id="searchFrame">
+	
+		<div id="searchFrame" class="">
+		
 			<div id="cardListFilters">
-				<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><br>
-				<span class="filterGroup supertypes"><span class="filterLabel">Supertype:</span><select class="filterField" filterType="supertypes"></select></span>
-				<span class="filterGroup types"><span class="filterLabel">Type:</span><select class="filterField" filterType="types"></select></span>
-				<span class="filterGroup subtypes"><span class="filterLabel">Subtype:</span><select class="filterField" filterType="subtypes"></select></span>
-				<span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
+				<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><span class="filterGroup formats"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
+				<span class="filterGroup supertypes"><span class="filterLabel">Supertype:</span><select class="filterField" filterType="supertypes"></select></span><span class="filterGroup types"><span class="filterLabel">Type:</span><select class="filterField" filterType="types"></select></span><span class="filterGroup subtypes"><span class="filterLabel">Subtype:</span><select class="filterField" filterType="subtypes"></select></span><br>
 				<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><br>
-				<span class="filterGroup colors"><span class="filterLabel">Color:</span>
-					<span class="filterSublable">White</span><select class="filterField" filterType="colors" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Blue</span><select class="filterField" filterType="colors" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Black</span><select class="filterField" filterType="colors" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Red</span><select class="filterField" filterType="colors" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Green</span><select class="filterField" filterType="colors" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-				</span><br>
-				<span class="filterGroup colorIdentity"><span class="filterLabel">Identity:</span>
-					<span class="filterSublable">White</span><select class="filterField" filterType="colorIdentity" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Blue</span><select class="filterField" filterType="colorIdentity" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Black</span><select class="filterField" filterType="colorIdentity" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Red</span><select class="filterField" filterType="colorIdentity" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-					<span class="filterSublable">Green</span><select class="filterField" filterType="colorIdentity" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select>
-				</span><br>
-				<span class="filterGroup legalities"><span class="filterLabel">Format:</span><select class="filterField" filterType="legalities"></select></span>
+				<span class="filterGroup colors"><span class="filterLabel">Color:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
+				<span class="filterGroup colorIdentity"><span class="filterLabel">Identity:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
+				<div class="bottomTab hide" onclick="toggleFilters( 'searchFrame', false );">HIDE FILTER SETTINGS</div>
+				<div class="bottomTab show" onclick="toggleFilters( 'searchFrame', true );">SHOW FILTER SETTINGS</div>
 			</div>
+			
+			<div id="cardListArea">
+				<table id="cardList"></table>
+			</div>
+
 			<div id="cardListNav"></div>
-			<table id="cardList"></table>
+			<div id="bottomLine"></div>
+			
 		</div>
 	
 	</body>
