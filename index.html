@@ -202,7 +202,7 @@
 			.navSection{
 				position:absolute;
 				bottom:0.35em;
-				right:1.5em;
+				right:3.5em;
 				font-weight:400;
 				font-size:1.0em;
 				z-index:9;
@@ -280,6 +280,11 @@
 				padding:0.5em 1.5em 0.5em 0.5em;
 				vertical-align:top;
 			}
+			#masterTable .listTable td:nth-of-type(3){
+				padding:0.5em 0.5em 0.5em 0.5em;
+				vertical-align:middle;
+				width:1.5em;
+			}
 			.listTable span{
 				color:#c5c5c5;
 				font-size:0.9em;
@@ -312,8 +317,123 @@
 			.listTable .cardImage{
 				width:95px;
 				border-radius:6px;
-				
 			}
+			
+			#masterTable .listTable td:nth-of-type(3) a{
+				display:inline-block;
+				cursor:pointer;
+				border:1px solid black;
+				border-radius:10em;
+				width:1.1em;
+				height:1.0em;
+				text-align:center;
+				padding-bottom:0.1em;
+				background-color:#888;
+				color:#fff;
+				position:relative;
+				top:-0.1em;
+				font-size:1.5em;
+			}
+			#masterTable .listTable td:nth-of-type(3) a:hover{
+				background-color:#AAA;
+			}
+			#masterTable .listTable td:nth-of-type(3) .cardCount{
+				text-align:center;
+				width:1.55em;
+				height:1.55em;
+				position:relative;
+				left:0.13em;
+				top:-0.15em;
+			}
+			
+			#masterTable .listTable td:nth-of-type(3) a.add span{
+				position:relative;
+				top:-0.22em;
+				left:0.00em;
+			}
+			#masterTable .listTable td:nth-of-type(3) a.remove span{
+				position:relative;
+				top:-0.32em;
+				left:0.00em;
+			}
+			#masterTable .listTable td:nth-of-type(3) a.commanderFlag span{
+				position:relative;
+				top:-0.245em;
+				left:-0.03em;
+			}
+			#masterTable .listTable td:nth-of-type(3) a.commanderFlag.commander{
+				background-color:#882288;
+			}
+			
+			#masterTable .listTable td:nth-of-type(3) .cardCount[count="0"]{
+				color:#c5c5c5;
+			}
+			#masterTable .listTable td:nth-of-type(3) .cardCount[legal="0"]{
+				color:red;
+			}
+		
+		</style>
+		
+		<!-- Deck Management Layout -->
+		<style>
+		
+			.overviewContainer{
+				background-color:#383838;
+				width:20%;
+			}
+			
+			#deckProperties{
+				position:absolute;
+				top:0em;
+				width:20%;
+				height:9.35em;
+				background-color:#444;
+				border-bottom:1px solid black;
+				padding:0.4em 0em 0.3em 0.3em;
+			}
+			#deckProperties .filterLabel{
+				width:30%;
+			}
+			#deckProperties input,
+			#deckProperties select{
+				width:68%;
+			}
+			
+			#deckData{
+				overflow-y:scroll;
+				position:absolute;
+				top:9.35em;
+				bottom:0.5em;
+				width:20%;
+			}
+			#deckData #deckIssues{
+				font-weight:400;
+				color:#00ff00;
+				border:1px solid green;
+				margin:0.5em;
+				border-radius:0.3em;
+				padding:0.25em 0.5em 0.35em 1.8em;
+				background-color:rgba(0,255,0,0.1);
+				font-size:0.9em;
+			}
+			#masterTable.illegal #deckData #deckIssues{
+				color:red;
+				border-color:red;
+				background-color:rgba(255,0,0,0.1);
+			}
+			
+			
+			#deckFooter{
+				position:absolute;
+				bottom:0em;
+				width:20%;
+				background-color:#444;
+				border-top:1px solid black;
+				height:0.4em;
+				z-index:8;
+			}
+			
+			
 		
 		</style>
 		
@@ -322,8 +442,16 @@
 			cardData = null;
 			mainList = null;
 			deckList = null;
+			deck = null;
+			
+			formats = {
+				default:{ minCards:60 },
+				Commander:{ minCards:100, maxCards:100, commander:true }
+			}
+			
 			function start(){
 				
+				deck = new Deck();
 				getCardData();
 				deckList = new CardList(
 					document.getElementById( "deckList"), 
@@ -344,6 +472,7 @@
 							document.getElementById( "cardListFilters" )
 						);
 						mainList.setCards( cardData );
+						catelogReady();
 					}
 				};
 				// DATA SOURCE: https://mtgjson.com/json/AllSets-x.json.zip 12/31/17
@@ -351,7 +480,27 @@
 				request.send();			
 			}
 				
-			function CardList( listElement, navElement, filtersElement ){
+			function catelogReady(){
+				
+				var content = "";
+				var options = mainList.filterTypes.formats.options;
+				var format = document.getElementById( "deckFormat" );
+				for ( var i = 0; i < options.length; i++ )
+					content += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
+				format.innerHTML = content;
+				format.addEventListener( "change", function(){
+					deck.setFormat( format.value );
+				} );
+				
+				var name = document.getElementById( "deckName" );
+				name.addEventListener( "change", function(){
+					deck.name = name.value;
+					deck.save();
+				} );
+				
+			}
+				
+			function CardList( listElement, navElement, filtersElement, callback ){
 			
 				var context = this;
 				
@@ -388,6 +537,9 @@
 				var filterFields = filtersElement.querySelectorAll( ".filterField" );
 				for ( var i = 0; i < filterFields.length; i++ )
 					setupField( filterFields[ i ] );
+					
+				if ( callback )
+					callback();
 					
 				function setupField( element ){
 					
@@ -551,15 +703,20 @@
 					var list = '';
 					for ( var i = minIndex; i <= maxIndex; i++ ){
 						var card = context.sortedCards[ i ];
-						var key = card.name.replace( /"/g, "" );
+						var key = keyFromName( card.name );
+						var count = 0;
+						if ( deck.cards[ card.name ] )
+							count = deck.cards[ card.name ].count;
 						var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 						var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
 						if ( !card.multiverseid ){
 							image = 'https://chainsawxiv.github.io/deckbuilder/cardback.jpg';
 							link = 'http://gatherer.wizards.com/Pages/Default.aspx';
 						}
+						if ( !card.text )
+							card.text = "";
 						
-						list += '<tr><td key="' + key + '">';
+						list += '<tr key="' + key + '"><td>';
 						list += '<a href="' + link + '"><img class="cardImage" src="' + image + '" /></a>';
 						list += '</td><td>';
 						list += '<a class="cardTitle" href="' + link + '" target="_blank">' + card.name + '</a>';
@@ -569,13 +726,24 @@
 						list += '<span class="cardType">' + card.type + '</span>';
 						if ( card.power !== undefined && card.toughness !== undefined )
 							list += '<span class="cardStats">(<span class="cardPower">' + card.power + '</span>/<span class="cardToughness">' + card.toughness + '</span>)</span>';
-						list += '<br><span class="cardText">' + card.text + '</span>';
+						list += '<br><span class="cardText">' + card.text + '</span></td><td>';
+						list += '<a class="add" title="Add to Deck" onclick="deck.addCard( this.parentNode.parentNode.getAttribute(\'key\'), 1 );"><span>+</span></a>';
+						list += '<div class="cardCount" count="' + count + '">' + count + '</div>';
+						list += '<a class="remove" title="Remove from Deck" onclick="deck.removeCard( this.parentNode.parentNode.getAttribute(\'key\'), 1 );"><span>-</span></a>';
+						if ( deck.format == "Commander" ){
+							var commandClass = "";
+							if ( deck.commander ){
+								if ( card.name == deck.commander.name )
+									commandClass = " commander";
+							}
+							list += '<a title="Make Commander" class="commanderFlag' + commandClass + '" onclick="deck.setCommander( this.parentNode.parentNode.getAttribute(\'key\') );"><span>&#9813;</span></a>';
+						}
 						list += '</td></tr>';
 					}
 					context.listElement.innerHTML = replaceSymbols( list );
 					context.updateNavigation();
 				}
-				
+			
 				function replaceSymbols( text ){
 					
 					return text.replace( /\{([\w\d]+)\}/g, function( match, p1 ){
@@ -607,6 +775,279 @@
 				
 			}
 		
+			function Deck(){
+				
+				var context = this;
+				
+				this.cards = {};
+				this.format = "";
+				this.name = "";
+				this.minCards = -1;
+				this.maxCards = -1;
+				this.legal = 0;
+				this.issues = [];
+				this.commander = null;
+				this.identity = [];
+				
+				this.addCard = function( cardKey, quantity ){
+					
+					var cardName = nameFromKey( cardKey );
+					if ( context.cards[ cardName ] )
+						context.cards[ cardName ].count += quantity;
+					else{
+						context.cards[ cardName ] = cardData[ cardName ];
+						context.cards[ cardName ].count = quantity;
+					}
+						
+					deckList.setCards( context.cards );
+					context.updateAllCounts();
+					context.save();
+					
+				}
+				
+				this.removeCard = function( cardKey, quantity ){
+				
+					var cardName = nameFromKey( cardKey );
+					if ( context.cards[ cardName ] ){
+						if ( context.cards[ cardName ].count <= quantity )
+							delete context.cards[ cardName ];
+						else
+							context.cards[ cardName ].count -= quantity;
+					}
+
+					deckList.setCards( context.cards );
+					updateCounts( cardKey );
+					context.save();
+				
+				}
+				
+				this.updateAllCounts = function(){
+					
+					for ( var card in context.cards )
+						updateCounts( keyFromName( card ) );
+					
+				}
+				
+				this.save = function(){
+					// IMPLEMENT ME
+				}
+				
+				this.setFormat = function( format ){
+					
+					context.format = format;
+					if ( !formats[ format ] ) format = "default";
+					
+					mainList.updateList();
+					deckList.updateList();
+					
+					context.minCards = formats[ format ].minCards || -1;
+					context.maxCards = formats[ format ].maxCards || -1;
+					
+					context.updateAllCounts();
+					context.save();
+					
+				}
+				
+				this.setCommander = function( cardKey ){
+					
+					if ( context.commander ){
+						var rows = document.querySelectorAll( '.commanderFlag.commander' );
+						for ( var i = 0; i < rows.length; i++ ){
+							rows[ i ].className = rows[ i ].className.replace( /[\s]+commander/g, '' );
+						}
+					}
+					var rows = document.querySelectorAll( 'tr[key="' + cardKey + '"] .commanderFlag' );
+					for ( var i = 0; i < rows.length; i++ ){
+						rows[ i ].className += " commander";
+					}
+					
+					var cardName = nameFromKey( cardKey );
+					context.commander = cardData[ cardName ];
+					context.identity = context.commander.colorIdentity;
+					if ( !context.commander.count ){
+						context.addCard( cardKey, 1 );
+					}
+					
+					context.updateAllCounts();
+					
+				}
+				
+				this.list = function(){
+				
+					var out = '';
+					for ( var cardName in context.cards ){
+						out += context.cards.count + "x " + cardName;
+						if ( context.commander ){
+							if ( cardName == context.commander.name )
+								out += " *CMDR*";
+						}
+						out += "\r\n";
+					}
+					
+					return out;
+				
+				}
+				
+				function checkDeckLegality(){
+
+					context.issues = [];
+					
+					if ( context.format == "Commander" ){
+						if ( !context.commander ){
+							legal = 0;
+							context.issues.push( "You must select a commander." );
+						}
+						else{
+							if ( context.commander.supertypes ){
+								if ( context.commander.supertypes.indexOf( "Legendary" ) < 0 ){
+									legal = 0;
+									context.issues.push( "Your commander must be legendary." );
+								}
+							}
+							if ( context.commander.types ){
+								if ( context.commander.types.indexOf( "Creature" ) < 0 ){
+									legal = 0;
+									context.issues.push( "Your command must be a creature." );
+								}
+							}
+						}
+					}
+					
+					var count = Object.keys( context.cards ).length;
+					if ( context.minCards > 0 && count < context.minCards ){
+						legal = 0;
+						context.issues.push( "Deck must contain at least " + context.minCards + " cards." );
+					}
+					if ( context.maxCards > 0 && count > context.maxCards ){
+						legal = 0;
+						context.issues.push( "Deck may contain at most " + context.maxCards + " cards." );
+					}
+					
+					for ( var cardName in context.cards ){
+						var card = context.cards[ cardName ];
+						if ( !card.legal ){
+							legal = 0;
+							context.issues.push( card.issue )
+						}
+					}
+					
+					var issueList = document.getElementById( "deckIssues" );
+					if ( legal ){
+						issueList.innerHTML = "<li>Deck is legal for the chosen format.</li>";
+					}
+					else{
+						issueList.innerHTML = '';
+						for ( var i = 0; i < context.issues.length; i++ )
+							issueList.innerHTML += '<li>' + context.issues[ i ] + '</li>';
+					}
+					
+					var mt = document.getElementById( "masterTable" );
+					if ( legal )
+						mt.className = mt.className.replace( /[\s]+illegal/g, "" );
+					else
+						mt.className += " illegal";
+					
+					context.legal = legal;
+					return legal;
+				
+				}
+				
+				function updateCounts( cardKey ){
+				
+					var cardName = nameFromKey( cardKey );
+					var rows = document.querySelectorAll( 'tr[key="' + cardKey + '"] .cardCount' );
+					for ( var i = 0; i < rows.length; i++ ){
+						if ( !context.cards[ cardName ] ){
+							rows[ i ].setAttribute( 'count', 0 );
+							rows[ i ].innerHTML = 0;
+						}
+						else{
+							rows[ i ].setAttribute( 'count', context.cards[ cardName ].count );
+							rows[ i ].innerHTML = context.cards[ cardName ].count;
+						}
+						var legal = updateLegality( cardName );
+						if ( legal )
+								rows[ i ].setAttribute( 'legal', 1 );
+						else
+								rows[ i ].setAttribute( 'legal', 0 );
+					}
+					
+					checkDeckLegality();
+				
+				}
+				
+				function updateLegality( cardName ){
+					
+					var card = cardData[ cardName ];
+					
+					if ( card.supertypes ){
+						if ( card.supertypes.indexOf( "Basic" ) >= 0 ){
+							card.legal = true;
+							card.issue = "";
+							return true;
+						}
+					}
+
+					if ( context.format != "" ){
+						if ( !card.formats ){
+							card.legal = false;
+							card.issue = card.name + " is banned.";
+							return false;
+						}
+						if ( card.formats.indexOf( context.format ) < 0 ){
+							card.legal = false;
+							card.issue = card.name + " is banned.";
+							return false;
+						}
+						else if ( card.restricted ){
+							if ( card.restricted.indexOf( context.format ) >= 0 ){
+								if ( card.count > 1 ){
+									card.legal = false;
+									card.issue = card.name + " is restricted.";
+									return false;
+								}
+							}
+						}
+					}
+					
+					if ( context.format == "Commander" ){
+						if ( card.count > 1 ){
+							card.legal = false;
+							card.issue = "Too many coppies of " + card.name + ".";
+							return false;
+						}
+						for ( var i = 0; i < card.colorIdentity.length; i++ ){
+							if ( context.identity.indexOf( card.colorIdentity[ i ] ) < 0 ){
+								card.legal = false;
+								card.issue = card.name + " doesn't match commander's colors.";
+								return false;
+							}
+						}
+					}
+					else if ( card.count > 4 ){
+						card.legal = false;
+						card.issue = "Too many coppies of " + card.name + ".";
+						return false;
+					}
+					
+					card.legal = true;
+					card.issue = "";
+					return true;
+					
+				}
+			
+			}
+
+			function nameFromKey( key ){
+				return key.replace( /\|\|/g, "\"" );
+			}
+			
+			function keyFromName( name ){
+				return name.replace( /"/g, "||" );
+			}
+			
+			
+			
 		</script>
 		
 	</head>
@@ -657,6 +1098,16 @@
 			</div></td>
 			
 			<td class="overviewContainer">
+			
+				<div id="deckProperties">
+					<span class="filterGroup deckName"><span class="filterLabel">Deck Name:</span><input id="deckName" type="text" class="filterField" filterType="deckName" /></span><br>
+					<span class="filterGroup deckFormat"><span class="filterLabel">Format:</span><select id="deckFormat" class="filterField" filterType="formats"></select></span>
+				</div>
+				
+				<div id="deckData">
+					<ul id="deckIssues"><li>Deck is legal for the chosen format.</li></ul>
+				</div>
+				<div id="deckFooter"></div>
 			
 			</td>
 			
