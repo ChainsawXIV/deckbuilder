@@ -6,6 +6,8 @@
 		
 		<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700" rel="stylesheet">
 		
+		<script src="filesaver.js"></script>
+		
 		<!-- Main Page Layout -->
 		<style>
 		
@@ -401,6 +403,35 @@
 				width:68%;
 			}
 			
+			#deckProperties .buttonHolder{
+				text-align:center;
+				font-size:1.5em;
+				padding-top:0.7em;
+			
+			}
+			#deckProperties .imageButton{
+				display:inline-block;
+				cursor:pointer;
+				background-color:#888;
+				border:1px solid black;
+				border-radius:10em;
+				height:2em;
+				width:2em;
+				margin-right:0.7em;
+			}
+			#deckProperties .imageButton:hover{
+				background-color:#AAA;
+			}
+			#deckProperties .imageButton img{
+				width:1.3em;
+				position:relative;
+				top:0.32em;
+				left:0.0em;
+			}
+			#deckProperties .imageButton.disabled{
+				opacity:0.3;
+			}
+			
 			#deckData{
 				overflow-y:scroll;
 				position:absolute;
@@ -424,7 +455,6 @@
 				background-color:rgba(255,0,0,0.1);
 			}
 			
-			
 			#deckFooter{
 				position:absolute;
 				bottom:0em;
@@ -445,6 +475,7 @@
 			mainList = null;
 			deckList = null;
 			deck = null;
+			storage = null;
 			
 			formats = {
 				default:{ minCards:60 },
@@ -454,6 +485,7 @@
 			function start(){
 				
 				deck = new Deck();
+				storage = new Storage();
 				getCardData();
 				deckList = new CardList(
 					document.getElementById( "deckList"), 
@@ -784,6 +816,7 @@
 				this.cards = {};
 				this.format = "";
 				this.name = "";
+				this.folder = "";
 				this.minCards = -1;
 				this.maxCards = -1;
 				this.legal = 0;
@@ -831,7 +864,26 @@
 				}
 				
 				this.save = function(){
-					// IMPLEMENT ME
+				
+					
+				
+				}
+				
+				this.bundle = function(){
+				
+					return { 
+						cards:context.cards,	
+						format:context.format,	
+						name:context.name, 
+						folder:context.folder, 
+						minCards:context.minCards, 
+						maxCards:context.maxCards, 
+						legal:context.legal, 
+						issues:context.issues, 
+						commander:context.commander, 
+						identity:context.identity
+					};
+				
 				}
 				
 				this.setFormat = function( format ){
@@ -878,12 +930,12 @@
 				
 					var out = '';
 					for ( var cardName in context.cards ){
-						out += context.cards.count + "x " + cardName;
+						out += context.cards[ cardName ].count + "x " + cardName;
 						if ( context.commander ){
 							if ( cardName == context.commander.name )
 								out += " *CMDR*";
 						}
-						out += "\r\n";
+						out += "\n";
 					}
 					
 					return out;
@@ -1049,7 +1101,161 @@
 				return name.replace( /"/g, "||" );
 			}
 			
+			function saveList( deck ){
+					
+				if ( deck.name )
+					name = deck.name.replace( /[\s\?\\\/_]+/g, " " );
+				else
+					name = "list";
+					
+				var blob = new Blob( [ deck.list() ], { type: "text/plain;charset=utf-8" } );
+				saveAs(blob, name + ".txt");
 			
+			}
+			
+			function Storage( callback ){
+				
+				var context = this;
+				
+				this.database = null;
+				this.decks = [];
+				
+				callback = callback || function(){};
+			
+				this.connect = function( callback ){
+					callback = callback || function(){};
+					var request = indexedDB.open( "mtgdecks", 1 );
+
+					request.onerror = function( event ){
+						alert( "Failed to get database due to an error:" + event.target.errorCode );
+					};
+					request.onupgradeneeded = function( event ){
+						context.database = event.target.result;
+						if ( event.oldVersion < 1 ){
+							var store = context.database.createObjectStore( "decks", { keyPath:"name" } );
+							store.createIndex( "folder", "folder", { unique: false } );
+						}
+						else{
+							// Future schema upgrade code goes here
+						}
+					};
+					request.onsuccess = function( event ){
+						context.database = event.target.result;
+						context.database.onerror = function( event ){
+							alert( "Failed to save due to a database error: " + event.target.errorCode );
+						};
+						callback();
+					};
+					
+				};
+			
+				this.save = function( deck, callback ){
+					callback = callback || function(){};
+				
+					if ( !context.database ){
+						alert( "No database available to save to." );
+						return;
+					}
+					
+					if ( !deck.name ){
+						alert( "Decks require a name in order to be saved." );
+						return;
+					}
+					
+					var trans = context.database.transaction( [ "decks" ], "readwrite" );
+					trans.onerror = function( event ){
+						alert( "Failed to save due to a transaction error: " + event.target.errorCode );
+					}
+					
+					var store = trans.objectStore( "decks" );
+					var request = store.put( deck.bundle() );
+					request.onerror = function( event ){
+						alert( "Failed to save due to request error: " + event.target.errorCode );
+					};
+					request.onsuccess = function( event ){
+						callback( request.result );
+					}
+				
+				};
+			
+				this.remove = function( deckName, callback ){
+					callback = callback || function(){};
+				
+					if ( !context.database ){
+						alert( "No database available to delete from." );
+						return;
+					}
+				
+					var trans = context.database.transaction( [ "decks" ], "readwrite" );
+					trans.onerror = function( event ){
+						alert( "Failed to delete due to a transaction error: " + event.target.errorCode );
+					}
+					
+					var store = trans.objectStore( "decks" );
+					var request = store.delete( deckName );
+					request.onerror = function( event ){
+						alert( "Failed to delete due to request error: " + event.target.errorCode );
+					};
+					request.onsuccess = function( event ){
+						callback( request.result );
+					}
+				
+				};
+			
+				this.loadDeck = function( deckName, callback ){
+						callback = callback || function(){};
+			
+					if ( !context.database ){
+						alert( "No database available to load from." );
+						return;
+					}
+
+					var trans = context.database.transaction( [ "decks" ], "readonly" );
+					trans.onerror = function( event ){
+						alert( "Failed to load due to a transaction error: " + event.target.errorCode );
+					}
+					
+					var store = trans.objectStore( "decks" );
+					var request = store.get( deckName );
+					request.onerror = function( event ){
+						alert( "Failed to delete due to request error: " + event.target.errorCode );
+					};
+					request.onsuccess = function( event ){
+						callback( request.result );
+					}
+				
+				};
+			
+				this.loadList = function( callback ){
+					callback = callback || function(){};
+				
+					if ( !context.database ){
+						alert( "No database available to load from." );
+						return;
+					}
+
+					var trans = context.database.transaction( [ "decks" ], "readonly" );
+					trans.onerror = function( event ){
+						alert( "Failed to load due to a transaction error: " + event.target.errorCode );
+					}
+					
+					context.decks = [];
+					var store = trans.objectStore( "decks" );
+					store.openCursor().onsuccess = function( event ){
+						var cursor = event.target.result;
+						if ( cursor ){
+							context.decks.push( { name:cursor.key, folder:cursor.value.folder } );
+							cursor.continue();
+						}
+					};
+				
+				};
+			
+				this.connect( callback );
+				
+				return this;
+			
+			};
 			
 		</script>
 		
@@ -1104,7 +1310,13 @@
 			
 				<div id="deckProperties">
 					<span class="filterGroup deckName"><span class="filterLabel">Deck Name:</span><input id="deckName" type="text" class="filterField" filterType="deckName" /></span><br>
-					<span class="filterGroup deckFormat"><span class="filterLabel">Format:</span><select id="deckFormat" class="filterField" filterType="formats"></select></span>
+					<span class="filterGroup deckFormat"><span class="filterLabel">Format:</span><select id="deckFormat" class="filterField" filterType="formats"></select></span><br>
+					<div class="buttonHolder">
+						<a class="imageButton" onclick="storage.save( deck );" title="Save Changes"><img src="https://chainsawxiv.github.io/deckbuilder/save.svg" /></a>
+						<a class="imageButton disabled" onclick="saveList( deck );" title="Load Deck"><img src="https://chainsawxiv.github.io/deckbuilder/open.svg" /></a>
+						<a class="imageButton" onclick="saveList( deck );" title="Download Deck List"><img src="https://chainsawxiv.github.io/deckbuilder/down.svg" /></a>
+						<a class="imageButton disabled" onclick="saveList( deck );" title="Import Deck List"><img src="https://chainsawxiv.github.io/deckbuilder/up.svg" /></a>
+					</div>
 				</div>
 				
 				<div id="deckData">
