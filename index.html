@@ -56,6 +56,7 @@
 				width:100%;
 				height:100%;
 				border-collapse:collapse;
+				min-width:1510px;
 			}
 			#masterTable td{
 				padding:0em;
@@ -522,14 +523,22 @@
 				for ( var i = 0; i < options.length; i++ )
 					content += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
 				format.innerHTML = content;
-				format.addEventListener( "change", function(){
-					deck.setFormat( format.value );
-				} );
 				
-				var name = document.getElementById( "deckName" );
-				name.addEventListener( "change", function(){
-					deck.name = name.value;
-					deck.save();
+				storage.loadDeck( "AUTOSAVE", function( bundle ){
+				
+					if( bundle )
+						deck.load( bundle );
+				
+					format.addEventListener( "change", function(){
+						deck.setFormat( format.value );
+					} );
+					
+					var name = document.getElementById( "deckName" );
+					name.addEventListener( "change", function(){
+						deck.name = name.value;
+						deck.save();
+					} );
+					
 				} );
 				
 			}
@@ -863,26 +872,56 @@
 					
 				}
 				
-				this.save = function(){
+				this.bundle = function( saveAs ){
 				
-					
-				
-				}
-				
-				this.bundle = function(){
-				
-					return { 
+					var bundle = { 
 						cards:context.cards,	
 						format:context.format,	
 						name:context.name, 
 						folder:context.folder, 
-						minCards:context.minCards, 
-						maxCards:context.maxCards, 
-						legal:context.legal, 
-						issues:context.issues, 
-						commander:context.commander, 
-						identity:context.identity
 					};
+					
+					if ( context.commander )
+						bundle.commander = context.commander.name;
+					
+					var cl = {};
+					for ( var cardName in bundle.cards )
+						cl[ cardName ] = { name:cardName, count:bundle.cards[ cardName ].count };
+					bundle.cards = cl;
+					
+					if ( saveAs ){
+						bundle.tempName = bundle.name;
+						bundle.name = saveAs;
+					}
+					
+					return bundle;
+				
+				};
+				
+				this.save = function(){
+				
+					storage.save( context.bundle( "AUTOSAVE" ) );
+				
+				};
+				
+				this.load = function( bundle ){
+				
+					context.name = bundle.name;
+					if ( bundle.tempName ) context.name = bundle.tempName;
+					document.getElementById( "deckName" ).value = context.name;
+					
+					context.setFormat( bundle.format );
+					document.getElementById( "deckFormat" ).querySelector( 'option[value="' + bundle.format + '"]' ).selected = "selected";
+					
+					context.folder = bundle.folder;
+					// FOLDER RELATED GUI POPULATION
+					
+					context.cards = {};
+					for ( var cardName in bundle.cards )
+						context.addCard( keyFromName( cardName ), bundle.cards[ cardName ].count );
+						
+					if ( bundle.commander )
+						context.setCommander( keyFromName( bundle.commander ) );
 				
 				}
 				
@@ -923,6 +962,7 @@
 					}
 					
 					context.updateAllCounts();
+					context.save();
 					
 				}
 				
@@ -1168,7 +1208,8 @@
 					}
 					
 					var store = trans.objectStore( "decks" );
-					var request = store.put( deck.bundle() );
+					var bundle = ( deck.bundle ) ? deck.bundle() : deck;
+					var request = store.put( bundle );
 					request.onerror = function( event ){
 						alert( "Failed to save due to request error: " + event.target.errorCode );
 					};
