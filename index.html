@@ -769,6 +769,7 @@
 				this.setPage = function( page ){
 					context.currentPage = Math.max( 0, Math.min( page, context.pageCount ) );
 					context.updateList( true );
+					deck.updateAllCounts();
 				};
 				
 				this.updateList = function( forceScroll ){
