@@ -773,7 +773,7 @@
 				
 				this.updateList = function( forceScroll ){
 					var minIndex = context.pageLength * context.currentPage;
-					var maxIndex = Math.min( minIndex + context.pageLength, context.cardCount - 1 );
+					var maxIndex = Math.min( minIndex + context.pageLength - 1, context.cardCount - 1 );
 					var list = '';
 					for ( var i = minIndex; i <= maxIndex; i++ ){
 						var card = context.sortedCards[ i ];
