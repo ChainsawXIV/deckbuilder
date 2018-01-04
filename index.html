@@ -116,13 +116,14 @@
 			.filterGroup.formats select{
 				width:17.5%;
 			}
-			.filterGroup.cmc .filterLabel{
+			.filterGroup.sort .filterLabel{
 				padding-left:0.5em;
-				width:14%;
+				width:7%;
 			}
-			.filterGroup.cmc input{
-				width:14%;
+			.filterGroup.sort select{
+				width:21%;
 			}
+
 			
 			.filterGroup.supertypes .filterLabel{
 				width:13%;
@@ -147,7 +148,14 @@
 			.filterGroup.text input{
 				margin-top:0.2em;
 				margin-bottom:0.25em;
-				width:87%;
+				width:59%;
+			}
+			.filterGroup.cmc .filterLabel{
+				padding-left:0.5em;
+				width:14%;
+			}
+			.filterGroup.cmc input{
+				width:14%;
 			}
 			
 			.filterGroup.colors .filterLabel,
@@ -307,6 +315,9 @@
 			}
 			.listTable .cardManaCost{
 				margin-right:0.2em;
+			}
+			.listTable .cardRating{
+				color:#CA4;
 			}
 			.listTable .cardType{
 				margin-right:0.2em;
@@ -570,7 +581,8 @@
 					text:{ type:"match" },
 					colors:{ type:"color" },
 					colorIdentity:{ type:"color" },
-					formats:{ type:"list", populate:true }
+					formats:{ type:"list", populate:true },
+					sort:{ type:"sort" }
 				};
 				
 				listElement.cardList = this;
@@ -598,7 +610,7 @@
 								context.scheduleFilterUpdate( 200 );
 							} );
 						}
-						if ( type == "list" ){
+						else if ( type == "list" ){
 							element.addEventListener( "change", function(){
 								context.filterParameters[ field ] = this.value;
 								if ( this.value == "" ) delete context.filterParameters[ field ];
@@ -612,6 +624,15 @@
 								context.filterParameters[ field ][ color ] = this.value;
 								if ( this.value == "allowed" ) delete context.filterParameters[ field ][ color ];
 								if ( Object.keys( context.filterParameters[ field ] ).length === 0 ) delete context.filterParameters[ field ];
+								context.scheduleFilterUpdate( 500 );
+							} );
+						}
+						else if ( type == "sort" ){
+							element.addEventListener( "change", function(){
+								context.sortProperty = this.value;
+								context.sortDescending = false;
+								if ( this.value == "userRating" )
+									context.sortDescending = true;
 								context.scheduleFilterUpdate( 500 );
 							} );
 						}
@@ -724,12 +745,20 @@
 						if ( descending ){
 							if ( a[ property ] > b[ property ] ) return -1;
 							else if ( a[ property ] < b[ property ] ) return 1;
-							else return 0;
+							else {
+								if ( a[ "name" ] > b[ "name" ] ) return 1;
+								else if ( a[ "name" ] < b[ "name" ] ) return -1;
+								else return 0;							
+							};
 						}
 						else{
 							if ( a[ property ] > b[ property ] ) return 1;
 							else if ( a[ property ] < b[ property ] ) return -1;
-							else return 0;
+							else {
+								if ( a[ "name" ] > b[ "name" ] ) return 1;
+								else if ( a[ "name" ] < b[ "name" ] ) return -1;
+								else return 0;							
+							};
 						}
 					} );
 					context.updateList();
@@ -765,8 +794,10 @@
 						list += '<a class="cardTitle" href="' + link + '" target="_blank">' + card.name + '</a>';
 						if ( card.manaCost )
 							list += '<span class="cardManaCost">' + card.manaCost + '</span>';
-						list += '<span class="cardCMC">(' + card.cmc + ')</span><br>';
-						list += '<span class="cardType">' + card.type + '</span>';
+						list += '<span class="cardCMC">(' + card.cmc + ')</span>';
+						if ( card.userRating )
+							list += ' <span class="cardRating">\u2605' + formatRating( card.userRating ) + '</span>';
+						list += '<br><span class="cardType">' + card.type + '</span>';
 						if ( card.power !== undefined && card.toughness !== undefined )
 							list += '<span class="cardStats">(<span class="cardPower">' + card.power + '</span>/<span class="cardToughness">' + card.toughness + '</span>)</span>';
 						list += '<br><span class="cardText">' + card.text + '</span></td><td>';
@@ -793,6 +824,15 @@
 						if ( p1 == "T" ) p1 = "tap";
 						return '<img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=' + p1 + '&type=symbol" />';
 					} );
+				
+				}
+
+				function formatRating( value ){
+				
+					value = Math.round( value * 10 ) / 10;
+					if ( value % 1 == 0 )
+						value += ".0"
+					return value + "";
 				
 				}
 				
@@ -1308,9 +1348,11 @@
 			<td class="searchContainer"><div id="searchFrame" class="">
 			
 				<div id="cardListFilters" class="filterSection">
-					<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><span class="filterGroup formats"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
+					<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><span class="filterGroup formats"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><span class="filterGroup sort"><span class="filterLabel">Sort:</span><select class="filterField" filterType="sort">
+						<option value="name">Name</option><option value="userRating">User Rating</option><option value="cmc">Mana Cost</option>
+					</select></span><br>
 					<span class="filterGroup supertypes"><span class="filterLabel">Supertype:</span><select class="filterField" filterType="supertypes"></select></span><span class="filterGroup types"><span class="filterLabel">Type:</span><select class="filterField" filterType="types"></select></span><span class="filterGroup subtypes"><span class="filterLabel">Subtype:</span><select class="filterField" filterType="subtypes"></select></span><br>
-					<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><br>
+					<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
 					<span class="filterGroup colors"><span class="filterLabel">Color:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
 					<span class="filterGroup colorIdentity"><span class="filterLabel">Identity:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
 					<div class="bottomTab hide" onclick="toggleFilters( 'searchFrame', false );">HIDE FILTER SETTINGS</div>
@@ -1329,13 +1371,15 @@
 			<td class="deckContainer"><div id="deckFrame" class="">
 			
 				<div id="deckListFilters" class="filterSection">
-					<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><span class="filterGroup formats"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
+					<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><span class="filterGroup formats"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><span class="filterGroup sort"><span class="filterLabel">Sort:</span><select class="filterField" filterType="sort">
+						<option value="name">Name</option><option value="userRating">User Rating</option><option value="cmc">Mana Cost</option>
+					</select></span><br>
 					<span class="filterGroup supertypes"><span class="filterLabel">Supertype:</span><select class="filterField" filterType="supertypes"></select></span><span class="filterGroup types"><span class="filterLabel">Type:</span><select class="filterField" filterType="types"></select></span><span class="filterGroup subtypes"><span class="filterLabel">Subtype:</span><select class="filterField" filterType="subtypes"></select></span><br>
-					<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><br>
+					<span class="filterGroup text"><span class="filterLabel">Text:</span><input type="text" class="filterField" filterType="text" /></span><span class="filterGroup cmc"><span class="filterLabel">Mana Cost:</span><input type="text" class="filterField" filterType="cmc" /></span><br>
 					<span class="filterGroup colors"><span class="filterLabel">Color:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colors" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
 					<span class="filterGroup colorIdentity"><span class="filterLabel">Identity:</span><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=W&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="W"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=U&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="U"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=B&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="B"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=R&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="R"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select><span class="filterSublable"><img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=G&type=symbol" /></span><select class="filterField" filterType="colorIdentity" manaColor="G"><option value="allowed">Allow</option><option value="required">Require</option><option value="excluded">Exclude</option></select></span><br>
-					<div class="bottomTab hide" onclick="toggleFilters( 'deckFrame', false );">HIDE FILTER SETTINGS</div>
-					<div class="bottomTab show" onclick="toggleFilters( 'deckFrame', true );">SHOW FILTER SETTINGS</div>
+					<div class="bottomTab hide" onclick="toggleFilters( 'searchFrame', false );">HIDE FILTER SETTINGS</div>
+					<div class="bottomTab show" onclick="toggleFilters( 'searchFrame', true );">SHOW FILTER SETTINGS</div>
 				</div>
 				
 				<div id="deckListArea" class="listSection">
