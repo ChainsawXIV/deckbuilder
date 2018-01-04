@@ -1,0 +1,108 @@
+<html>
+	<head>
+	
+		<title>Scraper</title>
+		<script src="filesaver.js"></script>
+		<script>
+		
+			cards = null;
+			ratings = {};
+			index = [];
+			startTime = null;
+			function start(){
+				
+				startTime = Date.now();
+				getCards();
+				
+			}
+			
+			function getCards(){
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = function(){
+					if( request.readyState == 4 ){
+						cards = JSON.parse( request.responseText );
+						for( var name in cards ){
+							if( cards[ name ].multiverseid )
+								index.push( cards[ name ].multiverseid );
+						}
+						scrape();
+					}
+				};
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/data.json", true );
+				request.send();			
+			}
+			
+			function formatTime( msTime ){
+				
+				var sTime = msTime / 1000;
+				var hours = Math.floor( sTime / ( 60 * 60 ) );
+				var minutes = Math.floor( ( sTime % ( 60 * 60 ) ) / 60 );
+				var seconds = Math.floor( sTime % 60 );
+				return hours + ":" + padDigits( minutes, 2 ) + ":" + padDigits( seconds, 2 );
+				
+			}
+			
+			function padDigits( number, digits ){
+				number = number + "";
+				while( number.length < digits )
+					number = "0" + number;
+				return number;
+			}
+			
+			cursor = -1;
+			function scrape(){
+				cursor++;
+				var buffer = document.getElementById( "buffer" );
+				var elapsed = Date.now() - startTime;
+				var progress = cursor / index.length;
+				buffer.innerHTML = "Processing #" + ( cursor + 1 ) + " of " + index.length + " (" + Math.floor( progress * 100 ) + "%)<br>";
+				buffer.innerHTML += "Time Elapsed: " + formatTime( elapsed ) + "<br>Time Remaining: " + formatTime( ( elapsed / progress ) - elapsed );
+				document.title = "Scraper (" + Math.floor( cursor / index.length * 100 ) + "%)"
+				fetch( index[ cursor ] );
+			}
+			
+			function fetch( mvid ){
+				var request = new XMLHttpRequest();
+				var id = mvid;
+				request.onreadystatechange = function(){
+					if( request.readyState == 4 ){
+						extract( id, request.responseText );
+					}
+				};
+				var proxy = 'https://cors-anywhere.herokuapp.com/';
+				var page = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + mvid;
+				request.open( "GET", proxy + page, true );
+				request.send();
+			}
+			
+			function extract( mvid, pageString ){
+				
+				var page = document.createElement( "html" );
+				page.innerHTML = pageString;
+
+				var value = page.querySelector( ".textRatingValue" );
+				if ( value ) ratings[ mvid ] = value.innerHTML;
+				
+				// Scrape for other values here as needed
+				
+				if ( cursor >= index.length + 1 )
+					save();
+				else
+					scrape();
+				
+			}
+			
+			function save(){
+					
+				var blob = new Blob( [ JSON.stringify( ratings ) ], { type: "text/plain;charset=utf-8" } );
+				saveAs( blob, "scores.json" );
+			
+			}
+		
+		</script>
+	
+	</head>
+	<body id="buffer" onload="start();">
+		Working...
+	</body>
+</html>
