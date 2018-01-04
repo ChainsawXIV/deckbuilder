@@ -2,16 +2,19 @@
 	<head>
 	
 		<title>Sticher</title>
-		<script src="jszip.js"></script>
 		<script src="filesaver.js"></script>
 		<script>
 		
 			cards = null;
 			sets = null;
+			scores = null;
+			started = 0;
+			loaded = 0;
 			function start(){
 				
 				getCards();
 				getSets();
+				getScores();
 				
 			}
 		
@@ -20,11 +23,13 @@
 				request.onreadystatechange = function(){
 					if( request.readyState == 4 ){
 						cards = JSON.parse( request.responseText );
-						if ( sets ) stitch();
+						loaded++;
+						if ( loaded >= started ) stitch();
 					}
 				};
 				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/stitcher/cards.json", true );
-				request.send();			
+				request.send();
+				started++;
 			}
 			
 			function getSets(){
@@ -32,11 +37,27 @@
 				request.onreadystatechange = function(){
 					if( request.readyState == 4 ){
 						sets = JSON.parse( request.responseText );
-						if ( cards ) stitch();
+						loaded++;
+						if ( loaded >= started ) stitch();
 					}
 				};
 				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/stitcher/sets.json", true );
-				request.send();			
+				request.send();		
+				started++;
+			}
+			
+			function getScores(){
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = function(){
+					if( request.readyState == 4 ){
+						scores = JSON.parse( request.responseText );
+						loaded++;
+						if ( loaded >= started ) stitch();
+					}
+				};
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/stitcher/scores.json", true );
+				request.send();
+				started++;
 			}
 			
 			function stitch(){
@@ -59,6 +80,8 @@
 						var setCard = setCards[ i ];
 						if ( setCard.name == cardName ){
 							baseCard.multiverseid = setCard.multiverseid;
+							if ( baseCard.multiverseid )
+								baseCard.userRating = parseFloat( scores[ baseCard.multiverseid ] );
 							baseCard.rarity = setCard.rarity;
 							delete baseCard[ "imageName" ];
 							delete baseCard[ "printings" ];
@@ -93,16 +116,14 @@
 				}
 				
 				document.body.innerHTML = "Conversion complete."
-				exportFile( JSON.stringify( cards ) );
+				save( cards );
 			
 			}
 			
-			function exportFile( data ){
-			
-				var archive = new JSZip();
-				archive.file( "data.json", data );
-				var content = archive.generate( { type: "blob" } );
-				saveAs( content, "stitched-cards.zip" );
+			function save( object ){
+					
+				var blob = new Blob( [ JSON.stringify( object ) ], { type: "text/plain;charset=utf-8" } );
+				saveAs( blob, "data.json" );
 			
 			}
 		
