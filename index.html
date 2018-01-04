@@ -504,6 +504,7 @@
 					document.getElementById( "deckListNav"),
 					document.getElementById( "deckListFilters" )
 				);
+				deckList.forceScroll = false;
 				
 			}
 			
@@ -571,6 +572,7 @@
 				this.cardCount = 0;
 				this.currentPage = 0;
 				this.pageCount = 0;
+				this.forceScroll = true;
 				
 				this.filterTypes = {
 					name:{ type:"match" },
@@ -766,10 +768,10 @@
 				
 				this.setPage = function( page ){
 					context.currentPage = Math.max( 0, Math.min( page, context.pageCount ) );
-					context.updateList();
+					context.updateList( true );
 				};
 				
-				this.updateList = function(){
+				this.updateList = function( forceScroll ){
 					var minIndex = context.pageLength * context.currentPage;
 					var maxIndex = Math.min( minIndex + context.pageLength, context.cardCount - 1 );
 					var list = '';
@@ -816,6 +818,8 @@
 					}
 					context.listElement.innerHTML = replaceSymbols( list );
 					context.updateNavigation();
+					if ( forceScroll || context.forceScroll )
+						context.listElement.parentNode.scrollTop = 0;
 				}
 			
 				function replaceSymbols( text ){
@@ -1151,11 +1155,13 @@
 							card.issue = "Too many coppies of " + card.name + ".";
 							return false;
 						}
-						for ( var i = 0; i < card.colorIdentity.length; i++ ){
-							if ( context.identity.indexOf( card.colorIdentity[ i ] ) < 0 ){
-								card.legal = false;
-								card.issue = card.name + " doesn't match commander's colors.";
-								return false;
+						if ( card.colorIdentity ){
+							for ( var i = 0; i < card.colorIdentity.length; i++ ){
+								if ( context.identity.indexOf( card.colorIdentity[ i ] ) < 0 ){
+									card.legal = false;
+									card.issue = card.name + " doesn't match commander's colors.";
+									return false;
+								}
 							}
 						}
 					}
