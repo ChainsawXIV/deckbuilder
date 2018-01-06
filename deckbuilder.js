@@ -487,7 +487,7 @@ function Deck( container, callback ){
 				legal = 0;
 				issues.push( "You must select a commander." );
 			}
-			else{
+			else if ( !context.commander.legalCommander ){
 				if ( context.commander.supertypes ){
 					if ( context.commander.supertypes.indexOf( "Legendary" ) < 0 ){
 						legal = 0;
