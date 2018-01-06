@@ -10,6 +10,18 @@
 			scores = null;
 			started = 0;
 			loaded = 0;
+			
+			extras = {
+				"Daretti, Scrap Savant":{ legalCommander:true },
+				"Freyalise, Llanowar's Fury":{ legalCommander:true },
+				"Nahiri, the Lithomancer":{ legalCommander:true },
+				"Ob Nixilis of the Black Oath":{ legalCommander:true },
+				"Teferi, Temporal Archmage":{ legalCommander:true },
+				"Shadowborn Apostle":{ deckLimit:-1 },
+				"Relentless Rats":{ deckLimit:-1 },
+				"Once More with Feeling":{ deckLimit:1 }
+			};
+			
 			function start(){
 				
 				getCards();
@@ -27,7 +39,7 @@
 						if ( loaded >= started ) stitch();
 					}
 				};
-				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/stitcher/cards.json", true );
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/tools/cards.json", true );
 				request.send();
 				started++;
 			}
@@ -41,7 +53,7 @@
 						if ( loaded >= started ) stitch();
 					}
 				};
-				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/stitcher/sets.json", true );
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/tools/sets.json", true );
 				request.send();		
 				started++;
 			}
@@ -55,7 +67,7 @@
 						if ( loaded >= started ) stitch();
 					}
 				};
-				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/stitcher/scores.json", true );
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/tools/scores.json", true );
 				request.send();
 				started++;
 			}
@@ -79,6 +91,10 @@
 					for ( var i = 0; i < setCards.length; i++ ){
 						var setCard = setCards[ i ];
 						if ( setCard.name == cardName ){
+							if ( extras[ cardName ] ){
+								for ( var key in extras[ cardName ] )
+									baseCard[ key ] = extras[ cardName ][ key ];
+							}
 							baseCard.multiverseid = setCard.multiverseid;
 							if ( baseCard.multiverseid )
 								baseCard.userRating = parseFloat( scores[ baseCard.multiverseid ] );
