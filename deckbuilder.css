@@ -263,6 +263,13 @@ html,body,div,span,input,select,table,img{
 	border-collapse:collapse;
 	margin-bottom:2em;
 }
+.listTable tr[commander="1"]{
+	background-color:rgba(80,20,80,0.5);
+}
+.listTable tr[legal="0"]{
+	background-color:rgba(80,20,20,0.5);
+}
+
 .listTable tr:nth-of-type(odd) td{
 	background-color:rgba(0,0,0,0.2);
 }
