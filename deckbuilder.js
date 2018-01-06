@@ -836,7 +836,7 @@ function CardList( container, template, deck ){
 		updateNavigation();
 		
 		// Scroll back to the top of the list if specified by parameter
-		if ( forceScroll || context.forceScroll )
+		if ( ( forceScroll || context.forceScroll ) && context.listElement.parentNode.scrollTop != 0 )
 			context.listElement.parentNode.scrollTop = 0;
 			
 	}
