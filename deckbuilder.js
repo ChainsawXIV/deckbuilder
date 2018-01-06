@@ -409,7 +409,7 @@ function Deck( container, callback ){
 				// Everything but basic lands are limited to one per deck
 				if ( card.count > 1 ){
 					legal = false;
-					issue = "Too many coppies of " + card.name + ".";
+					issue = "Too many copies of " + card.name + ".";
 				}
 				
 				// Cards must match the color identity of the commander
