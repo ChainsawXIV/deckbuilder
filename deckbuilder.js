@@ -161,6 +161,9 @@ function Deck( container, callback ){
 		context.minCards = context.formats[ format ].minCards || -1;
 		context.maxCards = context.formats[ format ].maxCards || -1;
 		
+		// Flag the master table with an attribute for formatting
+		context.masterTable.setAttribute( "format", format );
+		
 		// Refresh all card counts and legal statuses
 		validateDeck( true );
 		

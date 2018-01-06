@@ -361,6 +361,12 @@ html,body,div,span,input,select,table,img{
 .masterTable .listTable tr[commander="1"] td:nth-of-type(3) a.commanderFlag{
 	background-color:#882288;
 }
+.masterTable .listTable td:nth-of-type(3) a.commanderFlag{
+	display:none;
+}
+.masterTable[format="Commander"] .listTable td:nth-of-type(3) a.commanderFlag{
+	display:inline-block;
+}
 
 .masterTable .listTable td:nth-of-type(3) .cardCount[count="0"]{
 	color:#c5c5c5;
