@@ -172,7 +172,7 @@ function Deck( container, callback ){
 		context.masterTable.setAttribute( "format", format );
 		
 		// Refresh all card counts and legal statuses
-		validateDeck( true );
+		context.validateDeck( true );
 		
 		// Check legality for the cards on the catalog page
 		context.catalog.refreshPage();
@@ -219,7 +219,7 @@ function Deck( container, callback ){
 		}
 		
 		// Update counts and legality for all cards in all lists
-		validateDeck( true );
+		context.validateDeck( true );
 		
 		// Check legality for the cards on the catalog page
 		context.catalog.refreshPage();
@@ -243,7 +243,7 @@ function Deck( container, callback ){
 			context.catalog.refreshPage();
 		
 			// Fully re-validate the deck list
-			validateDeck( true );
+			context.validateDeck( true );
 			
 			// Save the changes
 			context.autoSave();
@@ -351,7 +351,7 @@ function Deck( container, callback ){
 		context.decklist.setCards( context.cards );
 		
 		// Update the counts and states in the card lists
-		validateDeck( true );
+		context.validateDeck( true );
 		
 		// Save the changes to the deck
 		context.autoSave();
@@ -359,10 +359,11 @@ function Deck( container, callback ){
 	}
 			
 
-	/* RULES VALIDATION HELPERS */
+	/* RULES VALIDATION METHODS */
 	
 	// Checks and updates the legality of an individual card
-	this.validateCard = function validateCard( cardName ){
+	this.validateCard = function validateCard( cardName, checkDeck ){
+		checkDeck = ( checkDeck === undefined ) ? true : checkDeck;
 		
 		var card = context.cardData[ cardName ];
 		var legal = true;
@@ -442,7 +443,8 @@ function Deck( container, callback ){
 			context.decklist.refreshCard( cardName );
 		
 		// Recheck legality of the deck as a whole with these changes
-		validateDeck( false );
+		if ( checkDeck )
+			context.validateDeck( false );
 		
 		// Return the card's legality
 		return legal;
@@ -450,7 +452,7 @@ function Deck( container, callback ){
 	}
 	
 	// Check the legality of all cards and the deck overall
-	function validateDeck( validateCards ){
+	this.validateDeck = function validateDeck( validateCards ){
 
 		var issues = [];
 		var legal = 1;
@@ -459,7 +461,7 @@ function Deck( container, callback ){
 		for ( var cardName in context.cards ){
 			// Don't waste time rechecking cards unless asked
 			if ( validateCards )
-				context.validateCard( cardName );
+				context.validateCard( cardName, false );
 			// Gather information from each card in the deck
 			var card = context.cards[ cardName ];
 			if ( !card.legal ){
@@ -679,9 +681,10 @@ function CardList( container, template, deck ){
 		var minIndex = context.pageLength * context.currentPage;
 		var maxIndex = Math.min( minIndex + context.pageLength - 1, context.cardCount - 1 );
 		for ( var i = minIndex; i <= maxIndex; i++ ){
-			context.deck.validateCard( context.sortedCards[ i ].name );
+			context.deck.validateCard( context.sortedCards[ i ].name, false );
 			context.refreshCard( context.sortedCards[ i ].name );
 		}
+		context.deck.validateDeck( false );
 		
 	}
 
