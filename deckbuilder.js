@@ -404,7 +404,7 @@ function Deck( container, callback ){
 			}
 			
 			// Validate special conditions of the Commander format
-			if ( context.format == "Commander" ){
+			if ( context.format == "Commander" && legal ){
 			
 				// Everything but basic lands are limited to one per deck
 				if ( card.count > 1 ){
