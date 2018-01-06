@@ -495,7 +495,6 @@
 					
 						// Create the deck and link to the lists
 						DECK = new Deck(
-							JSON.parse( request.responseText ),
 							document.getElementById( "deckName" ), 
 							document.getElementById( "deckFormat" ),
 							document.getElementById( "deckIssues" ),
@@ -510,11 +509,11 @@
 			}
 
 			// Master class for the deck builder tool itself
-			function Deck( cardData, nameElement, formatElement, issuesElement, masterTable, callback ){
+			function Deck( nameElement, formatElement, issuesElement, masterTable, callback ){
 				
 				var context = this;
 				
-				this.cardData = cardData;
+				this.cardData = null;
 				this.catalog = null;
 				this.decklist = null;
 				this.storage = null;
@@ -537,61 +536,68 @@
 				}
 				
 				
-				/* DECK LIST INITIALIZATION */
+				/* INITIALIZATION AND LOADING */
 				
-				// Create the main card catalog list
-				this.catalog = new CardList( 
-					document.getElementById( "CATALOG" ), 
-					document.getElementById( "CATALOGNav" ),
-					document.getElementById( "CATALOGFilters" )
-				);
-				this.catalog.setCards( context.cardData );
-				
-				// Create an empty list for the deck
-				this.decklist = new CardList(
-					document.getElementById( "DECKLIST" ), 
-					document.getElementById( "DECKLISTNav" ),
-					document.getElementById( "DECKLISTFilters" )
-				);
-				this.decklist.forceScroll = false;
-				
-				
-				/* UI INITIALIZATION */
-				
-				// Populate the list of formats for the deck
-				var options = context.catalog.filterTypes.formats.options;
-				for ( var i = 0; i < options.length; i++ )
-					context.formatElement.innerHTML += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
+				// Fetch the master card data and set up the card lists
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = function(){
+					if( request.readyState == 4 ){
 					
-				// Set up event listener for changing deck format
-				context.formatElement.addEventListener( "change", function(){
-					context.setFormat( context.formatElement.value );
-				} );
-								
-				// Set up event listener for changing deck name
-				context.nameElement.addEventListener( "change", function(){
-					context.name = context.nameElement.value;
-					context.autoSave();
-				} );
+						context.cardData = JSON.parse( request.responseText );
+					
+						// Create the main card catalog list
+						context.catalog = new CardList( 
+							document.getElementById( "CATALOG" ), 
+							document.getElementById( "CATALOGNav" ),
+							document.getElementById( "CATALOGFilters" )
+						);
+						context.catalog.setCards( context.cardData );
+						
+						// Create an empty list for the deck
+						context.decklist = new CardList(
+							document.getElementById( "DECKLIST" ), 
+							document.getElementById( "DECKLISTNav" ),
+							document.getElementById( "DECKLISTFilters" )
+						);
+						context.decklist.forceScroll = false;
 
-				
-				/* INITIAL LOADING */
-				
-				this.storage = new Storage( function(){
-						
-					// Attempt to load the last working deck from storage
-					context.storage.loadDeck( "AUTOSAVE", function( bundle ){
-						
-						// Load the autosave data if it exists
-						if( bundle )
-							context.load( bundle );
+						// Populate the list of formats for the deck
+						var options = context.catalog.filterTypes.formats.options;
+						for ( var i = 0; i < options.length; i++ )
+							context.formatElement.innerHTML += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
 							
-						// Invoke the callback when the deck is ready
-						context.callback();
+						// Set up event listener for changing deck format
+						context.formatElement.addEventListener( "change", function(){
+							context.setFormat( context.formatElement.value );
+						} );
+										
+						// Set up event listener for changing deck name
+						context.nameElement.addEventListener( "change", function(){
+							context.name = context.nameElement.value;
+							context.autoSave();
+						} );
 						
-					} );
+						// Connect to storage and load autosaved data
+						context.storage = new Storage( function(){
+								
+							// Attempt to load the last WIP deck from storage
+							context.storage.loadDeck( "AUTOSAVE", function( bundle ){
+								
+								// Load the autosave data if it exists
+								if( bundle )
+									context.load( bundle );
+									
+								// Invoke the callback when the deck is ready
+								context.callback();
+								
+							} );
+								
+						} );
 						
-				} );
+					}
+				};
+				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/data.json", true );
+				request.send();	
 				
 
 				/* DECK ACTION METHODS */
