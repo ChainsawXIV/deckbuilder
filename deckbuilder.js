@@ -321,6 +321,7 @@ function Deck( container, callback ){
 		// Recover the deck name from the bundle
 		context.name = bundle.name;
 		if ( bundle.tempName ) context.name = bundle.tempName;
+		else context.name = "";
 		context.nameElement.value = context.name;
 		
 		// Set the proper format in the format menu
