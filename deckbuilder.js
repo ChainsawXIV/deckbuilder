@@ -125,25 +125,29 @@ function Deck( container, callback ){
 	
 		var cardName = nameFromKey( cardKey );
 		if ( context.cards[ cardName ] ){
-			// Delete the card from the deck if there are no more
-			if ( context.cards[ cardName ].count <= quantity )
+			// If there would be no copies left in the deck
+			if ( context.cards[ cardName ].count <= quantity ){
+				
+				// Delete the card from the deck
 				delete context.cards[ cardName ];
-			// Reduce the count if there are enough left
+				
+				// Refresh the deck display list
+				context.decklist.setCards( context.cards );
+				
+				// Remove from commander slot if required
+				if ( context.commander ){
+					if ( context.commander.name == cardName )
+						context.clearCommander();
+				}
+
+			}
 			else
+				// Reduce the count if there are enough left
 				context.cards[ cardName ].count -= quantity;
 		}
 		
-		// Propagate changes to the deck list
-		context.decklist.setCards( context.cards );
-		
-		// Remove from commander slot if required
-		if ( context.commander ){
-			if ( context.commander.name == cardName )
-				context.clearCommander();
-		}
 		// Update the state of the card as needed
-		else
-			validateCard( cardName );
+		validateCard( cardName );
 		
 		// Save the changes to the deck
 		context.autoSave();
