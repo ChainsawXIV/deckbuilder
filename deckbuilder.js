@@ -340,11 +340,14 @@ function Deck( container, callback ){
 		
 		// Replace the existing card list with the bundle's
 		context.cards = {};
+		var missingCards = [];
 		for ( var cardName in bundle.cards ){
 			if( context.cardData[ cardName ] ){
 				context.cards[ cardName ] = context.cardData[ cardName ];
 				context.cards[ cardName ].count = bundle.cards[ cardName ].count;
 			}
+			else
+				missingCards.push( cardName );
 		}
 			
 		// Designate the commander if specified
@@ -359,6 +362,9 @@ function Deck( container, callback ){
 		
 		// Save the changes to the deck
 		context.autoSave();
+		
+		// Return a list of any cards that weren't found
+		return missingCards;
 			
 	}
 			
@@ -1231,16 +1237,20 @@ function DialogBox( container ){
 	this.confirmButton = container.querySelector( ".confirmButton" );
 	this.title = container.querySelector( ".dialogTitle" );
 	this.body = container.querySelector( ".dialogBody" );
+	this.onClose = function(){};
 	
 	// Close the dialog whenever a button gets clicked
 	this.closeButton.addEventListener( "click", function(){
 		context.container.style.display = "none";
+		context.onClose();
 	} );
 	this.cancelButton.addEventListener( "click", function(){
 		context.container.style.display = "none";
+		context.onClose();
 	} );
 	this.confirmButton.addEventListener( "click", function(){
 		context.container.style.display = "none";
+		context.onClose();
 	} );
 	
 	/* BASIC CONTROL METHODS */
@@ -1263,7 +1273,8 @@ function DialogBox( container ){
 		// Configure the cancel button
 		if ( options.cancel ){
 			context.container.setAttribute( "cancel", "1" );
-			context.cancelButton.addEventListener( "click", options.cancel.callback );
+			if ( options.cancel.callback )
+				context.cancelButton.addEventListener( "click", options.cancel.callback );
 			if ( options.cancel.text )
 				context.cancelButton.querySelector( "span" ).innerHTML = options.cancel.text;
 			else
@@ -1276,7 +1287,8 @@ function DialogBox( container ){
 		// Configure the confirm button
 		if ( options.confirm ){
 			context.container.setAttribute( "confirm", "1" );
-			context.confirmButton.addEventListener( "click", options.confirm.callback );
+			if ( options.confirm.callback )
+				context.confirmButton.addEventListener( "click", options.confirm.callback );
 			if ( options.confirm.text )
 				context.confirmButton.querySelector( "span" ).innerHTML = options.confirm.text;
 			else
@@ -1284,6 +1296,12 @@ function DialogBox( container ){
 		}
 		else
 			context.container.setAttribute( "confirm", "0" );
+		
+		// Set the close dialog callback
+		if ( options.onClose )
+			context.onClose = options.onClose;
+		else
+			context.onClose = function(){};
 	
 		// Show the dialog box
 		context.container.style.display = 'table';
@@ -1310,6 +1328,20 @@ function exportList( deck ){
 	saveAs(blob, name + ".txt");
 
 }			
+
+// Warn the user about overwrite before importing
+function importWarn( fileInput ){
+	
+	var input = fileInput;
+	DECK.dialog.show( {
+		title:"Import Deck List",
+		body:"Importing a new deck list will replace all cards currently in your deck list. Would you like to proceed?",
+		allowClose:false,
+		confirm:{ callback:function(){ importList( input ); } },
+		cancel:{callback:function(){ input.value = "" } }
+	} );
+	
+}
 
 // Import a list of cards in the standard text file format
 function importList( fileInput ){
@@ -1351,7 +1383,20 @@ function importList( fileInput ){
 		}
 		
 		// Load the bundle into the deck list
-		DECK.load( bundle );
+		var error = DECK.load( bundle );
+		
+		// If there were any unidentified cards, tell the user
+		var list = "";
+		for ( var i = 0; i < error.length; i++ )
+			list += "<li>" + error[ i ] + " was not recognized.</li>";
+		DECK.dialog.show( {
+			title:"Import Deck List",
+			body:"There were one or more issues during import:</br><ul>" + list + "</ul>",
+			allowClose:true
+		} );
+		
+		// Reset the file input
+		fileInput.value = "";
 		
 	};
 	reader.readAsText( file );
