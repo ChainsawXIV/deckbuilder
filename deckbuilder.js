@@ -9,6 +9,7 @@ function Deck( container, callback ){
 	this.catalog = null;
 	this.decklist = null;
 	this.storage = null;
+	this.dialog = null;
 	this.callback = callback || function(){};
 	this.nameElement = container.querySelector( ".deckName input" );
 	this.formatElement = container.querySelector( ".deckFormat select" );
@@ -52,6 +53,9 @@ function Deck( container, callback ){
 				context
 			);
 			context.decklist.forceScroll = false;
+			
+			// Set up the general purpose dialog box
+			context.dialog = new DialogBox( context.container.querySelector( ".interstitial" ) );
 
 			// Populate the list of formats for the deck
 			var options = context.catalog.filterTypes.formats.options;
@@ -1215,6 +1219,80 @@ function Storage( callback ){
 	return this;
 
 };
+
+// Component class for managing the popup dialog box
+function DialogBox( container ){
+
+	var context = this;
+	
+	this.container = container;
+	this.closeButton = container.querySelector( ".closeButton" );
+	this.cancelButton = container.querySelector( ".cancelButton" );
+	this.confirmButton = container.querySelector( ".confirmButton" );
+	this.title = container.querySelector( ".dialogTitle" );
+	this.body = container.querySelector( ".dialogBody" );
+	
+	// Close the dialog whenever a button gets clicked
+	this.closeButton.addEventListener( "click", function(){
+		context.container.style.display = "none";
+	} );
+	this.cancelButton.addEventListener( "click", function(){
+		context.container.style.display = "none";
+	} );
+	this.confirmButton.addEventListener( "click", function(){
+		context.container.style.display = "none";
+	} );
+	
+	/* BASIC CONTROL METHODS */
+	
+	// Show the dialog box with the specified options
+	this.show = function show( options ){
+	
+		// Set the text of the dialog box
+		if ( options.title ) this.title.innerHTML = options.title;
+		if ( options.body ) this.body.innerHTML = options.body;
+		
+		// Hide or show the close button
+		if ( options.allowClose !== undefined ){
+			if ( !options.allowClose )
+				context.container.setAttribute( "close", "0" );
+			else
+				context.container.setAttribute( "close", "1" );
+		}
+		
+		// Configure the cancel button
+		if ( options.cancel ){
+			context.container.setAttribute( "cancel", "1" );
+			context.cancelButton.addEventListener( "click", options.cancel.callback );
+			if ( options.cancel.text )
+				context.cancelButton.querySelector( "span" ).innerHTML = options.cancel.text;
+			else
+				context.cancelButton.querySelector( "span" ).innerHTML = "CANCEL";
+				
+		}
+		else
+			context.container.setAttribute( "cancel", "0" );
+	
+		// Configure the confirm button
+		if ( options.confirm ){
+			context.container.setAttribute( "confirm", "1" );
+			context.confirmButton.addEventListener( "click", options.confirm.callback );
+			if ( options.confirm.text )
+				context.confirmButton.querySelector( "span" ).innerHTML = options.confirm.text;
+			else
+				context.confirmButton.querySelector( "span" ).innerHTML = "CONFIRM";
+		}
+		else
+			context.container.setAttribute( "confirm", "0" );
+	
+		// Show the dialog box
+		context.container.style.display = 'table';
+		
+	};
+	
+	return this;
+
+}
 
 // Export the deck list to a text file in the standard format
 function exportList( deck ){
