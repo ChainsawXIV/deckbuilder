@@ -128,6 +128,9 @@ function Deck( container, callback ){
 			// If there would be no copies left in the deck
 			if ( context.cards[ cardName ].count <= quantity ){
 				
+				// Set the count of the card to zero
+				context.cards[ cardName ].count = 0;
+				
 				// Delete the card from the deck
 				delete context.cards[ cardName ];
 				
