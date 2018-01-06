@@ -378,6 +378,7 @@ function Deck( container, callback ){
 		var card = context.cardData[ cardName ];
 		var legal = true;
 		var issue = "";
+		var validCount = ( card.deckLimit === undefined ) ? 4 : card.deckLimit;
 		
 		// Always allow any number of each basic land type
 		if ( card.supertypes ){
@@ -418,7 +419,7 @@ function Deck( container, callback ){
 			if ( context.format == "Commander" && legal ){
 			
 				// Everything but basic lands are limited to one per deck
-				if ( card.count > 1 ){
+				if ( card.count > 1 && validCount >= 0 ){
 					legal = false;
 					issue = "Too many copies of " + card.name + ".";
 				}
@@ -435,7 +436,7 @@ function Deck( container, callback ){
 				
 			}
 			// Validate the usual card count maximum of four in other formats
-			else if ( card.count > 4 ){
+			else if ( card.count > validCount && validCount >= 0 ){
 				legal = false;
 				issue = "Too many copies of " + card.name + ".";
 			}
