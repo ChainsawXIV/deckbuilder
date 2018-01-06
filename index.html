@@ -483,10 +483,9 @@
 		
 		<script>
 		
-			CARDDATA = null;
-			DECK = null;
 			
 			// Main page boot up sequence
+			DECK = null;
 			function start(){
 				
 				// Set up the card lists, deck, and interfaces
@@ -494,12 +493,9 @@
 				request.onreadystatechange = function(){
 					if( request.readyState == 4 ){
 					
-						// Store the card data for general usage
-						CARDDATA = JSON.parse( request.responseText );
-						
 						// Create the deck and link to the lists
 						DECK = new Deck(
-							CARDDATA,
+							JSON.parse( request.responseText ),
 							document.getElementById( "deckName" ), 
 							document.getElementById( "deckFormat" ),
 							document.getElementById( "deckIssues" ),
@@ -549,7 +545,7 @@
 					document.getElementById( "CATALOGNav" ),
 					document.getElementById( "CATALOGFilters" )
 				);
-				this.catalog.setCards( CARDDATA );
+				this.catalog.setCards( context.cardData );
 				
 				// Create an empty list for the deck
 				this.decklist = new CardList(
@@ -609,8 +605,8 @@
 						context.cards[ cardName ].count += quantity;
 					// Add the card to the deck if it's not already in it
 					else{
-						if ( CARDDATA[ cardName ] ){
-							context.cards[ cardName ] = CARDDATA[ cardName ];
+						if ( context.cardData[ cardName ] ){
+							context.cards[ cardName ] = context.cardData[ cardName ];
 							context.cards[ cardName ].count = quantity;
 						}
 					}
@@ -682,13 +678,13 @@
 					
 					// Remove commander status from any old commander rows
 					if ( context.commander )
-						CARDDATA[ context.commander.name ].commander = false;
+						context.cardData[ context.commander.name ].commander = false;
 					
 					// Add commander status to any rows for the new commander
-					CARDDATA[ cardName ].commander = true;
+					context.cardData[ cardName ].commander = true;
 					
 					// Store the commander's data and color identity for the deck
-					context.commander = CARDDATA[ cardName ];
+					context.commander = context.cardData[ cardName ];
 					context.identity = context.commander.colorIdentity;
 					
 					// Make sure the commander is actually in the deck list
@@ -805,8 +801,8 @@
 					// Replace the existing card list with the bundle's
 					context.cards = {};
 					for ( var cardName in bundle.cards ){
-						if( CARDDATA[ cardName ] ){
-							context.cards[ cardName ] = CARDDATA[ cardName ];
+						if( context.cardData[ cardName ] ){
+							context.cards[ cardName ] = context.cardData[ cardName ];
 							context.cards[ cardName ].count = bundle.cards[ cardName ].count;
 						}
 					}
@@ -832,7 +828,7 @@
 				// Checks and updates the legality of an individual card
 				function validateCard( cardName ){
 					
-					var card = CARDDATA[ cardName ];
+					var card = context.cardData[ cardName ];
 					var legal = true;
 					var issue = "";
 					
@@ -1085,7 +1081,11 @@
 				// Update the visual state of a particular card on the list
 				this.refreshCard = function( cardName ){
 				
-					var card = CARDDATA[ cardName ];
+					// Early out if the card's not on this list
+					var card = context.cards[ cardName ];
+					if ( !card )
+						return;
+					
 					var entry = context.listElement.querySelector( 'tr[key="' + keyFromName( cardName ) + '"]' );
 					if ( entry ){
 						var count = entry.querySelector( ".cardCount" );
