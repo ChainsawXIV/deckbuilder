@@ -208,10 +208,10 @@ function Deck( container, callback ){
 		
 		// Store the commander's data and color identity for the deck
 		context.commander = context.cardData[ cardName ];
-		if ( context.commander.colorIdentity )
-			context.identity = context.commander.colorIdentity;
+		if ( context.commander.identity )
+			context.identity = context.commander.identity;
 		else
-			context.colorIdentity = [];
+			context.identity = [];
 		
 		// Make sure the commander is actually in the deck list
 		if ( !context.commander.count ){
@@ -237,7 +237,7 @@ function Deck( container, callback ){
 		
 			// Clear the commander and color identity from the deck
 			context.commander = null;
-			context.colorIdentity = ["W","U","B","R","G"];
+			context.identity = ["W","U","B","R","G"];
 			
 			// Check legality for the cards on the catalog page
 			context.catalog.refreshPage();
