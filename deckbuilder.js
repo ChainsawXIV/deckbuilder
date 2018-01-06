@@ -178,6 +178,27 @@ function Deck( container, callback ){
 		if ( context.commander )
 			context.cardData[ context.commander.name ].commander = false;
 		
+		// If toggling the existing commander, toggle it off
+		if ( context.commander ){
+			if ( cardName == context.commander.name ){
+
+				// Unset the commander from the deck
+				context.commander = null;
+				
+				// Clear the deck's color identity
+				context.identity = ["W","U","B","R","G"];
+				
+				// Revalidate the cards in the deck
+				validateDeck( true );
+				
+				// Save the changes
+				context.autoSave();
+				
+				return;
+				
+			}
+		}
+
 		// Add commander status to any rows for the new commander
 		context.cardData[ cardName ].commander = true;
 		
