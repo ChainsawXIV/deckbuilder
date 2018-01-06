@@ -40,14 +40,16 @@ function Deck( container, callback ){
 			// Create the main card catalog list
 			context.catalog = new CardList( 
 				context.container.querySelector( ".searchFrame" ),
-				context.container.querySelector( ".searchFrame" )
+				context.container.querySelector( ".searchFrame" ),
+				context
 			);
 			context.catalog.setCards( context.cardData );
 			
 			// Create an empty list for the deck
 			context.decklist = new CardList(
 				context.container.querySelector( ".deckFrame" ),
-				context.container.querySelector( ".searchFrame" )
+				context.container.querySelector( ".searchFrame" ),
+				context
 			);
 			context.decklist.forceScroll = false;
 
@@ -499,10 +501,11 @@ function Deck( container, callback ){
 }
 
 // Component class for scrolling, filtering card lists
-function CardList( container, template ){
+function CardList( container, template, deck ){
 
 	var context = this;
 	
+	this.deck = deck;
 	this.template = template.innerHTML;
 	this.container = container;
 	this.pageLength = 100;
@@ -732,6 +735,11 @@ function CardList( container, template ){
 			// Preflight various card values to use in the HTML
 			var key = keyFromName( card.name );
 			var legal = ( card.legal ) ? 1 : 0;
+			var commander = 0;
+			if ( context.deck.commander ){
+				if ( card.name == context.deck.commander.name )
+					commander = 1;
+			}
 			var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 			var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
 			if ( !card.multiverseid ){
