@@ -32,8 +32,8 @@
 				box-sizing:border-box;
 			}
 			
-			#searchFrame,
-			#deckFrame{
+			.searchFrame,
+			.deckFrame{
 				width:100%;
 				height:100%;
 				position:relative;
@@ -52,20 +52,20 @@
 				border-radius:0.2em;
 			}
 			
-			#masterTable{
+			.masterTable{
 				width:100%;
 				height:100%;
 				border-collapse:collapse;
 				min-width:1510px;
 			}
-			#masterTable td{
+			.masterTable td{
 				padding:0em;
 			}
-			#masterTable .searchContainer,
-			#masterTable .deckContainer{
+			.masterTable .searchContainer,
+			.masterTable .deckContainer{
 				width:40%;
 			}
-			#masterTable .overviewContainer{
+			.masterTable .overviewContainer{
 				width:20%;
 			}
 			
@@ -285,15 +285,15 @@
 			.listTable tr:nth-of-type(odd) td{
 				background-color:rgba(0,0,0,0.2);
 			}
-			#masterTable .listTable td:nth-of-type(1){
+			.masterTable .listTable td:nth-of-type(1){
 				padding:0.5em 0.3em 0.2em 0.5em;
 				vertical-align:top;
 			}
-			#masterTable .listTable td:nth-of-type(2){
+			.masterTable .listTable td:nth-of-type(2){
 				padding:0.5em 1.5em 0.5em 0.5em;
 				vertical-align:top;
 			}
-			#masterTable .listTable td:nth-of-type(3){
+			.masterTable .listTable td:nth-of-type(3){
 				padding:0.5em 0.5em 0.5em 0.5em;
 				vertical-align:middle;
 				width:1.5em;
@@ -335,7 +335,7 @@
 				border-radius:6px;
 			}
 			
-			#masterTable .listTable td:nth-of-type(3) a{
+			.masterTable .listTable td:nth-of-type(3) a{
 				display:inline-block;
 				cursor:pointer;
 				border:1px solid black;
@@ -350,10 +350,10 @@
 				top:-0.1em;
 				font-size:1.5em;
 			}
-			#masterTable .listTable td:nth-of-type(3) a:hover{
+			.masterTable .listTable td:nth-of-type(3) a:hover{
 				background-color:#AAA;
 			}
-			#masterTable .listTable td:nth-of-type(3) .cardCount{
+			.masterTable .listTable td:nth-of-type(3) .cardCount{
 				text-align:center;
 				width:1.55em;
 				height:1.55em;
@@ -362,29 +362,29 @@
 				top:-0.15em;
 			}
 			
-			#masterTable .listTable td:nth-of-type(3) a.add span{
+			.masterTable .listTable td:nth-of-type(3) a.add span{
 				position:relative;
 				top:-0.22em;
 				left:0.00em;
 			}
-			#masterTable .listTable td:nth-of-type(3) a.remove span{
+			.masterTable .listTable td:nth-of-type(3) a.remove span{
 				position:relative;
 				top:-0.32em;
 				left:0.00em;
 			}
-			#masterTable .listTable td:nth-of-type(3) a.commanderFlag span{
+			.masterTable .listTable td:nth-of-type(3) a.commanderFlag span{
 				position:relative;
 				top:-0.245em;
 				left:-0.03em;
 			}
-			#masterTable .listTable td:nth-of-type(3) a.commanderFlag.commander{
+			.masterTable .listTable td:nth-of-type(3) a.commanderFlag.commander{
 				background-color:#882288;
 			}
 			
-			#masterTable .listTable td:nth-of-type(3) .cardCount[count="0"]{
+			.masterTable .listTable td:nth-of-type(3) .cardCount[count="0"]{
 				color:#c5c5c5;
 			}
-			#masterTable .listTable td:nth-of-type(3) .cardCount[legal="0"]{
+			.masterTable .listTable td:nth-of-type(3) .cardCount[legal="0"]{
 				color:red;
 			}
 		
@@ -398,7 +398,7 @@
 				width:20%;
 			}
 			
-			#deckProperties{
+			.deckProperties{
 				position:absolute;
 				top:0em;
 				width:20%;
@@ -407,21 +407,21 @@
 				border-bottom:1px solid black;
 				padding:0.4em 0em 0.3em 0.3em;
 			}
-			#deckProperties .filterLabel{
+			.deckProperties .filterLabel{
 				width:30%;
 			}
-			#deckProperties input,
-			#deckProperties select{
+			.deckProperties input,
+			.deckProperties select{
 				width:68%;
 			}
 			
-			#deckProperties .buttonHolder{
+			.deckProperties .buttonHolder{
 				text-align:center;
 				font-size:1.5em;
 				padding-top:0.7em;
 			
 			}
-			#deckProperties .imageButton{
+			.deckProperties .imageButton{
 				display:inline-block;
 				cursor:pointer;
 				background-color:#888;
@@ -431,27 +431,27 @@
 				width:2em;
 				margin-right:0.7em;
 			}
-			#deckProperties .imageButton:hover{
+			.deckProperties .imageButton:hover{
 				background-color:#AAA;
 			}
-			#deckProperties .imageButton img{
+			.deckProperties .imageButton img{
 				width:1.3em;
 				position:relative;
 				top:0.32em;
 				left:0.0em;
 			}
-			#deckProperties .imageButton.disabled{
+			.deckProperties .imageButton.disabled{
 				opacity:0.3;
 			}
 			
-			#deckData{
+			.deckData{
 				overflow-y:scroll;
 				position:absolute;
 				top:9.35em;
 				bottom:0.5em;
 				width:20%;
 			}
-			#deckData #deckIssues{
+			.deckData .deckIssues{
 				font-weight:400;
 				color:#00ff00;
 				border:1px solid green;
@@ -461,13 +461,13 @@
 				background-color:rgba(0,255,0,0.1);
 				font-size:0.9em;
 			}
-			#masterTable.illegal #deckData #deckIssues{
+			.masterTable.illegal .deckData .deckIssues{
 				color:red;
 				border-color:red;
 				background-color:rgba(255,0,0,0.1);
 			}
 			
-			#deckFooter{
+			.deckFooter{
 				position:absolute;
 				bottom:0em;
 				width:20%;
@@ -489,39 +489,25 @@
 			function start(){
 				
 				// Set up the card lists, deck, and interfaces
-				var request = new XMLHttpRequest();
-				request.onreadystatechange = function(){
-					if( request.readyState == 4 ){
-					
-						// Create the deck and link to the lists
-						DECK = new Deck(
-							document.getElementById( "deckName" ), 
-							document.getElementById( "deckFormat" ),
-							document.getElementById( "deckIssues" ),
-							document.getElementById( "masterTable" )
-						);
-						
-					}
-				};
-				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/data.json", true );
-				request.send();	
+				DECK = new Deck( document );
 				
 			}
 
 			// Master class for the deck builder tool itself
-			function Deck( nameElement, formatElement, issuesElement, masterTable, callback ){
+			function Deck( container, callback ){
 				
 				var context = this;
 				
+				this.container = container;
 				this.cardData = null;
 				this.catalog = null;
 				this.decklist = null;
 				this.storage = null;
 				this.callback = callback || function(){};
-				this.nameElement = nameElement;
-				this.formatElement = formatElement;
-				this.issuesElement = issuesElement;
-				this.masterTable = masterTable;
+				this.nameElement = container.querySelector( ".deckName input" );
+				this.formatElement = container.querySelector( ".deckFormat select" );
+				this.issuesElement = container.querySelector( ".deckIssues" );
+				this.masterTable = container.querySelector( ".masterTable" );
 				this.cards = {};
 				this.format = "";
 				this.name = "";
@@ -547,15 +533,15 @@
 					
 						// Create the main card catalog list
 						context.catalog = new CardList( 
-							document.getElementById( "searchFrame" ),
-							document.getElementById( "searchFrame" )
+							context.container.querySelector( ".searchFrame" ),
+							context.container.querySelector( ".searchFrame" )
 						);
 						context.catalog.setCards( context.cardData );
 						
 						// Create an empty list for the deck
 						context.decklist = new CardList(
-							document.getElementById( "deckFrame" ),
-							document.getElementById( "searchFrame" )
+							context.container.querySelector( ".deckFrame" ),
+							context.container.querySelector( ".searchFrame" )
 						);
 						context.decklist.forceScroll = false;
 
@@ -971,20 +957,19 @@
 					
 					// Update the issues list with the list of issues found
 					if ( legal ){
-						issuesElement.innerHTML = "<li>Deck is legal for the chosen format.</li>";
+						context.issuesElement.innerHTML = "<li>Deck is legal for the chosen format.</li>";
 					}
 					else{
 						context.issuesElement.innerHTML = "";
 						for ( var i = 0; i < issues.length; i++ )
-							issuesElement.innerHTML += "<li>" + issues[ i ] + "</li>";
+							context.issuesElement.innerHTML += "<li>" + issues[ i ] + "</li>";
 					}
 					
 					// Tag the master table with a class for formatting purposes
-					var mt = document.getElementById( "masterTable" );
 					if ( legal )
-						mt.className = mt.className.replace( /[\s]+illegal/g, "" );
+						context.masterTable.className = context.masterTable.className.replace( /[\s]+illegal/g, "" );
 					else
-						mt.className += " illegal";
+						context.masterTable.className += " illegal";
 					
 					return legal;
 				
@@ -1729,9 +1714,9 @@
 	</head>
 	<body onload="start();">
 	
-		<table id="masterTable"><tr>
+		<table class="masterTable"><tr>
 	
-			<td class="searchContainer"><div id="searchFrame" class="">
+			<td class="searchContainer"><div class="searchFrame">
 			
 				<div class="filterSection">
 					<span class="filterGroup name"><span class="filterLabel">Name:</span><input type="text" class="filterField" filterType="name" /></span><span class="filterGroup formats"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><span class="filterGroup sort"><span class="filterLabel">Sort:</span><select class="filterField" filterType="sort">
@@ -1754,14 +1739,14 @@
 				
 			</div></td>
 
-			<td class="deckContainer"><div id="deckFrame" class="">
+			<td class="deckContainer"><div class="deckFrame">
 			</div></td>
 			
 			<td class="overviewContainer">
 			
-				<div id="deckProperties">
-					<span class="filterGroup deckName"><span class="filterLabel">Deck Name:</span><input id="deckName" type="text" class="filterField" filterType="deckName" /></span><br>
-					<span class="filterGroup deckFormat"><span class="filterLabel">Format:</span><select id="deckFormat" class="filterField" filterType="formats"></select></span><br>
+				<div class="deckProperties">
+					<span class="filterGroup deckName"><span class="filterLabel">Deck Name:</span><input type="text" class="filterField" filterType="deckName" /></span><br>
+					<span class="filterGroup deckFormat"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><br>
 					<div class="buttonHolder">
 						<a class="imageButton" onclick="DECK.save();" title="Save Changes"><img src="https://chainsawxiv.github.io/deckbuilder/save.svg" /></a>
 						<a class="imageButton disabled" onclick="exportList( DECK );" title="Load Deck"><img src="https://chainsawxiv.github.io/deckbuilder/open.svg" /></a>
@@ -1773,10 +1758,10 @@
 					</span>
 				</div>
 				
-				<div id="deckData">
-					<ul id="deckIssues"><li>Deck is legal for the chosen format.</li></ul>
+				<div class="deckData">
+					<ul class="deckIssues"><li>Deck is legal for the chosen format.</li></ul>
 				</div>
-				<div id="deckFooter"></div>
+				<div class="deckFooter"></div>
 			
 			</td>
 			
