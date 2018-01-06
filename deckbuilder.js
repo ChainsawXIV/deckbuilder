@@ -764,6 +764,7 @@ function CardList( container, template, deck ){
 				if ( card.name == context.deck.commander.name )
 					commander = 1;
 			}
+			var count = card.count || 0;
 			var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 			var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
 			if ( !card.multiverseid ){
