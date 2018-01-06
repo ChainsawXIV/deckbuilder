@@ -32,7 +32,7 @@ function Deck( container, callback ){
 	
 	// Fetch the master card data and set up the card lists
 	var request = new XMLHttpRequest();
-	request.onreadystatechange = function(){
+	request.onreadystatechange = function initializeDeck(){
 		if( request.readyState == 4 ){
 		
 			context.cardData = JSON.parse( request.responseText );
@@ -59,21 +59,21 @@ function Deck( container, callback ){
 				context.formatElement.innerHTML += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
 				
 			// Set up event listener for changing deck format
-			context.formatElement.addEventListener( "change", function(){
+			context.formatElement.addEventListener( "change", function changedFormat(){
 				context.setFormat( context.formatElement.value );
 			} );
 							
 			// Set up event listener for changing deck name
-			context.nameElement.addEventListener( "change", function(){
+			context.nameElement.addEventListener( "change", function changedName(){
 				context.name = context.nameElement.value;
 				context.autoSave();
 			} );
 			
 			// Connect to storage and load autosaved data
-			context.storage = new Storage( function(){
+			context.storage = new Storage( function initializeStorage(){
 					
 				// Attempt to load the last WIP deck from storage
-				context.storage.loadDeck( "AUTOSAVE", function( bundle ){
+				context.storage.loadDeck( "AUTOSAVE", function loadAutosave( bundle ){
 					
 					// Load the autosave data if it exists
 					if( bundle )
@@ -95,7 +95,7 @@ function Deck( container, callback ){
 	/* DECK ACTION METHODS */
 	
 	// Add a new card to the deck
-	this.addCard = function( cardKey, quantity ){
+	this.addCard = function addCard( cardKey, quantity ){
 		
 		var cardName = nameFromKey( cardKey );
 		// Increase quantity if card is already in the deck
@@ -121,7 +121,7 @@ function Deck( container, callback ){
 	}
 	
 	// Remove a card from the deck
-	this.removeCard = function( cardKey, quantity ){
+	this.removeCard = function removeCard( cardKey, quantity ){
 	
 		var cardName = nameFromKey( cardKey );
 		if ( context.cards[ cardName ] ){
@@ -158,7 +158,7 @@ function Deck( container, callback ){
 	}
 
 	// Set the deck format and validate rules
-	this.setFormat = function( format ){
+	this.setFormat = function setFormat( format ){
 		
 		// Use default rules for formats without their own data
 		context.format = format;
@@ -183,7 +183,7 @@ function Deck( container, callback ){
 	}
 	
 	// Set the commander card for the deck
-	this.setCommander = function( cardKey ){
+	this.setCommander = function setCommander( cardKey ){
 
 		var cardName = nameFromKey( cardKey );
 		
@@ -230,7 +230,7 @@ function Deck( container, callback ){
 	}
 	
 	// Clear the commander selection from the deck entirely
-	this.clearCommander = function(){
+	this.clearCommander = function clearCommander(){
 	
 		// Validate that there's a commander to remove
 		if ( context.commander ){
@@ -256,7 +256,7 @@ function Deck( container, callback ){
 	/* DECK DATA METHODS */
 	
 	// Create a text deck list in the standard format
-	this.list = function(){
+	this.list = function list(){
 	
 		var out = '';
 		for ( var cardName in context.cards ){
@@ -274,7 +274,7 @@ function Deck( container, callback ){
 	}
 
 	// Create a data bundle from the deck for saving
-	this.bundle = function( saveAs ){
+	this.bundle = function bundle( saveAs ){
 	
 		// Initialize the bundle with the basics
 		var bundle = { 
@@ -305,21 +305,21 @@ function Deck( container, callback ){
 	};
 	
 	// Save the deck to a named slot in local
-	this.save = function(){
+	this.save = function save(){
 	
 		context.storage.save( context.bundle() );
 	
 	}
 	
 	// Save the deck to the draft slot in storage
-	this.autoSave = function(){
+	this.autoSave = function autoSave(){
 	
 		context.storage.save( context.bundle( "AUTOSAVE" ) );
 	
 	};
 	
 	// Load the deck from a provided data bundle
-	this.load = function( bundle ){
+	this.load = function load( bundle ){
 
 		// Recover the deck name from the bundle
 		context.name = bundle.name;
@@ -362,7 +362,7 @@ function Deck( container, callback ){
 	/* RULES VALIDATION HELPERS */
 	
 	// Checks and updates the legality of an individual card
-	this.validateCard = function( cardName ){
+	this.validateCard = function validateCard( cardName ){
 		
 		var card = context.cardData[ cardName ];
 		var legal = true;
@@ -596,7 +596,7 @@ function CardList( container, template, deck ){
 	/* LIST CONTROL METHODS */
 
 	// Sets the cards on the list from a collection of cards
-	this.setCards = function( cards ){
+	this.setCards = function setCards( cards ){
 	
 		// Overwrite the list's internal card data
 		context.cards = cards;
@@ -613,7 +613,7 @@ function CardList( container, template, deck ){
 	};
 	
 	// Sets which page of cards the list is currently viewing
-	this.setPage = function( page ){
+	this.setPage = function setPage( page ){
 	
 		// Constrain the view to pages which actually exist
 		context.currentPage = Math.max( 0, Math.min( page, context.pageCount ) );
@@ -624,7 +624,7 @@ function CardList( container, template, deck ){
 	};
 
 	// Update the visual state of a particular card on the list
-	this.refreshCard = function( cardName ){
+	this.refreshCard = function refreshCard( cardName ){
 	
 		// Early out if the card's not on this list
 		var card = context.cards[ cardName ];
@@ -663,7 +663,7 @@ function CardList( container, template, deck ){
 	}
 	
 	// Show or hide the filter section at the top of the list
-	this.toggleFilters = function( show ){
+	this.toggleFilters = function toggleFilters( show ){
 		
 		var container = context.filtersElement.parentNode;
 		if ( show )
@@ -674,7 +674,7 @@ function CardList( container, template, deck ){
 	}
 
 	// Validates and updates tagging for each card on the page
-	this.refreshPage = function(){
+	this.refreshPage = function refreshPage(){
 		
 		var minIndex = context.pageLength * context.currentPage;
 		var maxIndex = Math.min( minIndex + context.pageLength - 1, context.cardCount - 1 );
@@ -754,7 +754,7 @@ function CardList( container, template, deck ){
 		// Sort the reduced card array by property and order
 		var property = property || context.sortProperty;
 		var descending = descending || context.sortDescending;
-		context.sortedCards.sort( function( a, b ){
+		context.sortedCards.sort( function sordCards( a, b ){
 			var order = ( descending ) ? 1 : -1;
 			// Sort first by the specified property
 			if ( a[ property ] > b[ property ] ) return -1 * order;
@@ -1039,7 +1039,7 @@ function Storage( callback ){
 	/* STORAGE ACCESS METHODS */
 
 	// Connect the storage module to the database
-	this.connect = function( callback ){
+	this.connect = function connect( callback ){
 		callback = callback || function(){};
 		var request = indexedDB.open( "mtgdecks", 1 );
 
@@ -1070,7 +1070,7 @@ function Storage( callback ){
 	};
 
 	// Write a deck to the database, overwriting existing entry if any
-	this.save = function( deck, callback ){
+	this.save = function save( deck, callback ){
 		callback = callback || function(){};
 	
 		// Produce a user facing error if database is disconnected
@@ -1108,7 +1108,7 @@ function Storage( callback ){
 	};
 
 	// Delete a deck from the database
-	this.remove = function( deckName, callback ){
+	this.remove = function remove( deckName, callback ){
 		callback = callback || function(){};
 	
 		// Produce a user facing error if the database is gone
@@ -1139,7 +1139,7 @@ function Storage( callback ){
 	};
 
 	// Load deck data from the database and send it to the callback function
-	this.loadDeck = function( deckName, callback ){
+	this.loadDeck = function loadDeck( deckName, callback ){
 			callback = callback || function(){};
 
 		// Produce a user facing error if the database is gone
@@ -1170,7 +1170,7 @@ function Storage( callback ){
 	};
 
 	// Gather a list of stored decks and send it to the callback function
-	this.loadList = function( callback, refresh ){
+	this.loadList = function lostList( callback, refresh ){
 		callback = callback || function(){};
 	
 		// Used the cached deck list unless specified otherwise
