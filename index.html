@@ -1751,11 +1751,10 @@
 						<a class="imageButton" onclick="DECK.save();" title="Save Changes"><img src="https://chainsawxiv.github.io/deckbuilder/save.svg" /></a>
 						<a class="imageButton disabled" onclick="exportList( DECK );" title="Load Deck"><img src="https://chainsawxiv.github.io/deckbuilder/open.svg" /></a>
 						<a class="imageButton" onclick="exportList( DECK );" title="Download Deck List"><img src="https://chainsawxiv.github.io/deckbuilder/down.svg" /></a>
-						<a class="imageButton disabled" onclick="exportList( DECK );" title="Import Deck List"><img src="https://chainsawxiv.github.io/deckbuilder/up.svg" /></a>
+						<a class="imageButton" onclick="document.getElementById( 'fileSelect' ).click();" title="Import Deck List"><img src="https://chainsawxiv.github.io/deckbuilder/up.svg" />
+							<input style="display:none;" id="fileSelect" onchange="importList( this );" type="file" />
+						</a>
 					</div>
-					<span style="display:block;">
-						<input id="fileSelect" onchange="importList( this );" type="file" />
-					</span>
 				</div>
 				
 				<div class="deckData">
