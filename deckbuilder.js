@@ -735,7 +735,7 @@ function CardList( container, template ){
 			var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 			var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
 			if ( !card.multiverseid ){
-				image = 'https://chainsawxiv.github.io/deckbuilder/images/cardback.jpg';
+				image = 'images/cardback.jpg';
 				link = 'http://gatherer.wizards.com/Pages/Default.aspx';
 			}
 			if ( !card.text )
