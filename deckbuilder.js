@@ -113,7 +113,7 @@ function Deck( container, callback ){
 		context.decklist.setCards( context.cards );
 		
 		// Update counts and state on all card lists
-		validateCard( cardName );
+		context.validateCard( cardName );
 		
 		// Save the changes to the deck
 		context.autoSave();
@@ -150,7 +150,7 @@ function Deck( container, callback ){
 		}
 		
 		// Update the state of the card as needed
-		validateCard( cardName );
+		context.validateCard( cardName );
 		
 		// Save the changes to the deck
 		context.autoSave();
@@ -174,6 +174,9 @@ function Deck( container, callback ){
 		// Refresh all card counts and legal statuses
 		validateDeck( true );
 		
+		// Check legality for the cards on the catalog page
+		context.catalog.refreshPage();
+		
 		// Save the changes to the deck
 		context.autoSave();
 		
@@ -193,16 +196,7 @@ function Deck( container, callback ){
 			if ( cardName == context.commander.name ){
 
 				// Unset the commander from the deck
-				context.commander = null;
-				
-				// Clear the deck's color identity
-				context.identity = ["W","U","B","R","G"];
-				
-				// Revalidate the cards in the deck
-				validateDeck( true );
-				
-				// Save the changes
-				context.autoSave();
+				context.clearCommander();
 				
 				return;
 				
@@ -224,6 +218,9 @@ function Deck( container, callback ){
 		// Update counts and legality for all cards in all lists
 		validateDeck( true );
 		
+		// Check legality for the cards on the catalog page
+		context.catalog.refreshPage();
+		
 		// Save the changes to the deck
 		context.autoSave();
 		
@@ -239,8 +236,14 @@ function Deck( container, callback ){
 			context.commander = null;
 			context.colorIdentity = ["W","U","B","R","G"];
 			
+			// Check legality for the cards on the catalog page
+			context.catalog.refreshPage();
+		
 			// Fully re-validate the deck list
 			validateDeck( true );
+			
+			// Save the changes
+			context.autoSave();
 			
 		}
 	
@@ -355,7 +358,7 @@ function Deck( container, callback ){
 	/* RULES VALIDATION HELPERS */
 	
 	// Checks and updates the legality of an individual card
-	function validateCard( cardName ){
+	this.validateCard = function( cardName ){
 		
 		var card = context.cardData[ cardName ];
 		var legal = true;
@@ -419,7 +422,7 @@ function Deck( container, callback ){
 			// Validate the usual card count maximum of four in other formats
 			else if ( card.count > 4 ){
 				legal = false;
-				issue = "Too many coppies of " + card.name + ".";
+				issue = "Too many copies of " + card.name + ".";
 			}
 		
 		}
@@ -429,8 +432,10 @@ function Deck( container, callback ){
 		card.issue = issue;
 		
 		// Tell the lists to update card visual status
-		context.catalog.refreshCard( cardName );
-		context.decklist.refreshCard( cardName );
+		if ( context.catalog )
+			context.catalog.refreshCard( cardName );
+		if ( context.decklist )
+			context.decklist.refreshCard( cardName );
 		
 		// Recheck legality of the deck as a whole with these changes
 		validateDeck( false );
@@ -450,7 +455,7 @@ function Deck( container, callback ){
 		for ( var cardName in context.cards ){
 			// Don't waste time rechecking cards unless asked
 			if ( validateCards )
-				validateCard( cardName );
+				context.validateCard( cardName );
 			// Gather information from each card in the deck
 			var card = context.cards[ cardName ];
 			if ( !card.legal ){
@@ -664,6 +669,17 @@ function CardList( container, template, deck ){
 		
 	}
 
+	// Validates and updates tagging for each card on the page
+	this.refreshPage = function(){
+		
+		var minIndex = context.pageLength * context.currentPage;
+		var maxIndex = Math.min( minIndex + context.pageLength - 1, context.cardCount - 1 );
+		for ( var i = minIndex; i <= maxIndex; i++ ){
+			context.deck.validateCard( context.sortedCards[ i ].name );
+			context.refreshCard( context.sortedCards[ i ].name );
+		}
+		
+	}
 
 	/* CARD LIST HELPERS */
 	
@@ -765,7 +781,6 @@ function CardList( container, template, deck ){
 		
 			// Preflight various card values to use in the HTML
 			var key = keyFromName( card.name );
-			var legal = ( card.legal ) ? 1 : 0;
 			var commander = 0;
 			if ( context.deck.commander ){
 				if ( card.name == context.deck.commander.name )
@@ -782,7 +797,7 @@ function CardList( container, template, deck ){
 				card.text = "";
 			
 			// Compose left hand section with the card image
-			list += '<tr key="' + key + '" legal="' + legal + '" commander="' + commander + '"><td>';
+			list += '<tr key="' + key + '" legal="1" commander="' + commander + '"><td>';
 			list += '<a href="' + link + '"><img class="cardImage" src="' + image + '" /></a>';
 			list += '</td><td>';
 			
@@ -809,6 +824,9 @@ function CardList( container, template, deck ){
 		
 		// Replace in special symbols and add the entry to the list
 		context.listElement.innerHTML = replaceSymbols( list );
+		
+		// Update validation for the card entries
+		context.refreshPage();
 		
 		// Update the page navigation at the bottom
 		updateNavigation();
