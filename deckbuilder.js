@@ -774,7 +774,7 @@ function CardList( container, template, deck ){
 				card.text = "";
 			
 			// Compose left hand section with the card image
-			list += '<tr key="' + key + '"><td>';
+			list += '<tr key="' + key + '" commander="' + commander + '"><td>';
 			list += '<a href="' + link + '"><img class="cardImage" src="' + image + '" /></a>';
 			list += '</td><td>';
 			
