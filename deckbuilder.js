@@ -497,7 +497,7 @@ function Deck( container, callback ){
 				if ( context.commander.types ){
 					if ( context.commander.types.indexOf( "Creature" ) < 0 ){
 						legal = 0;
-						issues.push( "Your command must be a creature." );
+						issues.push( "Your commander must be a creature." );
 					}
 				}
 			}
