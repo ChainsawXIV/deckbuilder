@@ -632,9 +632,9 @@ function CardList( container, template, deck ){
 			
 			// Flag the element to style for legality
 			if ( card.legal )
-				count.setAttribute( "legal", 1 );
+				entry.setAttribute( "legal", 1 );
 			else
-				count.setAttribute( "legal", 0 );
+				entry.setAttribute( "legal", 0 );
 				
 			// Flag the element for commander selection
 			if ( card.commander )
@@ -774,7 +774,7 @@ function CardList( container, template, deck ){
 				card.text = "";
 			
 			// Compose left hand section with the card image
-			list += '<tr key="' + key + '" commander="' + commander + '"><td>';
+			list += '<tr key="' + key + '" legal="' + legal + '" commander="' + commander + '"><td>';
 			list += '<a href="' + link + '"><img class="cardImage" src="' + image + '" /></a>';
 			list += '</td><td>';
 			
@@ -792,7 +792,7 @@ function CardList( container, template, deck ){
 			
 			// Compose the UI section to the right of the card entry
 			list += '<a class="add" title="Add to Deck" onclick="DECK.addCard( this.parentNode.parentNode.getAttribute(\'key\'), 1 );"><span>+</span></a>';
-			list += '<div class="cardCount" legal="' + legal + '" count="0">0</div>';
+			list += '<div class="cardCount" count="0">' + count + '</div>';
 			list += '<a class="remove" title="Remove from Deck" onclick="DECK.removeCard( this.parentNode.parentNode.getAttribute(\'key\'), 1 );"><span>-</span></a>';
 			list += '<a title="Make Commander" class="commanderFlag" onclick="DECK.setCommander( this.parentNode.parentNode.getAttribute(\'key\') );"><span>&#9813;</span></a>';
 			list += '</td></tr>';
