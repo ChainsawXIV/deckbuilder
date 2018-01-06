@@ -413,7 +413,7 @@ function Deck( container, callback ){
 				}
 				
 				// Cards must match the color identity of the commander
-				if ( card.colorIdentity ){
+				else if ( card.colorIdentity ){
 					for ( var i = 0; i < card.colorIdentity.length; i++ ){
 						if ( context.identity.indexOf( card.colorIdentity[ i ] ) < 0 ){
 							legal = false;
