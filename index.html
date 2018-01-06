@@ -487,11 +487,6 @@
 			DECK = null;
 			STORAGE = null;
 			
-			formats = {
-				default:{ minCards:60 },
-				Commander:{ minCards:100, maxCards:100, commander:true }
-			}
-			
 			// Main page boot up sequence
 			function start(){
 				
@@ -571,6 +566,10 @@
 				this.maxCards = -1;
 				this.commander = null;
 				this.identity = ["W","U","B","R","G"];
+				this.formats = {
+					default:{ minCards:60 },
+					Commander:{ minCards:100, maxCards:100, commander:true }
+				}
 				
 
 				/* UI INITIALIZATION */
@@ -655,11 +654,11 @@
 					
 					// Use default rules for formats without their own data
 					context.format = format;
-					if ( !formats[ format ] ) format = "default";
+					if ( !context.formats[ format ] ) format = "default";
 					
 					// Set the min and max card counts from the format data
-					context.minCards = formats[ format ].minCards || -1;
-					context.maxCards = formats[ format ].maxCards || -1;
+					context.minCards = context.formats[ format ].minCards || -1;
+					context.maxCards = context.formats[ format ].maxCards || -1;
 					
 					// Refresh all card counts and legal statuses
 					validateDeck( true );
