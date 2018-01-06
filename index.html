@@ -484,8 +484,6 @@
 		<script>
 		
 			CARDDATA = null;
-			CATALOG = null;
-			DECKLIST = null;
 			DECK = null;
 			STORAGE = null;
 			
@@ -506,28 +504,28 @@
 						CARDDATA = JSON.parse( request.responseText );
 						
 						// Create the main card catalog list
-						CATALOG = new CardList( 
+						var catalog = new CardList( 
 							document.getElementById( "CATALOG"), 
 							document.getElementById( "CATALOGNav"),
 							document.getElementById( "CATALOGFilters" )
 						);
-						CATALOG.setCards( CARDDATA );
+						catalog.setCards( CARDDATA );
 						
 						// Create an empty list for the deck
-						DECKLIST = new CardList(
+						var decklist = new CardList(
 							document.getElementById( "DECKLIST"), 
 							document.getElementById( "DECKLISTNav"),
 							document.getElementById( "DECKLISTFilters" )
 						);
-						DECKLIST.forceScroll = false;
+						decklist.forceScroll = false;
 
 						// Connect to the local storage and load default save
 						STORAGE = new Storage( function(){
 						
 							// Create the deck and link to the lists
 							DECK = new Deck( 
-								CATALOG, 
-								DECKLIST, 
+								catalog, 
+								decklist, 
 								STORAGE, 
 								document.getElementById( "deckName" ), 
 								document.getElementById( "deckFormat" ),
