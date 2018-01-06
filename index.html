@@ -497,26 +497,9 @@
 						// Store the card data for general usage
 						CARDDATA = JSON.parse( request.responseText );
 						
-						// Create the main card catalog list
-						var catalog = new CardList( 
-							document.getElementById( "CATALOG"), 
-							document.getElementById( "CATALOGNav"),
-							document.getElementById( "CATALOGFilters" )
-						);
-						catalog.setCards( CARDDATA );
-						
-						// Create an empty list for the deck
-						var decklist = new CardList(
-							document.getElementById( "DECKLIST"), 
-							document.getElementById( "DECKLISTNav"),
-							document.getElementById( "DECKLISTFilters" )
-						);
-						decklist.forceScroll = false;
-
 						// Create the deck and link to the lists
-						DECK = new Deck( 
-							catalog, 
-							decklist, 
+						DECK = new Deck(
+							CARDDATA,
 							document.getElementById( "deckName" ), 
 							document.getElementById( "deckFormat" ),
 							document.getElementById( "deckIssues" ),
@@ -531,12 +514,13 @@
 			}
 
 			// Master class for the deck builder tool itself
-			function Deck( catalog, decklist, nameElement, formatElement, issuesElement, masterTable, callback ){
+			function Deck( cardData, nameElement, formatElement, issuesElement, masterTable, callback ){
 				
 				var context = this;
 				
-				this.catalog = catalog;
-				this.decklist = decklist;
+				this.cardData = cardData;
+				this.catalog = null;
+				this.decklist = null;
 				this.storage = null;
 				this.callback = callback || function(){};
 				this.nameElement = nameElement;
@@ -556,7 +540,26 @@
 					Commander:{ minCards:100, maxCards:100, commander:true }
 				}
 				
-
+				
+				/* DECK LIST INITIALIZATION */
+				
+				// Create the main card catalog list
+				this.catalog = new CardList( 
+					document.getElementById( "CATALOG" ), 
+					document.getElementById( "CATALOGNav" ),
+					document.getElementById( "CATALOGFilters" )
+				);
+				this.catalog.setCards( CARDDATA );
+				
+				// Create an empty list for the deck
+				this.decklist = new CardList(
+					document.getElementById( "DECKLIST" ), 
+					document.getElementById( "DECKLISTNav" ),
+					document.getElementById( "DECKLISTFilters" )
+				);
+				this.decklist.forceScroll = false;
+				
+				
 				/* UI INITIALIZATION */
 				
 				// Populate the list of formats for the deck
@@ -577,7 +580,7 @@
 
 				
 				/* INITIAL LOADING */
-
+				
 				this.storage = new Storage( function(){
 						
 					// Attempt to load the last working deck from storage
