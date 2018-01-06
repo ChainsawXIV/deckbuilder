@@ -485,7 +485,6 @@
 		
 			CARDDATA = null;
 			DECK = null;
-			STORAGE = null;
 			
 			// Main page boot up sequence
 			function start(){
@@ -514,30 +513,15 @@
 						);
 						decklist.forceScroll = false;
 
-						// Connect to the local storage and load default save
-						STORAGE = new Storage( function(){
-						
-							// Create the deck and link to the lists
-							DECK = new Deck( 
-								catalog, 
-								decklist, 
-								STORAGE, 
-								document.getElementById( "deckName" ), 
-								document.getElementById( "deckFormat" ),
-								document.getElementById( "deckIssues" ),
-								document.getElementById( "masterTable" )
-							);
-
-							// Attempt to load the last working deck from storage
-							STORAGE.loadDeck( "AUTOSAVE", function( bundle ){
-								
-								// Load the autosave data if it exists
-								if( bundle )
-									DECK.load( bundle );
-								
-							} );
-						
-						} );
+						// Create the deck and link to the lists
+						DECK = new Deck( 
+							catalog, 
+							decklist, 
+							document.getElementById( "deckName" ), 
+							document.getElementById( "deckFormat" ),
+							document.getElementById( "deckIssues" ),
+							document.getElementById( "masterTable" )
+						);
 						
 					}
 				};
@@ -547,13 +531,14 @@
 			}
 
 			// Master class for the deck builder tool itself
-			function Deck( catalog, decklist, storage, nameElement, formatElement, issuesElement, masterTable ){
+			function Deck( catalog, decklist, nameElement, formatElement, issuesElement, masterTable, callback ){
 				
 				var context = this;
 				
 				this.catalog = catalog;
 				this.decklist = decklist;
-				this.storage = storage;
+				this.storage = null;
+				this.callback = callback || function(){};
 				this.nameElement = nameElement;
 				this.formatElement = formatElement;
 				this.issuesElement = issuesElement;
@@ -587,9 +572,28 @@
 				// Set up event listener for changing deck name
 				context.nameElement.addEventListener( "change", function(){
 					context.name = context.nameElement.value;
-					context.save();
+					context.autoSave();
 				} );
 
+				
+				/* INITIAL LOADING */
+
+				this.storage = new Storage( function(){
+						
+					// Attempt to load the last working deck from storage
+					context.storage.loadDeck( "AUTOSAVE", function( bundle ){
+						
+						// Load the autosave data if it exists
+						if( bundle )
+							context.load( bundle );
+							
+						// Invoke the callback when the deck is ready
+						context.callback();
+						
+					} );
+						
+				} );
+				
 
 				/* DECK ACTION METHODS */
 				
@@ -615,7 +619,7 @@
 					validateCard( cardName );
 					
 					// Save the changes to the deck
-					context.save();
+					context.autoSave();
 					
 				}
 				
@@ -645,7 +649,7 @@
 						validateCard( cardName );
 					
 					// Save the changes to the deck
-					context.save();
+					context.autoSave();
 				
 				}
 		
@@ -664,7 +668,7 @@
 					validateDeck( true );
 					
 					// Save the changes to the deck
-					context.save();
+					context.autoSave();
 					
 				}
 				
@@ -693,7 +697,7 @@
 					validateDeck( true );
 					
 					// Save the changes to the deck
-					context.save();
+					context.autoSave();
 					
 				}
 				
@@ -766,8 +770,15 @@
 				
 				};
 				
-				// Save the deck to the attached storage
+				// Save the deck to a named slot in local
 				this.save = function(){
+				
+					context.storage.save( context.bundle() );
+				
+				}
+				
+				// Save the deck to the draft slot in storage
+				this.autoSave = function(){
 				
 					context.storage.save( context.bundle( "AUTOSAVE" ) );
 				
@@ -808,7 +819,7 @@
 					validateDeck( true );
 					
 					// Save the changes to the deck
-					context.save();
+					context.autoSave();
 						
 				}
 						
@@ -1492,7 +1503,7 @@
 				};
 			
 				// Write a deck to the database, overwriting existing entry if any
-				this.save = function( DECK, callback ){
+				this.save = function( deck, callback ){
 					callback = callback || function(){};
 				
 					// Produce a user facing error if database is disconnected
@@ -1502,7 +1513,7 @@
 					}
 					
 					// Prompt the user to name the deck before saving if needed
-					if ( !DECK.name ){
+					if ( !deck.name ){
 						alert( "Decks require a name in order to be saved." );
 						return;
 					}
@@ -1515,7 +1526,7 @@
 					
 					// Save the deck data to the database
 					var store = trans.objectStore( "decks" );
-					var bundle = ( DECK.bundle ) ? DECK.bundle() : DECK;
+					var bundle = ( deck.bundle ) ? deck.bundle() : deck;
 					var request = store.put( bundle );
 					request.onerror = function( event ){
 						alert( "Failed to save due to request error: " + event.target.errorCode );
@@ -1758,7 +1769,7 @@
 					<span class="filterGroup deckName"><span class="filterLabel">Deck Name:</span><input id="deckName" type="text" class="filterField" filterType="deckName" /></span><br>
 					<span class="filterGroup deckFormat"><span class="filterLabel">Format:</span><select id="deckFormat" class="filterField" filterType="formats"></select></span><br>
 					<div class="buttonHolder">
-						<a class="imageButton" onclick="STORAGE.save( DECK );" title="Save Changes"><img src="https://chainsawxiv.github.io/deckbuilder/save.svg" /></a>
+						<a class="imageButton" onclick="DECK.save();" title="Save Changes"><img src="https://chainsawxiv.github.io/deckbuilder/save.svg" /></a>
 						<a class="imageButton disabled" onclick="exportList( DECK );" title="Load Deck"><img src="https://chainsawxiv.github.io/deckbuilder/open.svg" /></a>
 						<a class="imageButton" onclick="exportList( DECK );" title="Download Deck List"><img src="https://chainsawxiv.github.io/deckbuilder/down.svg" /></a>
 						<a class="imageButton disabled" onclick="exportList( DECK );" title="Import Deck List"><img src="https://chainsawxiv.github.io/deckbuilder/up.svg" /></a>
