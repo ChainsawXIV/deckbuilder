@@ -255,8 +255,8 @@ function Deck( container, callback ){
 		
 		// Store the commander's data and color identity for the deck
 		context.commander = context.cardData[ cardName ];
-		if ( context.commander.identity )
-			context.identity = context.commander.identity;
+		if ( context.commander.colorIdentity )
+			context.identity = context.commander.colorIdentity;
 		else
 			context.identity = [];
 		
