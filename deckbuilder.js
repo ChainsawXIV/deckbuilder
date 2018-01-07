@@ -13,13 +13,15 @@ function Deck( container, callback ){
 	this.callback = callback || function(){};
 	this.nameElement = container.querySelector( ".deckName input" );
 	this.formatElement = container.querySelector( ".deckFormat select" );
+	this.folderList = container.querySelector( ".deckFolder select" );
+	this.newFolderButton = container.querySelector( ".deckFolder a" );
 	this.issuesElement = container.querySelector( ".deckIssues" );
 	this.masterTable = container.querySelector( ".masterTable" );
-	this.loadedFrom = null;
+	this.loadedFrom = "AUTOSAVE";
 	this.cards = {};
 	this.format = "";
 	this.name = "";
-	this.folder = "";
+	this.folder = "General";
 	this.minCards = -1;
 	this.maxCards = -1;
 	this.commander = null;
@@ -76,16 +78,53 @@ function Deck( container, callback ){
 			
 			// Connect to storage and load autosaved data
 			context.storage = new Storage( function initializeStorage(){
+				
+				// Populate the folder list before loading decks
+				context.storage.loadList( function loadFolders( folders ){
 					
-				// Attempt to load the last WIP deck from storage
-				context.storage.loadDeck( "AUTOSAVE", function loadAutosave( bundle ){
-					
-					// Load the autosave data if it exists
-					if( bundle )
-						context.load( bundle );
+					// Populate the folder list
+					for ( var folderName in folders ){
+						if ( folderName != "General" )
+							context.folderList.innerHTML += '<option value="' + folderName + '">' + folderName + '</option>';
 						
-					// Invoke the callback when the deck is ready
-					context.callback();
+					}
+					
+					// Attach event listeners to the folder list
+					context.folderList.addEventListener( "change", function(){
+						context.folder = context.folderList.value;
+						context.autoSave();
+					} );
+					
+					// Attach event listeners to the add folder button
+					context.newFolderButton.addEventListener( "click", function(){
+						context.dialog.show( {
+							allowClose:true,
+							title:"New Folder",
+							body:'Specify a name for the new folder:<br><input type="text" class="nameInput" />',
+							cancel:{},
+							confirm:{ text:"CREATE", callback:function(){
+								var name = this.parentNode.parentNode.querySelector( ".nameInput" ).value
+								context.folder = name;
+								var opt = document.createElement( "option" );
+								opt.value = name;
+								opt.innerHTML = name;
+								context.folderList.appendChild( opt );
+								opt.selected = "selected";
+							} }
+						} );
+					} );
+					
+					// Attempt to load the last WIP deck from storage
+					context.storage.loadDeck( "AUTOSAVE", function loadAutosave( bundle ){
+						
+						// Load the autosave data if it exists
+						if( bundle )
+							context.load( bundle );
+							
+						// Invoke the callback when the deck is ready
+						context.callback();
+						
+					} );
 					
 				} );
 					
@@ -319,7 +358,7 @@ function Deck( container, callback ){
 	// Save the deck to the draft slot in storage
 	this.autoSave = function autoSave(){
 	
-		context.storage.save( context.bundle( "AUTOSAVE" ) );
+		context.storage.save( context.bundle( "AUTOSAVE" ), null, true );
 	
 	};
 	
@@ -339,8 +378,10 @@ function Deck( container, callback ){
 		context.setFormat( bundle.format );
 		context.formatElement.querySelector( 'option[value="' + bundle.format + '"]' ).selected = "selected";
 		
+		// Set the proper folder in the folder menu
+		if ( bundle.folder == "" ) bundle.folder = "General";
 		context.folder = bundle.folder;
-		// FOLDER RELATED GUI POPULATION
+		context.folderList.querySelector( 'option[value="' + bundle.folder + '"]' ).selected = "selected";
 		
 		// Replace the existing card list with the bundle's
 		context.cards = {};
@@ -1294,6 +1335,8 @@ function DialogBox( container ){
 	this.closeButton = container.querySelector( ".closeButton" );
 	this.cancelButton = container.querySelector( ".cancelButton" );
 	this.confirmButton = container.querySelector( ".confirmButton" );
+	this.cancelCallback = null;
+	this.confirmCallback = null;
 	this.title = container.querySelector( ".dialogTitle" );
 	this.body = container.querySelector( ".dialogBody" );
 	this.onClose = function(){};
@@ -1332,8 +1375,12 @@ function DialogBox( container ){
 		// Configure the cancel button
 		if ( options.cancel ){
 			context.container.setAttribute( "cancel", "1" );
-			if ( options.cancel.callback )
+			if ( context.cancelCallback )
+				context.cancelButton.removeEventListener( "click", context.cancelCallback );
+			if ( options.cancel.callback ){
 				context.cancelButton.addEventListener( "click", options.cancel.callback );
+				context.cancelCallback = options.cancel.callback;
+			}
 			if ( options.cancel.text )
 				context.cancelButton.querySelector( "span" ).innerHTML = options.cancel.text;
 			else
@@ -1346,8 +1393,12 @@ function DialogBox( container ){
 		// Configure the confirm button
 		if ( options.confirm ){
 			context.container.setAttribute( "confirm", "1" );
-			if ( options.confirm.callback )
+			if ( context.confirmCallback )
+				context.confirmButton.removeEventListener( "click", context.confirmCallback );
+			if ( options.confirm.callback ){
 				context.confirmButton.addEventListener( "click", options.confirm.callback );
+				context.confirmCallback = options.confirm.callback;
+			}
 			if ( options.confirm.text )
 				context.confirmButton.querySelector( "span" ).innerHTML = options.confirm.text;
 			else

@@ -410,11 +410,38 @@ html,body,div,span,input,select,table,img{
 .deckProperties select{
 	width:68%;
 }
+.deckProperties .deckFolder select{
+	width:60%;
+}
+.deckProperties .deckFolder a{
+	position:relative;
+	top:0.60em;
+	margin-top:-0.5em;
+	margin-left:0.2em;
+	display:inline-block;
+	height:1.33em;
+	width:1.33em;
+	background-color:rgba(128,128,128,0.4);
+	border:1px solid black;
+	color:white;
+	border-radius:0.2em;
+	cursor:pointer;
+}
+.deckProperties .deckFolder a:hover{
+	background-color:rgba(128,128,128,0.6);
+}
+.deckProperties .deckFolder a span{
+	position:relative;
+	top:-0.30em;
+	left:0.15em;
+	font-size:1.5em;
+	font-weight:700;
+}
 
 .deckProperties .buttonHolder{
 	text-align:center;
 	font-size:1.5em;
-	padding-top:0.7em;
+	padding-top:0.2em;
 
 }
 .deckProperties .imageButton{
