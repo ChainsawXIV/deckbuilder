@@ -38,14 +38,6 @@ function Deck( container, callback ){
 		
 			context.cardData = JSON.parse( request.responseText );
 		
-			// Create the main card catalog list
-			context.catalog = new CardList( 
-				context.container.querySelector( ".searchFrame" ),
-				context.container.querySelector( ".searchFrame" ),
-				context
-			);
-			context.catalog.setCards( context.cardData );
-			
 			// Create an empty list for the deck
 			context.decklist = new CardList(
 				context.container.querySelector( ".deckFrame" ),
@@ -53,6 +45,14 @@ function Deck( container, callback ){
 				context
 			);
 			context.decklist.forceScroll = false;
+			
+			// Create the main card catalog list
+			context.catalog = new CardList( 
+				context.container.querySelector( ".searchFrame" ),
+				context.container.querySelector( ".searchFrame" ),
+				context
+			);
+			context.catalog.setCards( context.cardData );
 			
 			// Set up the general purpose dialog box
 			context.dialog = new DialogBox( context.container.querySelector( ".interstitial" ) );
