@@ -1051,7 +1051,9 @@ function Storage( callback, deck ){
 	
 	this.deck = deck;
 	this.database = null;
-	this.decks = [];
+	this.decks = {};
+	this.folders = {};
+	this.decklistDirty = true;
 	
 	callback = callback || function(){};
 	
@@ -1083,6 +1085,10 @@ function Storage( callback, deck ){
 			context.database.onerror = function( event ){
 				alert( "Failed to save due to a database error: " + event.target.errorCode );
 			};
+			// Preload the deck list for future use
+			context.loadList();
+			
+			// Invoke the callback function
 			callback();
 		};
 		
@@ -1147,6 +1153,9 @@ function Storage( callback, deck ){
 		};
 		request.onsuccess = function( event ){
 		
+			// Mark the deck list dirty if needed
+			context.decklistDirty = true;
+		
 			// Invoke the callback when save is done
 			callback( request.result );
 			
@@ -1177,6 +1186,9 @@ function Storage( callback, deck ){
 			alert( "Failed to delete due to request error: " + event.target.errorCode );
 		};
 		request.onsuccess = function( event ){
+		
+			// Mark the deck list dirty
+			context.decklistDirty = true;
 		
 			// Invoke the callback once the entry is deleted
 			callback( request.result );
@@ -1217,12 +1229,12 @@ function Storage( callback, deck ){
 	};
 
 	// Gather a list of stored decks and send it to the callback function
-	this.loadList = function lostList( callback, refresh ){
+	this.loadList = function loadList( callback ){
 		callback = callback || function(){};
 	
 		// Used the cached deck list unless specified otherwise
-		if ( context.decks.length && !refresh )
-			return context.decks;
+		if ( !context.decklistDirty )
+			callback( context.folders );
 	
 		// Produce a user facing error if the database is gone
 		if ( !context.database ){
@@ -1237,19 +1249,32 @@ function Storage( callback, deck ){
 		}
 		
 		// Recurse over the database gathering deck names
-		context.decks = [];
+		context.decks = {};
+		context.folders = {};
 		var store = trans.objectStore( "decks" );
 		store.openCursor().onsuccess = function( event ){
 			var cursor = event.target.result;
 			if ( cursor ){
 				
-				// Record each deck's key and organization folder
-				context.decks.push( { name:cursor.key, folder:cursor.value.folder } );
+				if ( cursor.key != "AUTOSAVE" ){
+					
+					// Record each deck's key and organization folder
+					var folder = cursor.value.folder || "General";
+					context.decks[ cursor.key ] = { name:cursor.key, folder:folder };
+					
+					// Build the folder structure for the decks
+					if ( !context.folders[ folder ] ) context.folders[ folder ] = {};
+					context.folders[ folder ][ cursor.key ] = context.decks[ cursor.key ];
+					
+				}
+				
 				cursor.continue();
 			}
 			// When all decks have been evaluated, send the list to the callback
-			else
-				callback( context.decks );
+			else{
+				context.decklistDirty = false;
+				callback( context.folders );
+			}
 		};
 	
 	};
@@ -1458,3 +1483,70 @@ function showCredits(){
 	} );
 	
 }
+
+// Warn the user about overwrite before importing
+function loadWarn( deckName ){
+	
+	DECK.dialog.show( {
+		title:"Load Deck",
+		body:"Loading a deck will replace all cards currently in your deck list. Would you like to proceed?",
+		allowClose:false,
+		confirm:{ callback:function(){
+			DECK.storage.loadDeck( deckName, DECK.load );
+			DECK.dialog.hide();
+		} },
+		cancel:{}
+	} );
+	
+}
+
+// Open up a deck browser so the user can load a deck
+function showDeckList(){
+	
+	// Get the folder list from storage
+	DECK.storage.loadList( function( folders ){
+		
+		// Sort the folder list alphabetically
+		var sortedFolders = [];
+		for ( var folderName in folders )
+			sortedFolders.push( folderName );
+		sortedFolders.sort();
+		
+		// Build the HTML string for the folder list
+		var code = '<span class="folderList">';
+		if ( sortedFolders.length ){
+			for ( var f = 0; f <  sortedFolders.length; f++ ){
+				var decks = folders[ sortedFolders[ f ] ];
+				code += sortedFolders[ f ] + '<img class="folderIcon" src="images/open.svg"><ul>';
+				
+				// Sort the deck lists in each folder
+				var sortedDecks = [];
+				for ( var deckName in decks )
+					sortedDecks.push( deckName );
+				sortedDecks.sort();
+				
+				// Add the deck links to the list
+				for ( var d = 0; d < sortedDecks.length; d++ ){
+					code += '<li><a onclick="loadWarn( \'' + sortedDecks[ d ] + '\' )" title="Load Deck">' + sortedDecks[ d ] + "</a>"
+					code += '<a class="deleteDeck" onclick="DECK.storage.remove( \'' + sortedDecks[ d ] + '\', showDeckList );" title="Delete Deck"><span>&#215;</span></a></li>';
+				}
+				code += "</ul>";
+			}
+		}
+		else{
+			code += "No saved decks available.";
+		}
+		code += "</span>";
+		
+		// Show a dialog box with the folder tree in it
+		DECK.dialog.show( {
+			title:"Open Deck",
+			body:code,
+			allowClose:true
+		} );		
+		
+	} );
+	
+}
+
+

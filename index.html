@@ -80,7 +80,7 @@
 					<span class="filterGroup deckFormat"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><br>
 					<div class="buttonHolder">
 						<a class="imageButton" onclick="DECK.save();" title="Save Changes"><img src="images/save.svg" /></a>
-						<a class="imageButton disabled" onclick="exportList( DECK );" title="Load Deck"><img src="images/open.svg" /></a>
+						<a class="imageButton" onclick="showDeckList();" title="Saved Decks"><img src="images/open.svg" /></a>
 						<a class="imageButton" onclick="exportList( DECK );" title="Download Deck List"><img src="images/down.svg" /></a>
 						<a class="imageButton" onclick="document.getElementById( 'fileSelect' ).click();" title="Import Deck List"><img src="images/up.svg" />
 							<input style="display:none;" id="fileSelect" onchange="importWarn( this );" type="file" />

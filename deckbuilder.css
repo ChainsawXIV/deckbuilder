@@ -593,6 +593,64 @@ html,body,div,span,input,select,table,img{
 	width:80%;
 }
 
+.interstitial .dialogBody a{
+	color:#6688dd;
+	text-decoration:none;
+}
+.interstitial .dialogBody a:visited{
+	color:#6688dd;
+}
+.interstitial .dialogBody a:hover{
+	color:#7799ee;
+}
+
+.interstitial .folderList a{
+	cursor:pointer;
+}
+.interstitial .folderList .folderIcon{
+	position:relative;
+	height:1em;
+	top:0.15em;
+	margin-right:0.2em;
+	float:left;
+}
+.interstitial .folderList ul{
+	margin-top:0.0em;
+	list-style:none;
+	padding-left:0em;
+}
+.interstitial .folderList li{
+	padding-left:1em;
+}
+.interstitial .folderList li:nth-of-type(odd){
+	background-color:rgba(0,0,0,0.2);
+}
+.interstitial .folderList .deleteDeck{
+	position:relative;
+	top:0.15em;
+	display:inline-block;
+	height:1em;
+	width:1em;
+	background-color:#aa2222;
+	border:1px solid #880000;
+	color:#660000;
+	border-radius:1em;
+	float:left;
+	margin-right:0.2em;
+}
+.interstitial .folderList .deleteDeck:hover{
+	background-color:#bb3333;
+	border-color:#991111;
+	color:#771111;
+}
+.interstitial .folderList .deleteDeck span{
+	position:relative;
+	top:-0.43em;
+	left:0.03em;
+	font-weight:700;
+	font-size:1.5em;
+}
+
 /* About Section */
 
 .about{
@@ -610,13 +668,3 @@ html,body,div,span,input,select,table,img{
 	cursor:pointer;
 }
 
-.interstitial .dialogBody a{
-	color:#6688dd;
-	text-decoration:none;
-}
-.interstitial .dialogBody a:visited{
-	color:#6688dd;
-}
-.interstitial .dialogBody a:hover{
-	color:#7799ee;
-}
