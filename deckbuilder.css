@@ -577,3 +577,31 @@ html,body,div,span,input,select,table,img{
 .interstitial[cancel="0"] .cancelButton{
 	display:none;
 }
+
+/* About Section */
+
+.about{
+	position:absolute;
+	bottom:0.4em;
+	right:2em;
+	z-index:100;
+	border:1px solid black;
+	border-bottom:none;
+	border-radius:0.2em 0.2em 0em 0em;
+	padding:0.35em 0.7em;
+	background-color:#444;
+	font-weight:600;
+	font-size:0.9em;	
+	cursor:pointer;
+}
+
+.interstitial .dialogBody a{
+	color:#6688dd;
+	text-decoration:none;
+}
+.interstitial .dialogBody a:visited{
+	color:#6688dd;
+}
+.interstitial .dialogBody a:hover{
+	color:#7799ee;
+}
