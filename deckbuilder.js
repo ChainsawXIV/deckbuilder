@@ -15,6 +15,7 @@ function Deck( container, callback ){
 	this.formatElement = container.querySelector( ".deckFormat select" );
 	this.issuesElement = container.querySelector( ".deckIssues" );
 	this.masterTable = container.querySelector( ".masterTable" );
+	this.loadedFrom = null;
 	this.cards = {};
 	this.format = "";
 	this.name = "";
@@ -309,9 +310,9 @@ function Deck( container, callback ){
 	};
 	
 	// Save the deck to a named slot in local
-	this.save = function save(){
+	this.save = function save( overwrite ){
 	
-		context.storage.save( context.bundle() );
+		context.storage.save( context.bundle(), null, overwrite );
 	
 	}
 	
@@ -325,6 +326,9 @@ function Deck( container, callback ){
 	// Load the deck from a provided data bundle
 	this.load = function load( bundle ){
 
+		// Note which record the deck was loaded from
+		context.loadedFrom = bundle.name;
+	
 		// Recover the deck name from the bundle
 		context.name = bundle.name;
 		if ( bundle.tempName && context.name == "AUTOSAVE" ) context.name = bundle.tempName;
@@ -1085,7 +1089,7 @@ function Storage( callback, deck ){
 	};
 
 	// Write a deck to the database, overwriting existing entry if any
-	this.save = function save( deck, callback ){
+	this.save = function save( deck, callback, overwrite ){
 		callback = callback || function(){};
 	
 		// Produce a user facing error if database is disconnected
@@ -1113,6 +1117,21 @@ function Storage( callback, deck ){
 			return;
 		}
 		
+		// Prompt the user for confirmation before stomping saves
+		if ( !overwrite && context.deck.name != context.deck.loadedFrom && context.decks[ context.deck.name ] ){
+			context.deck.dialog.show( {
+				title:"Save Deck",
+				body:"A deck with this name already exists and will be overwritten if you proceed with saving. Continue?",
+				allowClose:false,
+				confirm:{ callback:function(){ 
+					context.deck.save( true );
+					context.deck.loadedFrom = context.deck.name;
+				} },
+				cancel:{}
+			} );
+			return;
+		}
+
 		// Initialize the transaction and report any errors
 		var trans = context.database.transaction( [ "decks" ], "readwrite" );
 		trans.onerror = function( event ){
