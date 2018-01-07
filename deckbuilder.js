@@ -110,7 +110,10 @@ function Deck( container, callback ){
 								opt.innerHTML = name;
 								context.folderList.appendChild( opt );
 								opt.selected = "selected";
-							} }
+							} },
+							onLoad:function( dialog ){
+								dialog.querySelector( ".nameInput" ).focus();
+							}
 						} );
 					} );
 					
@@ -1159,7 +1162,10 @@ function Storage( callback, deck ){
 					context.deck.dialog.hide();
 					context.deck.autoSave();
 					context.deck.save();
-				} }
+				} },
+				onLoad:function( dialog ){
+					dialog.querySelector( ".nameInput" ).focus();
+				}
 			} );
 			return;
 		}
@@ -1412,9 +1418,14 @@ function DialogBox( container ){
 			context.onClose = options.onClose;
 		else
 			context.onClose = function(){};
-	
+		
 		// Show the dialog box
 		context.container.style.display = 'table';
+
+		// Run any on-load function for the dialog box
+		if ( options.onLoad )
+			options.onLoad( context.container );
+	
 		
 	};
 	
