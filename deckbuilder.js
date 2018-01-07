@@ -92,7 +92,7 @@ function Deck( container, callback ){
 			
 		}
 	};
-	request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/data.json", true );
+	request.open( "GET", "https://deckmaven.com/data.json", true );
 	request.send();	
 	
 
