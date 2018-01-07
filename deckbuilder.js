@@ -1361,6 +1361,23 @@ function DialogBox( container ){
 		context.onClose();
 	} );
 	
+	// Listen for keyboard shortcuts to confirm and cancel
+	document.addEventListener( "keyup", function( e ){
+		
+		// Ignore this if the dialog box isn't open
+		if ( context.container.style.display == "none" )
+			return;
+		
+		// Listen for escape for the cancel button
+		if ( e.keyCode == 27 )
+			context.cancelButton.click();
+		
+		// Listen for enter for the confirm button
+		else if ( e.keyCode == 13 )
+			context.confirmButton.click();
+		
+	} );
+	
 	/* BASIC CONTROL METHODS */
 	
 	// Show the dialog box with the specified options
