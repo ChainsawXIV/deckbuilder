@@ -88,7 +88,7 @@ function Deck( container, callback ){
 					
 				} );
 					
-			} );
+			}, context );
 			
 		}
 	};
@@ -1041,10 +1041,11 @@ function CardList( container, template, deck ){
 }
 
 // Component class for accessing local storage DB
-function Storage( callback ){
+function Storage( callback, deck ){
 	
 	var context = this;
 	
+	this.deck = deck;
 	this.database = null;
 	this.decks = [];
 	
@@ -1095,7 +1096,20 @@ function Storage( callback ){
 		
 		// Prompt the user to name the deck before saving if needed
 		if ( !deck.name ){
-			alert( "Decks require a name in order to be saved." );
+			context.deck.dialog.show( {
+				allowClose:true,
+				title:"Save Deck",
+				body:'You must name your deck before it can be saved.<br><input type="text" class="nameInput" />',
+				cancel:{},
+				confirm:{ text:"SAVE", callback:function(){
+					var name = this.parentNode.parentNode.querySelector( ".nameInput" ).value
+					context.deck.name = name;
+					context.deck.nameElement.value = name;
+					context.deck.dialog.hide();
+					context.deck.autoSave();
+					context.deck.save();
+				} }
+			} );
 			return;
 		}
 		
@@ -1309,6 +1323,13 @@ function DialogBox( container ){
 		
 	};
 	
+	// Hide the dialog box
+	this.hide = function hide(){
+		
+		context.container.style.display = 'none';
+		
+	}
+	
 	return this;
 
 }
@@ -1339,7 +1360,7 @@ function importWarn( fileInput ){
 		body:"Importing a new deck list will replace all cards currently in your deck list. Would you like to proceed?",
 		allowClose:false,
 		confirm:{ callback:function(){ importList( input ); } },
-		cancel:{callback:function(){ input.value = "" } }
+		cancel:{ callback:function(){ input.value = "" } }
 	} );
 	
 }
