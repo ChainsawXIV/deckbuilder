@@ -281,6 +281,9 @@ function Deck( container, callback ){
 	
 		// Validate that there's a commander to remove
 		if ( context.commander ){
+			
+			// Clear the commander flag from the card
+			context.commander.commander = false;
 		
 			// Clear the commander and color identity from the deck
 			context.commander = null;
