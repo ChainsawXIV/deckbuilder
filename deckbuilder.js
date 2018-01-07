@@ -299,6 +299,17 @@ function Deck( container, callback ){
 	
 	}
 	
+	// Clear the deck list and start fresh
+	this.resetDeck = function resetDeck(){
+		
+		this.load( {
+			name:"",
+			folder:"General",
+			format:"",
+			cards:{}
+		} );
+		
+	}
 
 	/* DECK DATA METHODS */
 	

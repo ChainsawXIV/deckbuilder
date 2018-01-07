@@ -452,7 +452,7 @@ html,body,div,span,input,select,table,img{
 	border-radius:10em;
 	height:2em;
 	width:2em;
-	margin-right:0.7em;
+	margin-right:0.3em;
 }
 .deckProperties .imageButton:hover{
 	background-color:#AAA;
