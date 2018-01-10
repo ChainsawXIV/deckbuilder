@@ -747,10 +747,12 @@ function CardList( container, template, deck ){
 		
 			// Populate the card count into the element
 			if( !card.count ){
+				entry.setAttribute( "count", 0 );
 				count.setAttribute( "count", 0 );
 				count.innerHTML = 0;
 			}
 			else{
+				entry.setAttribute( "count", card.count );
 				count.setAttribute( "count", card.count );
 				count.innerHTML = card.count;
 			}
@@ -912,7 +914,7 @@ function CardList( container, template, deck ){
 				card.text = "";
 			
 			// Compose left hand section with the card image
-			list += '<tr key="' + key + '" legal="1" commander="' + commander + '"><td>';
+			list += '<tr key="' + key + '" legal="1" commander="' + commander + '" count="' + count + '"><td>';
 			list += '<a href="' + link + '" target="_blank"><img class="cardImage" src="' + image + '" onerror="this.src = \'images/cardback.jpg\'" /></a>';
 			list += '</td><td>';
 			

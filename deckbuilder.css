@@ -269,6 +269,9 @@ html,body,div,span,input,select,table,img{
 	border-collapse:collapse;
 	margin-bottom:2em;
 }
+.searchContainer .listTable tr:not([count="0"]){
+	background-color:rgba(20,80,20,0.2);
+}
 .listTable tr[commander="1"]{
 	background-color:rgba(80,20,80,0.5);
 }
