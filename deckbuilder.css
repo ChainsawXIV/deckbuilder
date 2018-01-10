@@ -242,6 +242,7 @@ html,body,div,span,input,select,table,img{
 	background-color:#888;
 	position:relative;
 	top:-0.1em;
+	user-select:none;
 }
 .navSection a:hover{
 	background-color:#AAA;
@@ -342,6 +343,7 @@ html,body,div,span,input,select,table,img{
 	position:relative;
 	top:-0.1em;
 	font-size:1.5em;
+	user-select:none;
 }
 .masterTable .listTable td:nth-of-type(3) a:hover{
 	background-color:#AAA;
@@ -426,6 +428,7 @@ html,body,div,span,input,select,table,img{
 	color:white;
 	border-radius:0.2em;
 	cursor:pointer;
+	user-select:none;
 }
 .deckProperties .deckFolder a:hover{
 	background-color:rgba(128,128,128,0.6);
@@ -693,5 +696,6 @@ html,body,div,span,input,select,table,img{
 	font-weight:600;
 	font-size:0.9em;	
 	cursor:pointer;
+	user-select:none;
 }
 
