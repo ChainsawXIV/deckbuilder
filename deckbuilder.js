@@ -791,6 +791,7 @@ function CardList( container, template, deck ){
 		
 	}
 
+	
 	/* CARD LIST HELPERS */
 	
 	// Filter the cards in the list to those that will be shown
@@ -874,7 +875,7 @@ function CardList( container, template, deck ){
 		} );
 		
 		// Send the list to be drawn
-		populateList();
+		context.setPage( 0 );
 		
 	};
 	
