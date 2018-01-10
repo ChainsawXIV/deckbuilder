@@ -394,12 +394,14 @@ html,body,div,span,input,select,table,img{
 .overviewContainer{
 	background-color:#383838;
 	width:20%;
+	position:relative;
+	overflow-x:hidden;
 }
 
 .deckProperties{
 	position:absolute;
 	top:0em;
-	width:20%;
+	width:100%;
 	height:9.35em;
 	background-color:#444;
 	border-bottom:1px solid black;
@@ -472,10 +474,11 @@ html,body,div,span,input,select,table,img{
 
 .deckData{
 	overflow-y:scroll;
+	overflow-x:hidden;
 	position:absolute;
 	top:9.35em;
 	bottom:0.5em;
-	width:20%;
+	width:100%;
 }
 .deckData .deckIssues{
 	font-weight:400;
@@ -496,7 +499,7 @@ html,body,div,span,input,select,table,img{
 .deckFooter{
 	position:absolute;
 	bottom:0em;
-	width:20%;
+	width:100%;
 	background-color:#444;
 	border-top:1px solid black;
 	height:0.4em;
