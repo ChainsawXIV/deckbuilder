@@ -906,12 +906,20 @@ function CardList( container, template, deck ){
 			var count = card.count || 0;
 			var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 			var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
-			if ( !card.multiverseid || context.deck.offline ){
+			if ( !card.multiverseid ){
 				image = 'images/cardback.jpg';
 				link = 'http://gatherer.wizards.com/Pages/Default.aspx';
 			}
 			if ( !card.text )
 				card.text = "";
+			var rarityTitle = "";
+			if ( card.rarity ){
+				if ( card.rarity == "L" ) rarityTitle = "Basic Land";
+				else if ( card.rarity == "C" ) rarityTitle = "Common";
+				else if ( card.rarity == "U" ) rarityTitle = "Uncommon";
+				else if ( card.rarity == "R" ) rarityTitle = "Rare";
+				else if ( card.rarity == "M" ) rarityTitle = "Mythic Rare";
+			}
 			
 			// Compose left hand section with the card image
 			list += '<tr key="' + key + '" legal="1" commander="' + commander + '" count="' + count + '"><td>';
@@ -923,6 +931,8 @@ function CardList( container, template, deck ){
 			if ( card.manaCost )
 				list += '<span class="cardManaCost">' + card.manaCost + '</span>';
 			list += '<span class="cardCMC">(' + card.cmc + ')</span>';
+			if ( card.rarity )
+				list += ' <span class="cardRarity" rarity="' + card.rarity + '" title="' + rarityTitle + '"></span>';
 			if ( card.userRating )
 				list += ' <span class="cardRating">\u2605' + formatRating( card.userRating ) + '</span>';
 			list += '<br><span class="cardType">' + card.type + '</span>';
