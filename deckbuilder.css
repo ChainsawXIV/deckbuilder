@@ -604,9 +604,12 @@ html,body,div,span,input,select,table,img{
 	font-weight:600;
 }
 .interstitial .dialogBody{
-	margin:0.5em 0.85em 0.2em 0.85em;
+	margin:0.5em 0.2em 0.2em 0.85em;
+	padding-right:0.65em;
 	font-weight:400;
 	text-align:left;
+	overflow-y:auto;
+	max-height:40em;
 }
 
 .interstitial .buttonHolder{
