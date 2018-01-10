@@ -95,6 +95,10 @@
 								// If there's a multiverseid record it
 								baseCard.multiverseid = setCard.multiverseid;
 								
+								// If we got a multiverseid for the card, integrate its rating
+								if ( baseCard.multiverseid && !baseCard.userRating )
+									baseCard.userRating = parseFloat( scores[ baseCard.multiverseid ] );
+								
 								// Get the printing's rarity in numeric form
 								var setRarity = 101;
 								if ( setCard.rarity == "Basic Land" ) setRarity = 1;
@@ -129,9 +133,6 @@
 						
 					}
 					
-					// If we got a multiverseid for the card, integrate its rating
-					if ( baseCard.multiverseid )
-						baseCard.userRating = parseFloat( scores[ baseCard.multiverseid ] );
 						
 					// If there's extra data for the card, integrate that
 					if ( extras[ cardName ] ){
