@@ -918,7 +918,7 @@ function CardList( container, template, deck ){
 			list += '<br><span class="cardType">' + card.type + '</span>';
 			if ( card.power !== undefined && card.toughness !== undefined )
 				list += '<span class="cardStats">(<span class="cardPower">' + card.power + '</span>/<span class="cardToughness">' + card.toughness + '</span>)</span>';
-			list += '<br><span class="cardText">' + card.text + '</span></td><td>';
+			list += '<br><span class="cardText">' + replaceBreaks( card.text ) + '</span></td><td>';
 			
 			// Compose the UI section to the right of the card entry
 			list += '<a class="add" title="Add to Deck" onclick="DECK.addCard( this.parentNode.parentNode.getAttribute(\'key\'), 1 );"><span>+</span></a>';
@@ -1102,6 +1102,13 @@ function CardList( container, template, deck ){
 	
 	}
 
+	// Replace text line breaks in a string with HTML line breaks
+	function replaceBreaks( text ){
+		
+		return text.replace( /(?:\r\n|\r|\n)/g, "<br>" );
+		
+	}
+	
 	// Format a rating to always show exactly one decimal place
 	function formatRating( value ){
 	
