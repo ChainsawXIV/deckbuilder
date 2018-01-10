@@ -38,99 +38,32 @@ function Deck( container, callback ){
 	var request = new XMLHttpRequest();
 	request.onreadystatechange = function initializeDeck(){
 		if( request.readyState == 4 ){
-		
-			context.cardData = JSON.parse( request.responseText );
-		
-			// Create an empty list for the deck
-			context.decklist = new CardList(
-				context.container.querySelector( ".deckFrame" ),
-				context.container.querySelector( ".searchFrame" ),
-				context
-			);
-			context.decklist.forceScroll = false;
 			
-			// Create the main card catalog list
-			context.catalog = new CardList( 
-				context.container.querySelector( ".searchFrame" ),
-				context.container.querySelector( ".searchFrame" ),
-				context
-			);
-			context.catalog.setCards( context.cardData );
-			
-			// Set up the general purpose dialog box
-			context.dialog = new DialogBox( context.container.querySelector( ".interstitial" ) );
-
-			// Populate the list of formats for the deck
-			var options = context.catalog.filterTypes.formats.options;
-			for ( var i = 0; i < options.length; i++ )
-				context.formatElement.innerHTML += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
+			// Set up the storage system regardless of outcome
+			context.storage = new Storage( function(){
 				
-			// Set up event listener for changing deck format
-			context.formatElement.addEventListener( "change", function changedFormat(){
-				context.setFormat( context.formatElement.value );
-			} );
-							
-			// Set up event listener for changing deck name
-			context.nameElement.addEventListener( "change", function changedName(){
-				context.name = context.nameElement.value;
-				context.autoSave();
-			} );
-			
-			// Connect to storage and load autosaved data
-			context.storage = new Storage( function initializeStorage(){
+				// If the request failed load local data instead
+				if ( request.status != 200 ){
+					
+					// Load the card catalog from local storage if able
+					context.storage.loadCatalog( function( catalog ){
+						context.cardData = catalog.cardData;
+						init();
+					} );
+					
+				}
+				// Otherwise load the card data from the file
+				else{
+					
+					// Store the card data locally for off line use
+					context.cardData = JSON.parse( request.responseText );
+					context.storage.saveCatalog( {name:"master", cardData:context.cardData } );
+					
+					// Continue with initialization
+					init()
+					
+				}
 				
-				// Populate the folder list before loading decks
-				context.storage.loadList( function loadFolders( folders ){
-					
-					// Populate the folder list
-					for ( var folderName in folders ){
-						if ( folderName != "General" )
-							context.folderList.innerHTML += '<option value="' + folderName + '">' + folderName + '</option>';
-						
-					}
-					
-					// Attach event listeners to the folder list
-					context.folderList.addEventListener( "change", function(){
-						context.folder = context.folderList.value;
-						context.autoSave();
-					} );
-					
-					// Attach event listeners to the add folder button
-					context.newFolderButton.addEventListener( "click", function(){
-						context.dialog.show( {
-							allowClose:true,
-							title:"New Folder",
-							body:'Specify a name for the new folder:<br><input type="text" class="nameInput" />',
-							cancel:{},
-							confirm:{ text:"CREATE", callback:function(){
-								var name = this.parentNode.parentNode.querySelector( ".nameInput" ).value
-								context.folder = name;
-								var opt = document.createElement( "option" );
-								opt.value = name;
-								opt.innerHTML = name;
-								context.folderList.appendChild( opt );
-								opt.selected = "selected";
-							} },
-							onLoad:function( dialog ){
-								dialog.querySelector( ".nameInput" ).focus();
-							}
-						} );
-					} );
-					
-					// Attempt to load the last WIP deck from storage
-					context.storage.loadDeck( "AUTOSAVE", function loadAutosave( bundle ){
-						
-						// Load the autosave data if it exists
-						if( bundle )
-							context.load( bundle );
-							
-						// Invoke the callback when the deck is ready
-						context.callback();
-						
-					} );
-					
-				} );
-					
 			}, context );
 			
 		}
@@ -138,7 +71,101 @@ function Deck( container, callback ){
 	request.open( "GET", "http://deckmaven.com/data.json", true );
 	request.send();	
 	
+	
+	/* MAIN INIT FUNCTIONS */
+	
+	function init(){
+	
+		// Create an empty list for the deck
+		context.decklist = new CardList(
+			context.container.querySelector( ".deckFrame" ),
+			context.container.querySelector( ".searchFrame" ),
+			context
+		);
+		context.decklist.forceScroll = false;
+		
+		// Create the main card catalog list
+		context.catalog = new CardList( 
+			context.container.querySelector( ".searchFrame" ),
+			context.container.querySelector( ".searchFrame" ),
+			context
+		);
+		context.catalog.setCards( context.cardData );
+		
+		// Set up the general purpose dialog box
+		context.dialog = new DialogBox( context.container.querySelector( ".interstitial" ) );
 
+		// Populate the list of formats for the deck
+		var options = context.catalog.filterTypes.formats.options;
+		for ( var i = 0; i < options.length; i++ )
+			context.formatElement.innerHTML += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
+			
+		// Set up event listener for changing deck format
+		context.formatElement.addEventListener( "change", function changedFormat(){
+			context.setFormat( context.formatElement.value );
+		} );
+						
+		// Set up event listener for changing deck name
+		context.nameElement.addEventListener( "change", function changedName(){
+			context.name = context.nameElement.value;
+			context.autoSave();
+		} );
+	
+		// Populate the folder list before loading decks
+		context.storage.loadList( function loadFolders( folders ){
+			
+			// Populate the folder list
+			for ( var folderName in folders ){
+				if ( folderName != "General" )
+					context.folderList.innerHTML += '<option value="' + folderName + '">' + folderName + '</option>';
+				
+			}
+			
+			// Attach event listeners to the folder list
+			context.folderList.addEventListener( "change", function(){
+				context.folder = context.folderList.value;
+				context.autoSave();
+			} );
+			
+			// Attach event listeners to the add folder button
+			context.newFolderButton.addEventListener( "click", function(){
+				context.dialog.show( {
+					allowClose:true,
+					title:"New Folder",
+					body:'Specify a name for the new folder:<br><input type="text" class="nameInput" />',
+					cancel:{},
+					confirm:{ text:"CREATE", callback:function(){
+						var name = this.parentNode.parentNode.querySelector( ".nameInput" ).value
+						context.folder = name;
+						var opt = document.createElement( "option" );
+						opt.value = name;
+						opt.innerHTML = name;
+						context.folderList.appendChild( opt );
+						opt.selected = "selected";
+					} },
+					onLoad:function( dialog ){
+						dialog.querySelector( ".nameInput" ).focus();
+					}
+				} );
+			} );
+			
+			// Attempt to load the last WIP deck from storage
+			context.storage.loadDeck( "AUTOSAVE", function loadAutosave( bundle ){
+				
+				// Load the autosave data if it exists
+				if( bundle )
+					context.load( bundle );
+					
+				// Invoke the callback when the deck is ready
+				context.callback();
+				
+			} );
+			
+		} );
+		
+	};
+
+	
 	/* DECK ACTION METHODS */
 	
 	// Add a new card to the deck
@@ -1120,7 +1147,7 @@ function Storage( callback, deck ){
 	// Connect the storage module to the database
 	this.connect = function connect( callback ){
 		callback = callback || function(){};
-		var request = indexedDB.open( "mtgdecks", 1 );
+		var request = indexedDB.open( "mtgdecks", 2 );
 
 		// Listen for and report errors
 		request.onerror = function( event ){
@@ -1130,11 +1157,18 @@ function Storage( callback, deck ){
 		request.onupgradeneeded = function( event ){
 			context.database = event.target.result;
 			if ( event.oldVersion < 1 ){
-				var store = context.database.createObjectStore( "decks", { keyPath:"name" } );
-				store.createIndex( "folder", "folder", { unique: false } );
+				
+				// First time database configuration
+				var deckStore = context.database.createObjectStore( "decks", { keyPath:"name" } );
+				deckStore.createIndex( "folder", "folder", { unique: false } );
+				var cardStore = context.database.createObjectStore( "cards", { keyPath:"name" } );
+				
 			}
-			else{
-				// Future schema upgrade code goes here
+			else if( event.oldVersion < 2 ){
+				
+				// Database configuration update for returning users
+				var cardStore = context.database.createObjectStore( "cards", { keyPath:"name" } );
+				
 			}
 		};
 		// Execute the callback when connection is ready
@@ -1224,6 +1258,37 @@ function Storage( callback, deck ){
 	
 	};
 
+	// Save the master card catalog for offline use
+	this.saveCatalog = function saveCatalog( catalog, callback ){
+		callback = callback || function(){};
+	
+		// Produce a user facing error if database is disconnected
+		if ( !context.database ){
+			alert( "No database available to save catalog to." );
+			return;
+		}		
+		
+		// Initialize the transaction and report any errors
+		var trans = context.database.transaction( [ "cards" ], "readwrite" );
+		trans.onerror = function( event ){
+			alert( "Failed to save catalog due to a transaction error: " + event.target.errorCode );
+		}
+		
+		// Save the deck data to the database
+		var store = trans.objectStore( "cards" );
+		var request = store.put( catalog );
+		request.onerror = function( event ){
+			alert( "Failed to save catalog due to request error: " + event.target.errorCode );
+		};
+		request.onsuccess = function( event ){
+		
+			// Invoke the callback when save is done
+			callback( request.result );
+			
+		}
+		
+	};
+	
 	// Delete a deck from the database
 	this.remove = function remove( deckName, callback ){
 		callback = callback || function(){};
@@ -1289,6 +1354,37 @@ function Storage( callback, deck ){
 	
 	};
 
+	// Load the master card catalog from local data
+	this.loadCatalog = function loadDeck( callback ){
+		var callback = callback || function(){};
+
+		// Produce a user facing error if the database is gone
+		if ( !context.database ){
+			alert( "No database available to load catalog from." );
+			return;
+		}
+
+		// Initialize the transaction and report any errors
+		var trans = context.database.transaction( [ "cards" ], "readonly" );
+		trans.onerror = function( event ){
+			alert( "Failed to load catalog due to a transaction error: " + event.target.errorCode );
+		}
+		
+		// Request the specified deck's data from the database
+		var store = trans.objectStore( "cards" );
+		var request = store.get( "master" );
+		request.onerror = function( event ){
+			alert( "Failed to load catalog due to request error: " + event.target.errorCode );
+		};
+		request.onsuccess = function( event ){
+		
+			// Invoke the callback, passing the deck data to it
+			callback( request.result );
+			
+		}
+	
+	};
+	
 	// Gather a list of stored decks and send it to the callback function
 	this.loadList = function loadList( callback ){
 		callback = callback || function(){};
