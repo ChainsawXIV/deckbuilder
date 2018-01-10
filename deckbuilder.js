@@ -25,6 +25,7 @@ function Deck( container, callback ){
 	this.minCards = -1;
 	this.maxCards = -1;
 	this.commander = null;
+	this.offline = false;
 	this.identity = ["W","U","B","R","G"];
 	this.formats = {
 		default:{ minCards:60 },
@@ -44,6 +45,9 @@ function Deck( container, callback ){
 				
 				// If the request failed load local data instead
 				if ( request.status != 200 ){
+					
+					// Flag us as working in offline mode
+					context.offline = true;
 					
 					// Load the card catalog from local storage if able
 					context.storage.loadCatalog( function( catalog ){
@@ -900,7 +904,7 @@ function CardList( container, template, deck ){
 			var count = card.count || 0;
 			var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 			var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
-			if ( !card.multiverseid ){
+			if ( !card.multiverseid || context.deck.offline ){
 				image = 'images/cardback.jpg';
 				link = 'http://gatherer.wizards.com/Pages/Default.aspx';
 			}
