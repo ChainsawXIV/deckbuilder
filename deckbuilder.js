@@ -913,7 +913,7 @@ function CardList( container, template, deck ){
 			
 			// Compose left hand section with the card image
 			list += '<tr key="' + key + '" legal="1" commander="' + commander + '"><td>';
-			list += '<a href="' + link + '" target="_blank"><img class="cardImage" src="' + image + '" /></a>';
+			list += '<a href="' + link + '" target="_blank"><img class="cardImage" src="' + image + '" onerror="this.src = \'images/cardback.jpg\'" /></a>';
 			list += '</td><td>';
 			
 			// Compose the card entry with its various data fields
