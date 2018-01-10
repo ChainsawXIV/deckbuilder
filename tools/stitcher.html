@@ -39,7 +39,7 @@
 						if ( loaded >= started ) stitch();
 					}
 				};
-				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/tools/cards.json", true );
+				request.open( "GET", "http://deckmaven.com/tools/cards.json", true );
 				request.send();
 				started++;
 			}
@@ -53,7 +53,7 @@
 						if ( loaded >= started ) stitch();
 					}
 				};
-				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/tools/sets.json", true );
+				request.open( "GET", "http://deckmaven.com/tools/sets.json", true );
 				request.send();		
 				started++;
 			}
@@ -67,7 +67,7 @@
 						if ( loaded >= started ) stitch();
 					}
 				};
-				request.open( "GET", "https://chainsawxiv.github.io/deckbuilder/tools/scores.json", true );
+				request.open( "GET", "http://deckmaven.com/tools/scores.json", true );
 				request.send();
 				started++;
 			}
@@ -77,58 +77,103 @@
 				var cardCount = Object.keys( cards ).length;
 				var progressCount = 0;
 				
+				// Iterate through all the cards in the game
 				for ( var cardName in cards ){
 					var baseCard = cards[ cardName ];
-					var set = baseCard.printings[ 0 ];
+					
+					// For each card, look through all of its printings
 					for ( var s = 0; s < baseCard.printings.length; s++ ){
-						set = baseCard.printings[ s ];
-						badSets = [ "ATH", "ITP", "DKM", "RQS", "DPA" ];
-						if ( !set.match( /p[\w]+/ ) && badSets.indexOf( set ) < 0 )
-							break;
+						var set = baseCard.printings[ s ];
+						var setCards = sets[ set ].cards;
+						
+						// For each printing, find the card within that set's data
+						var minRarity = 100;
+						for ( var c = 0; c < setCards.length; c++ ){
+							if ( setCards[ c ].name == cardName ){
+								var setCard = setCards[ c ];
+							
+								// If there's a multiverseid record it
+								baseCard.multiverseid = setCard.multiverseid;
+								
+								// Get the printing's rarity in numeric form
+								var setRarity = 101;
+								if ( setCard.rarity == "Basic Land" ) setRarity = 1;
+								else if ( setCard.rarity == "Common" ) setRarity = 2;
+								else if ( setCard.rarity == "Uncommon" ) setRarity = 3;
+								else if ( setCard.rarity == "Rare" ) setRarity = 4;
+								else if ( setCard.rarity == "Mythic Rare" ) setRarity = 5;
+								
+								// Record the card's lowest rarity and corresponding set
+								if ( !baseCard.rarity || setRarity < minRarity ){
+									
+									// Update the minimum rarity number
+									minRarity = setRarity;
+									
+									// Save rarity in short form
+									if ( setRarity == 1 ) baseCard.rarity = "L";
+									else if ( setRarity == 2 ) baseCard.rarity = "C";
+									else if ( setRarity == 3 ) baseCard.rarity = "U";
+									else if ( setRarity == 4 ) baseCard.rarity = "R";
+									else if ( setRarity == 5 ) baseCard.rarity = "M";
+									
+									// Save the set abbreviation for the rarity
+									baseCard.set = set;
+									
+								}
+								
+								// Done with this set for this card
+								break;
+							
+							}
+						}
+						
 					}
 					
-					var setCards = sets[ set ].cards;
-					for ( var i = 0; i < setCards.length; i++ ){
-						var setCard = setCards[ i ];
-						if ( setCard.name == cardName ){
-							if ( extras[ cardName ] ){
-								for ( var key in extras[ cardName ] )
-									baseCard[ key ] = extras[ cardName ][ key ];
-							}
-							baseCard.multiverseid = setCard.multiverseid;
-							if ( baseCard.multiverseid )
-								baseCard.userRating = parseFloat( scores[ baseCard.multiverseid ] );
-							baseCard.rarity = setCard.rarity;
-							delete baseCard[ "imageName" ];
-							delete baseCard[ "printings" ];
-							delete baseCard[ "rulings" ];
-							if ( baseCard.colors ){
-								for ( var c = 0; c < baseCard.colors.length; c++ ){
-									if ( baseCard.colors[ c ] == "White" ) baseCard.colors[ c ] = "W";
-									else if ( baseCard.colors[ c ] == "Black" ) baseCard.colors[ c ] = "B";
-									else if ( baseCard.colors[ c ] == "Red" ) baseCard.colors[ c ] = "R";
-									else if ( baseCard.colors[ c ] == "Blue" ) baseCard.colors[ c ] = "U";
-									else if ( baseCard.colors[ c ] == "Green" ) baseCard.colors[ c ] = "G";
-								}
-							}
-							if ( baseCard.legalities ){
-								for ( var f = 0; f < baseCard.legalities.length; f++ ){
-									if ( baseCard.legalities[ f ].legality == "Legal" || baseCard.legalities[ f ].legality == "Restricted" ){
-										baseCard.formats = baseCard.formats || [];
-										baseCard.formats.push( baseCard.legalities[ f ].format );
-									}
-									if ( baseCard.legalities[ f ].legality == "Restricted" ){
-										baseCard.restricted = baseCard.restricted || [];
-										baseCard.restricted.push( baseCard.legalities[ f ].format );
-									}
-								}
-								delete baseCard[ "legalities" ];
-							}
-							progressCount++;
-							document.body.innerHTML = "Stitching " + progressCount + "/" + cardCount + "(" + ( Math.floor( progressCount / cardCount * 100 ) ) + "%)";
-							break;
+					// If we got a multiverseid for the card, integrate its rating
+					if ( baseCard.multiverseid )
+						baseCard.userRating = parseFloat( scores[ baseCard.multiverseid ] );
+						
+					// If there's extra data for the card, integrate that
+					if ( extras[ cardName ] ){
+						for ( var key in extras[ cardName ] )
+							baseCard[ key ] = extras[ cardName ][ key ];
+					}
+					
+					// Remove unwanted data from the data set
+					delete baseCard[ "imageName" ];
+					delete baseCard[ "printings" ];
+					delete baseCard[ "rulings" ];
+					
+					// Convert card colors to same compact format as color identity
+					if ( baseCard.colors ){
+						for ( var c = 0; c < baseCard.colors.length; c++ ){
+							if ( baseCard.colors[ c ] == "White" ) baseCard.colors[ c ] = "W";
+							else if ( baseCard.colors[ c ] == "Black" ) baseCard.colors[ c ] = "B";
+							else if ( baseCard.colors[ c ] == "Red" ) baseCard.colors[ c ] = "R";
+							else if ( baseCard.colors[ c ] == "Blue" ) baseCard.colors[ c ] = "U";
+							else if ( baseCard.colors[ c ] == "Green" ) baseCard.colors[ c ] = "G";
 						}
 					}
+
+					// Compact the card's legality information
+					if ( baseCard.legalities ){
+						for ( var f = 0; f < baseCard.legalities.length; f++ ){
+							if ( baseCard.legalities[ f ].legality == "Legal" || baseCard.legalities[ f ].legality == "Restricted" ){
+								baseCard.formats = baseCard.formats || [];
+								baseCard.formats.push( baseCard.legalities[ f ].format );
+							}
+							if ( baseCard.legalities[ f ].legality == "Restricted" ){
+								baseCard.restricted = baseCard.restricted || [];
+								baseCard.restricted.push( baseCard.legalities[ f ].format );
+							}
+						}
+						delete baseCard[ "legalities" ];
+					}
+
+					// Update the progress display
+					progressCount++;
+					document.body.innerHTML = "Stitching " + progressCount + "/" + cardCount + "(" + ( Math.floor( progressCount / cardCount * 100 ) ) + "%)";
+
 				}
 				
 				document.body.innerHTML = "Conversion complete."
