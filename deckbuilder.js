@@ -238,6 +238,9 @@ function Deck( container, callback ){
 		context.format = format;
 		if ( !context.formats[ format ] ) format = "default";
 		
+		// If the new format isn't commander, remove the commander
+		context.clearCommander();
+		
 		// Set the min and max card counts from the format data
 		context.minCards = context.formats[ format ].minCards || -1;
 		context.maxCards = context.formats[ format ].maxCards || -1;
