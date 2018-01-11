@@ -24,6 +24,7 @@ function Deck( container, callback ){
 	this.folder = "General";
 	this.minCards = -1;
 	this.maxCards = -1;
+	this.count = 0;
 	this.commander = null;
 	this.offline = false;
 	this.identity = ["W","U","B","R","G"];
@@ -563,6 +564,7 @@ function Deck( container, callback ){
 
 		var issues = [];
 		var legal = 1;
+		context.count = 0;
 	
 		// Check the legality of each of the cards in the deck
 		for ( var cardName in context.cards ){
@@ -575,6 +577,8 @@ function Deck( container, callback ){
 				legal = false;
 				issues.push( card.issue );
 			}
+			// Tally the card count while we're here
+			context.count += card.count;
 		}
 
 		// Validate that commander decks have a proper commander
@@ -600,14 +604,13 @@ function Deck( container, callback ){
 		}
 		
 		// If a minimum card count is specified, check against it
-		var count = Object.keys( context.cards ).length;
-		if ( context.minCards > 0 && count < context.minCards ){
+		if ( context.minCards > 0 && context.count < context.minCards ){
 			legal = 0;
 			issues.push( "Deck must contain at least " + context.minCards + " cards." );
 		}
 		
 		// If a maximum card count is specified, check against it
-		if ( context.maxCards > 0 && count > context.maxCards ){
+		if ( context.maxCards > 0 && context.count > context.maxCards ){
 			legal = 0;
 			issues.push( "Deck may contain at most " + context.maxCards + " cards." );
 		}
