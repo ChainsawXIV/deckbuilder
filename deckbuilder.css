@@ -272,10 +272,12 @@ html,body,div,span,input,select,table,img{
 .searchContainer .listTable tr:not([count="0"]){
 	background-color:rgba(20,80,20,0.2);
 }
-.listTable tr[commander="1"]{
+.searchContainer .listTable tr[commander="1"],
+.deckContainer .listTable tr[commander="1"]{
 	background-color:rgba(80,20,80,0.5);
 }
-.listTable tr[legal="0"]{
+.searchContainer .listTable tr[legal="0"],
+.deckContainer .listTable tr[legal="0"]{
 	background-color:rgba(80,20,20,0.5);
 }
 
