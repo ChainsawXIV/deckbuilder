@@ -1113,11 +1113,23 @@ function CardList( container, template, deck ){
 	// Replace {*} markers in text with appropriate symbol images				
 	function replaceSymbols( text ){
 		
-		return text.replace( /\{([\w\d]+)\}/g, function( match, p1 ){
+		return text.replace( /\{([\w\d\/]+)\}/g, function( match, p1 ){
+			
 			// The image name for the tap symbol doesn't follow the normal pattern
 			if ( p1 == "T" ) p1 = "tap";
+			
+			// The image name for the snow symbol doesn't follow the normal pattern
+			if ( p1 == "S" ) p1 = "snow";
+			
+			// The image name for the untap symbol doesn't follow the normal pattern
+			if ( p1 == "Q" ) p1 = "untap";
+			
+			// Remove the slashes form hybrid mana symbols
+			p1 = p1.replace( /\//g, "" );
+			
 			// Typically the image name is just the string in the marker code
 			return '<img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=' + p1 + '&type=symbol" />';
+			
 		} );
 	
 	}
