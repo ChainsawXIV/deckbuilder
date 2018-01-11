@@ -728,7 +728,7 @@ function CardList( container, template, deck ){
 	this.setPage = function setPage( page ){
 	
 		// Constrain the view to pages which actually exist
-		context.currentPage = Math.max( 0, Math.min( page, context.pageCount ) );
+		context.currentPage = Math.max( 0, Math.min( page, context.pageCount - 1 ) );
 		
 		// Redraw the list with the proper cards in view
 		populateList( true );
