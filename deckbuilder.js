@@ -1732,6 +1732,7 @@ function importList( fileInput ){
 				// Dig the card name out from between other information
 				var cardName = rows[ i ].match( /(?:^[\d]+x[\s]+|^)([^\*$]+)/ )[ 1 ];
 				cardName = cardName.replace( /[\r\n]+/g, '' );
+				cardName = cardName.replace( /[\s]+$/, '' );
 				bundle.cards[ cardName ] = { name:cardName, count:1 };
 				
 				// Get the quantity of the card if it's specified
