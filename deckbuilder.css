@@ -524,6 +524,23 @@ html,body,div,span,input,select,table,img{
 	background-color:rgba(255,0,0,0.1);
 }
 
+.deckData .deckMetrics{
+	padding-left:0.5em;
+	font-weight:400;
+	margin-bottom:1em;
+}
+.deckData .deckMetrics ul{
+	margin-top:0.3em;
+	margin-bottom:0.5em;
+	list-style:none;
+	padding-left:0.5em;
+}
+.deckData .deckMetrics img{
+	height:1em;
+	position:relative;
+	top:0.15em;
+}
+
 .deckFooter{
 	position:absolute;
 	bottom:0em;

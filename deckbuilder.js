@@ -16,6 +16,7 @@ function Deck( container, callback ){
 	this.folderList = container.querySelector( ".deckFolder select" );
 	this.newFolderButton = container.querySelector( ".deckFolder a" );
 	this.issuesElement = container.querySelector( ".deckIssues" );
+	this.metricsElement = container.querySelector( ".deckMetrics" );
 	this.masterTable = container.querySelector( ".masterTable" );
 	this.loadedFrom = "AUTOSAVE";
 	this.cards = {};
@@ -194,6 +195,9 @@ function Deck( container, callback ){
 		// Update counts and state on all card lists
 		context.validateCard( cardName );
 		
+		// Update the deck metrics for the change
+		context.updateMetrics();
+		
 		// Save the changes to the deck
 		context.autoSave();
 		
@@ -230,6 +234,9 @@ function Deck( container, callback ){
 		
 		// Update the state of the card as needed
 		context.validateCard( cardName );
+		
+		// Update the deck metrics for the change
+		context.updateMetrics();
 		
 		// Save the changes to the deck
 		context.autoSave();
@@ -349,6 +356,7 @@ function Deck( container, callback ){
 		
 	}
 
+
 	/* DECK DATA METHODS */
 	
 	// Create a text deck list in the standard format
@@ -456,6 +464,9 @@ function Deck( container, callback ){
 		
 		// Update the counts and states in the card lists
 		context.validateDeck( true );
+		
+		// Update the deck stats
+		context.updateMetrics();
 		
 		// Save the changes to the deck
 		context.autoSave();
@@ -633,6 +644,63 @@ function Deck( container, callback ){
 		
 		return legal;
 	
+	}
+	
+	
+	/* DECK METRICS METHODS */
+	
+	this.updateMetrics = function updateMetrics(){
+		
+		var content = '';
+		
+		// Display the number of cards in the deck
+		content += "Card Count: " + context.count + "<br>";
+
+		// Count the number of cards with each color and casting cost
+		var mix = {W:0,U:0,B:0,R:0,G:0,C:0};
+		var costs = {};
+		for( var cardName in context.cards ){
+			var card = context.cards[ cardName ];
+			
+			// Count each color if the card has any
+			if ( card.colorIdentity ){
+				for ( var i = 0; i < card.colorIdentity.length; i++ )
+					mix[ card.colorIdentity[ i ] ] += card.count;
+			}
+			// If it has none then count it colorless
+			else
+				mix.C += card.count;
+			
+			// Count each casting cost
+			if ( !costs[ card.cmc ] )
+				costs[ card.cmc ] = card.count;
+			else
+				costs[ card.cmc ] += card.count;
+			
+		}
+		
+		// Display the color identity mix 
+		content += "<u>Color Mix</u><ul>";
+		var words = {W:"White",U:"Blue",B:"Black",R:"Red",G:"Green",C:"Colorless"};
+		for ( var color in mix ){
+			if ( mix[ color ] > 0 ){
+				var url = "http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + color + "&type=symbol";
+				content += '<li class="' + color + '"><img src="' + url + '"> ' + mix[ color ] + " Cards (" + ( Math.round( mix[ color ] / context.count * 100 ) ) + "% of Deck)</li>";
+			}
+		}
+		content += "</ul>"
+		
+		// Display the casting cost mix
+		content += "<u>Mana Curve</u><ul>";
+		for ( var cost in costs ){
+			var url = "http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + cost + "&type=symbol";
+			content += '<li><img src="' + url + '"> ' + costs[ cost ] + " Cards (" + ( Math.round( costs[ cost ] / context.count * 100 ) ) + "% of Deck)</li>";
+		}
+		content += "</ul>";
+		
+		// Put the content into its container
+		context.metricsElement.innerHTML = content;
+		
 	}
 	
 	
