@@ -455,8 +455,8 @@ function Deck( container, callback ){
 				missingCards.push( cardName );
 		}
 			
-		// Designate the commander if specified
-		if ( bundle.commander )
+		// Designate the commander if specified and exists
+		if ( bundle.commander && context.cards[ bundle.commander ] )
 			context.setCommander( keyFromName( bundle.commander ) );
 
 		// Propagate the changes to the card lists
