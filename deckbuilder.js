@@ -1753,14 +1753,16 @@ function importList( fileInput ){
 		var error = DECK.load( bundle );
 		
 		// If there were any unidentified cards, tell the user
-		var list = "";
-		for ( var i = 0; i < error.length; i++ )
-			list += "<li>" + error[ i ] + " was not recognized.</li>";
-		DECK.dialog.show( {
-			title:"Import Deck List",
-			body:"There were one or more issues during import:</br><ul>" + list + "</ul>",
-			allowClose:true
-		} );
+		if ( error.length ){
+			var list = "";
+			for ( var i = 0; i < error.length; i++ )
+				list += "<li>" + error[ i ] + " was not recognized.</li>";
+			DECK.dialog.show( {
+				title:"Import Deck List",
+				body:"There were one or more issues during import:</br><ul>" + list + "</ul>",
+				allowClose:true
+			} );
+		}
 		
 		// Reset the file input
 		fileInput.value = "";
