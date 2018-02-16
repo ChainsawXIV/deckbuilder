@@ -659,8 +659,23 @@ function Deck( container, callback ){
 		// Count the number of cards with each color and casting cost
 		var mix = {W:0,U:0,B:0,R:0,G:0,C:0};
 		var costs = {};
+		var spells = 0;
 		for( var cardName in context.cards ){
 			var card = context.cards[ cardName ];
+			
+			// Don't count non-spells towards costing
+			if (
+				card.types.indexOf( "Land" ) >= 0 ||
+				card.types.indexOf( "Conspiracy" ) >= 0 ||
+				card.types.indexOf( "Phenomenon" ) >= 0 ||
+				card.types.indexOf( "Plane" ) >= 0 ||
+				card.types.indexOf( "Scheme" ) >= 0 ||
+				card.types.indexOf( "Vanguard" ) >= 0
+			)
+				continue;
+			
+			// Count the number of non-land cards
+			spells++;
 			
 			// Count each color if the card has any
 			if ( card.colorIdentity ){
@@ -685,7 +700,7 @@ function Deck( container, callback ){
 		for ( var color in mix ){
 			if ( mix[ color ] > 0 ){
 				var url = "http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + color + "&type=symbol";
-				content += '<li class="' + color + '"><img src="' + url + '"> ' + mix[ color ] + " Cards (" + ( Math.round( mix[ color ] / context.count * 100 ) ) + "% of Deck)</li>";
+				content += '<li class="' + color + '"><img src="' + url + '"> ' + mix[ color ] + " Cards (" + ( Math.round( mix[ color ] / spells * 100 ) ) + "% of Spells)</li>";
 			}
 		}
 		content += "</ul>"
@@ -694,7 +709,7 @@ function Deck( container, callback ){
 		content += "<u>Mana Curve</u><ul>";
 		for ( var cost in costs ){
 			var url = "http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + cost + "&type=symbol";
-			content += '<li><img src="' + url + '"> ' + costs[ cost ] + " Cards (" + ( Math.round( costs[ cost ] / context.count * 100 ) ) + "% of Deck)</li>";
+			content += '<li><img src="' + url + '"> ' + costs[ cost ] + " Cards (" + ( Math.round( costs[ cost ] / spells * 100 ) ) + "% of Spells)</li>";
 		}
 		content += "</ul>";
 		
