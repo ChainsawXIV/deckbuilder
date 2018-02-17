@@ -830,28 +830,39 @@ function CardList( container, template, deck ){
 	};
 
 	// Update the visual state of a particular card on the list
-	this.refreshCard = function refreshCard( cardName ){
+	this.refreshCard = function refreshCard( cardName, dontRecurse ){
 	
 		// Early out if the card's not on this list
 		var card = context.cards[ cardName ];
 		if ( !card )
 			return;
 		
+		// Refresh alternate names of the same card too
+		if ( card.names && !dontRecurse ){
+			for ( var i = 0; i < card.names.length; i++ )
+				context.refreshCard( card.names[ i ], true );
+		}
+		
 		var entry = context.listElement.querySelector( 'tr[key="' + keyFromName( cardName ) + '"]' );
 		if ( entry ){
 			var count = entry.querySelector( ".cardCount" );
 			var commander = entry.querySelector( ".commanderFlag" );
 		
+			// Get the count from the primary card for multi-cards
+			var primaryCount = card.count;
+			if ( !primaryCount && card.names )
+				primaryCount = context.deck.cardData[ card.names[ 0 ] ].count;
+			
 			// Populate the card count into the element
-			if( !card.count ){
+			if( !primaryCount ){
 				entry.setAttribute( "count", 0 );
 				count.setAttribute( "count", 0 );
 				count.innerHTML = 0;
 			}
 			else{
-				entry.setAttribute( "count", card.count );
-				count.setAttribute( "count", card.count );
-				count.innerHTML = card.count;
+				entry.setAttribute( "count", primaryCount );
+				count.setAttribute( "count", primaryCount );
+				count.innerHTML = primaryCount;
 			}
 			
 			// Flag the element to style for legality
@@ -1001,6 +1012,9 @@ function CardList( container, template, deck ){
 					commander = 1;
 			}
 			var count = card.count || 0;
+			if ( !count && card.names )
+				count = context.deck.cardData[ card.names[ 0 ] ].count;
+			
 			var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 			var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
 			if ( !card.multiverseid ){
