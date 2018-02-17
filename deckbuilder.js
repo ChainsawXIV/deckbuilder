@@ -669,9 +669,18 @@ function Deck( container, callback ){
 		// Count the number of cards with each color and casting cost
 		var mix = {W:0,U:0,B:0,R:0,G:0,C:0};
 		var costs = {};
+		var types = {};
 		var spells = 0;
 		for( var cardName in context.cards ){
 			var card = context.cards[ cardName ];
+			
+			// Count each card type
+			for ( var i = 0; i < card.types.length; i++ ){
+				if ( types[ card.types[ i ] ] )
+					types[ card.types[ i ] ] += card.count;
+				else
+					types[ card.types[ i ] ] = card.count;
+			}
 			
 			// Don't count non-spells towards costing
 			if (
@@ -720,6 +729,13 @@ function Deck( container, callback ){
 		for ( var cost in costs ){
 			var url = "http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + cost + "&type=symbol";
 			content += '<li><img src="' + url + '"> ' + costs[ cost ] + " Cards (" + ( Math.round( costs[ cost ] / spells * 100 ) ) + "% of Spells)</li>";
+		}
+		content += "</ul>";
+		
+		// Display the card type mix
+		content += "<u>Card Types</u><ul>";
+		for ( var type in types ){
+			content += "<li>" + type + ": " + types[ type ] + " Cards (" + ( Math.round( types[ type ] / context.count * 100 ) ) + "% of Deck)</li>";
 		}
 		content += "</ul>";
 		
@@ -1262,7 +1278,6 @@ function CardList( container, template, deck ){
 	
 	}
 
-	
 	// Tag any text on a card in parenthesis for special formatting
 	function formatHelperText( text ){
 		
