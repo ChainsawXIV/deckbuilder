@@ -178,13 +178,23 @@ function Deck( container, callback ){
 	this.addCard = function addCard( cardKey, quantity ){
 		
 		var cardName = nameFromKey( cardKey );
+		var card = context.cardData[ cardName ];
+		
+		// If this is the back face of card add the front face instead
+		if ( card.names ){
+			if ( card.name !== card.names[ 0 ] ){
+				cardName = card.names[ 0 ];
+				card = context.cardData[ cardName ];
+			}
+		}
+		
 		// Increase quantity if card is already in the deck
 		if ( context.cards[ cardName ] )
 			context.cards[ cardName ].count += quantity;
 		// Add the card to the deck if it's not already in it
 		else{
-			if ( context.cardData[ cardName ] ){
-				context.cards[ cardName ] = context.cardData[ cardName ];
+			if ( card ){
+				context.cards[ cardName ] = card;
 				context.cards[ cardName ].count = quantity;
 			}
 		}
