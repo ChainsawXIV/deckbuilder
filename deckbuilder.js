@@ -74,7 +74,7 @@ function Deck( container, callback ){
 			
 		}
 	};
-	request.open( "GET", "http://deckmaven.com/data.json", true );
+	request.open( "GET", "https://deckmaven.com/data.json", true );
 	request.send();	
 	
 	
