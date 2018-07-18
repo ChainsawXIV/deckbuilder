@@ -501,64 +501,60 @@ function Deck( container, callback ){
 		// Always allow any number of each basic land type
 		if ( card.supertypes ){
 			if ( card.supertypes.indexOf( "Basic" ) >= 0 )
-				legal = true;
+				validCount = Number.MAX_SAFE_INTEGER;
 		}
-		// For all other card types do lots of validation...
-		else{
+
+		// Validate the card's legality in the chosen format
+		if ( context.format != "" ){
 		
-			// Validate the card's legality in the chosen format
-			if ( context.format != "" ){
-			
-				// Cards with no format information are always banned
-				if ( !card.formats ){
-					legal = false;
-					issue = card.name + " is banned.";
-				}
-				
-				// Cards not listing the chosen format are banned
-				else if ( card.formats.indexOf( context.format ) < 0 ){
-					legal = false;
-					issue = card.name + " is banned.";
-				}
-				
-				// Cards on the restricted list for a format are limited to one copy
-				else if ( card.restricted ){
-					if ( card.restricted.indexOf( context.format ) >= 0 ){
-						if ( card.count > 1 ){
-							legal = false;
-							issue = card.name + " is restricted.";
-						}
-					}
-				}
-				
+			// Cards with no format information are always banned
+			if ( !card.formats ){
+				legal = false;
+				issue = card.name + " is banned.";
 			}
 			
-			// Validate special conditions of the Commander format
-			if ( context.format == "Commander" && legal ){
+			// Cards not listing the chosen format are banned
+			else if ( card.formats.indexOf( context.format ) < 0 ){
+				legal = false;
+				issue = card.name + " is banned.";
+			}
 			
-				// Everything but basic lands are limited to one per deck
-				if ( card.count > 1 && validCount >= 0 ){
-					legal = false;
-					issue = "Too many copies of " + card.name + ".";
-				}
-				
-				// Cards must match the color identity of the commander
-				else if ( card.colorIdentity ){
-					for ( var i = 0; i < card.colorIdentity.length; i++ ){
-						if ( context.identity.indexOf( card.colorIdentity[ i ] ) < 0 ){
-							legal = false;
-							issue = card.name + " doesn't match commander's colors.";
-						}
+			// Cards on the restricted list for a format are limited to one copy
+			else if ( card.restricted ){
+				if ( card.restricted.indexOf( context.format ) >= 0 ){
+					if ( card.count > 1 ){
+						legal = false;
+						issue = card.name + " is restricted.";
 					}
 				}
-				
 			}
-			// Validate the usual card count maximum of four in other formats
-			else if ( card.count > validCount && validCount >= 0 ){
+			
+		}
+		
+		// Validate special conditions of the Commander format
+		if ( context.format == "Commander" && legal ){
+		
+			// Everything but basic lands are limited to one per deck
+			if ( card.count > 1 && validCount >= 0 ){
 				legal = false;
 				issue = "Too many copies of " + card.name + ".";
 			}
-		
+			
+			// Cards must match the color identity of the commander
+			else if ( card.colorIdentity ){
+				for ( var i = 0; i < card.colorIdentity.length; i++ ){
+					if ( context.identity.indexOf( card.colorIdentity[ i ] ) < 0 ){
+						legal = false;
+						issue = card.name + " doesn't match commander's colors.";
+					}
+				}
+			}
+			
+		}
+		// Validate the usual card count maximum of four in other formats
+		else if ( card.count > validCount && validCount >= 0 ){
+			legal = false;
+			issue = "Too many copies of " + card.name + ".";
 		}
 
 		// Flag the card with its legality and issue
