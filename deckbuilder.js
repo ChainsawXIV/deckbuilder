@@ -1159,8 +1159,11 @@ function CardList( container, template, deck ){
 				options.unshift( "" );
 				
 				// Create a set of option elements and insert them
-				for ( var i = 0; i < options.length; i++ )
-					content += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
+				var value = context.filterTypes[ field ].element.value;
+				for ( var i = 0; i < options.length; i++ ){
+					var selected = options[ i ] == value ? " selected" : "";
+					content += '<option value="' + options[ i ] + '"' + selected + '>' + options[ i ] + '</option>';	
+				}
 				context.filterTypes[ field ].element.innerHTML = content;
 			}
 		}
