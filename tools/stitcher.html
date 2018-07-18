@@ -5,11 +5,11 @@
 		<script src="filesaver.js"></script>
 		<script>
 		
-			cards = null;
 			sets = null;
-			scores = null;
-			started = 0;
-			loaded = 0;
+			cards = null;
+			startTime = null;
+			index = [];
+			cursor = -1;
 			
 			extras = {
 				"Daretti, Scrap Savant":{ legalCommander:true },
@@ -21,61 +21,30 @@
 				"Relentless Rats":{ deckLimit:-1 },
 				"Once More with Feeling":{ deckLimit:1 }
 			};
-			
-			function start(){
-				
-				getCards();
-				getSets();
-				getScores();
-				
-			}
 		
-			function getCards(){
-				var request = new XMLHttpRequest();
-				request.onreadystatechange = function(){
-					if( request.readyState == 4 ){
-						cards = JSON.parse( request.responseText );
-						loaded++;
-						if ( loaded >= started ) stitch();
-					}
-				};
-				request.open( "GET", "http://deckmaven.com/tools/cards.json", true );
-				request.send();
-				started++;
-			}
+			function build(){
+
+				document.getElementById( "report" ).innerHTML = "Starting build process...</br>";
 			
-			function getSets(){
-				var request = new XMLHttpRequest();
-				request.onreadystatechange = function(){
-					if( request.readyState == 4 ){
-						sets = JSON.parse( request.responseText );
-						loaded++;
-						if ( loaded >= started ) stitch();
-					}
-				};
-				request.open( "GET", "http://deckmaven.com/tools/sets.json", true );
-				request.send();		
-				started++;
-			}
+				// Load the set data file
+				loadJSON( document.getElementById( "sets" ), function( data ){
+					sets = data;
+					document.getElementById( "report" ).innerHTML += "Card data loaded...</br>";
+					
+					// Load the card data file
+					loadJSON( document.getElementById( "cards" ), function( data ){
+						cards = data;
+						document.getElementById( "report" ).innerHTML += "Set data loaded...</br>";
+						
+						startTime = Date.now();
+						stitch();
+						
+					} );
+				} );
 			
-			function getScores(){
-				var request = new XMLHttpRequest();
-				request.onreadystatechange = function(){
-					if( request.readyState == 4 ){
-						scores = JSON.parse( request.responseText );
-						loaded++;
-						if ( loaded >= started ) stitch();
-					}
-				};
-				request.open( "GET", "http://deckmaven.com/tools/scores.json", true );
-				request.send();
-				started++;
 			}
 			
 			function stitch(){
-			
-				var cardCount = Object.keys( cards ).length;
-				var progressCount = 0;
 				
 				// Iterate through all the cards in the game
 				for ( var cardName in cards ){
@@ -94,10 +63,6 @@
 							
 								// If there's a multiverseid record it
 								baseCard.multiverseid = setCard.multiverseid;
-								
-								// If we got a multiverseid for the card, integrate its rating
-								if ( baseCard.multiverseid && !baseCard.userRating )
-									baseCard.userRating = parseFloat( scores[ baseCard.multiverseid ] );
 								
 								// Get the printing's rarity in numeric form
 								var setRarity = 101;
@@ -130,7 +95,6 @@
 						
 					}
 					
-						
 					// If there's extra data for the card, integrate that
 					if ( extras[ cardName ] ){
 						for ( var key in extras[ cardName ] )
@@ -168,14 +132,100 @@
 						delete baseCard[ "legalities" ];
 					}
 
-					// Update the progress display
-					progressCount++;
-					document.body.innerHTML = "Stitching " + progressCount + "/" + cardCount + "(" + ( Math.floor( progressCount / cardCount * 100 ) ) + "%)";
-
 				}
 				
-				document.body.innerHTML = "Conversion complete."
-				save( cards );
+				document.getElementById( "report" ).innerHTML += "Static data compiled...</br>";
+				document.getElementById( "report" ).innerHTML += '<span id="buffer"></span></br>';
+
+				// Compile a list of cards to fetch data for
+				for( var name in cards ){
+					if( cards[ name ].multiverseid )
+						index.push( { "name":name, "mvid":cards[ name ].multiverseid } );
+				}
+				
+				// Start fetching user ratings
+				cursor = -1;
+				scrape();
+			
+			}
+			
+			function scrape(){
+			
+				// Advance to the next card to scrape
+				cursor++;
+				
+				// Update the progress display
+				var buffer = document.getElementById( "buffer" );
+				var elapsed = Date.now() - startTime;
+				var progress = cursor / index.length;
+				buffer.innerHTML = "Fetching Rating for #" + ( cursor + 1 ) + " of " + index.length + " (" + Math.floor( progress * 100 ) + "%)<br>";
+				buffer.innerHTML += "Time Elapsed: " + formatTime( elapsed ) + "<br>Time Remaining: " + formatTime( ( elapsed / progress ) - elapsed );
+				document.title = "Stitcher (" + Math.floor( cursor / index.length * 100 ) + "%)"
+				
+				// Fetch data for the card we're scraping
+				fetch( index[ cursor ] );
+				
+			}
+			
+			function fetch( card ){
+			
+				// Fetch the card's gatherer page via proxy
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = function(){
+					if( request.readyState == 4 ){
+					
+						// Extract the data we want from the page
+						extract( card, request.responseText );
+						
+					}
+				};
+				var proxy = 'https://cors-anywhere.herokuapp.com/';
+				var page = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.mvid;
+				request.open( "GET", proxy + page, true );
+				request.send();
+				
+			}
+			
+			function extract( card, pageString ){
+				
+				// Parse the page data into a document
+				var page = document.createElement( "html" );
+				page.innerHTML = pageString;
+
+				// Get the user rating data and record it
+				var value = page.querySelector( ".textRatingValue" );
+				if ( value ) cards[ card.name ].userRating = value.innerHTML;
+				
+				// Scrape for other values here as needed in the future
+				
+				// Scrape the next card or save the finished data
+				if ( cursor >= index.length + 1 )
+					save();
+				else
+					scrape();
+				
+			}
+
+			function loadJSON( input, callback ){
+			
+				// Abort if no file was selected
+				var file = input.files[ 0 ];
+				if ( file == null )
+					return;
+					
+				// Read the file provided
+				var reader = new FileReader();
+				reader.onload = function( e ){
+					
+					// Convert file contents to data
+					var data = null;
+					data = JSON.parse( e.target.result );
+					
+					// Break up data and re-save
+					callback( data );
+					
+				}
+				reader.readAsText( file );			
 			
 			}
 			
@@ -185,11 +235,36 @@
 				saveAs( blob, "data.json" );
 			
 			}
+			
+			function formatTime( msTime ){
+				
+				var sTime = msTime / 1000;
+				var hours = Math.floor( sTime / ( 60 * 60 ) );
+				var minutes = Math.floor( ( sTime % ( 60 * 60 ) ) / 60 );
+				var seconds = Math.floor( sTime % 60 );
+				return hours + ":" + padDigits( minutes, 2 ) + ":" + padDigits( seconds, 2 );
+				
+			}
+			
+			function padDigits( number, digits ){
+			
+				number = number + "";
+				while( number.length < digits )
+					number = "0" + number;
+				return number;
+				
+			}
 		
 		</script>
 	
 	</head>
-	<body onload="start();">
-		Working...
+	<body>
+	
+		Select local <a href="https://mtgjson.com/">MTG JSON</a> files to build from.<br/><br/>
+		Sets File: <input id="sets" type="file" /><br/>
+		Cards File: <input id="cards" type="file" /><br/>
+		<button id="build" onclick="build();">Build</button>
+		<div id="report"></div>
+		
 	</body>
 </html>
