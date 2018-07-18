@@ -936,7 +936,7 @@ function CardList( container, template, deck ){
 					var type = context.filterTypes[ key ].type;
 					
 					// Assume no match if the property is missing from the card
-					if ( card[ key ] === undefined )
+					if ( card[ key ] === undefined && type != "color" )
 						include = false;
 					// For text fields use a partial regex match, case insensitive
 					else if ( type == "match" && !card[ key ].match( new RegExp( fp[ key ], "im" ) ) )
@@ -950,6 +950,15 @@ function CardList( container, template, deck ){
 					// for color selections check each color for required or excluded
 					else if ( type == "color" ){
 						for ( var color in fp[ key ] ){
+							// Auto-fail if a color is required and the card has no colors
+							if ( fp[ key ][ color ] == "required" && card[ key ] === undefined ){
+								include = false;
+								break;
+							}
+							// Auto-pass if a color is excluded and the card has no colors
+							if ( fp[ key ][ color ] == "excluded" && card[ key ] === undefined ){
+								break;
+							}
 							if ( fp[ key ][ color ] == "required" && card[ key ].indexOf( color ) < 0 ){
 								include = false;
 								break;
