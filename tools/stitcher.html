@@ -9,7 +9,10 @@
 			cards = null;
 			startTime = null;
 			index = [];
-			cursor = -1;
+			cursor = 0;
+			subcursor = 0;
+			fetchCount = 0;
+			fetchGoal = 0;
 			
 			extras = {
 				"Daretti, Scrap Savant":{ legalCommander:true },
@@ -49,6 +52,7 @@
 				// Iterate through all the cards in the game
 				for ( var cardName in cards ){
 					var baseCard = cards[ cardName ];
+					baseCard.mvids = [];
 					
 					// For each card, look through all of its printings
 					for ( var s = 0; s < baseCard.printings.length; s++ ){
@@ -62,7 +66,10 @@
 								var setCard = setCards[ c ];
 							
 								// If there's a multiverseid record it
-								baseCard.multiverseid = setCard.multiverseid;
+								if ( setCard.multiverseid ){
+									baseCard.mvids.push( setCard.multiverseid );
+									baseCard.multiverseid = setCard.multiverseid;
+								}
 								
 								// Get the printing's rarity in numeric form
 								var setRarity = 101;
@@ -139,35 +146,51 @@
 
 				// Compile a list of cards to fetch data for
 				for( var name in cards ){
-					if( cards[ name ].multiverseid )
-						index.push( { "name":name, "mvid":cards[ name ].multiverseid } );
+					if( cards[ name ].mvids ){
+						fetchGoal += cards[ name ].mvids.length;
+						index.push( { "name":name, "mvids":cards[ name ].mvids } );
+						delete cards[ name ][ "mvids" ];
+					}
 				}
 				
 				// Start fetching user ratings
-				cursor = -1;
+				cursor = 0;
+				subcursor = 0;
 				scrape();
 			
 			}
 			
 			function scrape(){
+				var card = index[ cursor ];
 			
-				// Advance to the next card to scrape
-				cursor++;
-				
 				// Update the progress display
 				var buffer = document.getElementById( "buffer" );
 				var elapsed = Date.now() - startTime;
-				var progress = cursor / index.length;
+				var progress = fetchCount / fetchGoal;
 				buffer.innerHTML = "Fetching Rating for #" + ( cursor + 1 ) + " of " + index.length + " (" + Math.floor( progress * 100 ) + "%)<br>";
 				buffer.innerHTML += "Time Elapsed: " + formatTime( elapsed ) + "<br>Time Remaining: " + formatTime( ( elapsed / progress ) - elapsed );
 				document.title = "Stitcher (" + Math.floor( cursor / index.length * 100 ) + "%)"
 				
 				// Fetch data for the card we're scraping
-				fetch( index[ cursor ] );
+				fetch( card );
+				
+				// Advance to the next card to scrape
+				if ( subcursor < card.mvids.length - 1 ){
+					subcursor++;
+				}
+				else{
+					subcursor = 0;
+					cursor++;
+					console.log( "Scraping " + index[ cursor ].name );
+				}
+				
 				
 			}
 			
 			function fetch( card ){
+			
+				console.log( "Fetching " + card.mvids[ subcursor ] );
+				fetchCount++;
 			
 				// Fetch the card's gatherer page via proxy
 				var request = new XMLHttpRequest();
@@ -180,7 +203,7 @@
 					}
 				};
 				var proxy = 'https://cors-anywhere.herokuapp.com/';
-				var page = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.mvid;
+				var page = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.mvids[ subcursor ];
 				request.open( "GET", proxy + page, true );
 				request.send();
 				
@@ -188,18 +211,33 @@
 			
 			function extract( card, pageString ){
 				
+				// Clean up the page string to reduce error logging
+				pageString = pageString.replace( /script/gi, "fnord" );
+				pageString = pageString.replace( /src/gi, "fnord" );
+				
 				// Parse the page data into a document
 				var page = document.createElement( "html" );
 				page.innerHTML = pageString;
 
 				// Get the user rating data and record it
-				var value = page.querySelector( ".textRatingValue" );
-				if ( value ) cards[ card.name ].userRating = value.innerHTML;
+				var rtag = page.querySelector( ".textRatingValue" );
+				var vtag = page.querySelector( ".totalVotesValue" );
+				if ( rtag && vtag ){
+					var newRating = parseFloat( rtag.innerHTML );
+					var newVotes = parseInt( vtag.innerHTML );
+					
+					var oldScore = cards[ card.name ].userRating * cards[ card.name ].votes;
+					var totalScore = oldScore + ( newRating * newVotes );
+					var totalVotes = newVotes + cards[ card.name ].votes;
+				
+					cards[ card.name ].userRating = totalScore / totalVotes;
+					cards[ card.name ].votes = totalVotes;
+				}
 				
 				// Scrape for other values here as needed in the future
 				
 				// Scrape the next card or save the finished data
-				if ( cursor >= index.length + 1 )
+				if ( cursor >= index.length )
 					save();
 				else
 					scrape();
