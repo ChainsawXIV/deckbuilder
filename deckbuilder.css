@@ -268,6 +268,7 @@ html,body,div,span,input,select,table,img{
 .listTable{
 	border-collapse:collapse;
 	margin-bottom:2em;
+	width:100%;
 }
 .searchContainer .listTable tr:not([count="0"]){
 	background-color:rgba(20,80,20,0.2);
@@ -287,6 +288,7 @@ html,body,div,span,input,select,table,img{
 .masterTable .listTable td:nth-of-type(1){
 	padding:0.5em 0.3em 0.2em 0.5em;
 	vertical-align:top;
+	width:96px;
 }
 .masterTable .listTable td:nth-of-type(2){
 	padding:0.5em 1.5em 0.5em 0.5em;
