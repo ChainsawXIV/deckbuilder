@@ -939,8 +939,16 @@ function CardList( container, template, deck ){
 					if ( card[ key ] === undefined && type != "color" )
 						include = false;
 					// For text fields use a partial regex match, case insensitive
-					else if ( type == "match" && !card[ key ].match( new RegExp( fp[ key ], "im" ) ) )
-						include = false;
+					else if ( type == "match" ){
+						try{
+							var pattern = new RegExp( fp[ key ], "im" );
+							if ( !card[ key ].match( pattern ) )
+								include = false;
+						}
+						catch( error ){
+							// Ignore regex errors in user input
+						}
+					}
 					// For numeric fields convert the value to a number first
 					else if ( type == "number" && card[ key ] != parseInt( fp[ key ] ) )
 						include = false;
