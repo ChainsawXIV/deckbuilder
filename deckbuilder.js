@@ -474,6 +474,7 @@ function Deck( container, callback ){
 		
 		// Update the counts and states in the card lists
 		context.validateDeck( true );
+		context.catalog.refreshPage();
 		
 		// Update the deck stats
 		context.updateMetrics();
@@ -861,9 +862,9 @@ function CardList( container, template, deck ){
 			var commander = entry.querySelector( ".commanderFlag" );
 		
 			// Get the count from the primary card for multi-cards
-			var primaryCount = card.count;
+			var primaryCount = context.deck.cards[ card.name ] ? context.deck.cards[ card.name ].count : 0;
 			if ( !primaryCount && card.names )
-				primaryCount = context.deck.cardData[ card.names[ 0 ] ].count;
+				primaryCount = context.deck.cards[ card.names[ 0 ] ] ? context.deck.cards[ card.names[ 0 ] ].count : 0;
 			
 			// Populate the card count into the element
 			if( !primaryCount ){
@@ -1040,9 +1041,9 @@ function CardList( container, template, deck ){
 				if ( card.name == context.deck.commander.name )
 					commander = 1;
 			}
-			var count = card.count || 0;
+			var count = context.deck.cards[ card.name ] ? context.deck.cards[ card.name ].count : 0;
 			if ( !count && card.names )
-				count = context.deck.cardData[ card.names[ 0 ] ].count;
+				count = context.deck.cards[ card.names[ 0 ] ] ? context.deck.cards[ card.names[ 0 ] ].count : 0;
 			
 			var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 			var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
