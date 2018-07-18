@@ -169,7 +169,7 @@
 				var progress = fetchCount / fetchGoal;
 				buffer.innerHTML = "Fetching Rating for #" + ( cursor + 1 ) + " of " + index.length + " (" + Math.floor( progress * 100 ) + "%)<br>";
 				buffer.innerHTML += "Time Elapsed: " + formatTime( elapsed ) + "<br>Time Remaining: " + formatTime( ( elapsed / progress ) - elapsed );
-				document.title = "Stitcher (" + Math.floor( cursor / index.length * 100 ) + "%)"
+				document.title = "Stitcher (" + Math.floor( progress * 100 ) + "%)"
 				
 				// Fetch data for the card we're scraping
 				fetch( card );
