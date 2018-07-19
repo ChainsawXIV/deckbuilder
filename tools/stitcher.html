@@ -10,7 +10,7 @@
 			startTime = null;
 			index = [];
 			cursor = 0;
-			subcursor = 0;
+			subcursor = -1;
 			fetchCount = 0;
 			fetchGoal = 0;
 			
@@ -155,13 +155,12 @@
 				
 				// Start fetching user ratings
 				cursor = 0;
-				subcursor = 0;
+				subcursor = -1;
 				scrape();
 			
 			}
 			
 			function scrape(){
-				var card = index[ cursor ];
 			
 				// Update the progress display
 				var buffer = document.getElementById( "buffer" );
@@ -171,25 +170,30 @@
 				buffer.innerHTML += "Time Elapsed: " + formatTime( elapsed ) + "<br>Time Remaining: " + formatTime( ( elapsed / progress ) - elapsed );
 				document.title = "Stitcher (" + Math.floor( progress * 100 ) + "%)"
 				
-				// Fetch data for the card we're scraping
-				fetch( card );
-				
 				// Advance to the next card to scrape
-				if ( subcursor < card.mvids.length - 1 ){
-					subcursor++;
+				var card = index[ cursor ];
+				if ( subcursor >= card.mvids.length - 1 ){
+					cursor++;
+					subcursor = 0;
 				}
 				else{
-					subcursor = 0;
-					cursor++;
+					subcursor++;
+				}
+				
+				if ( subcursor == 0 ){
+					cards[ index[ cursor ].name ].userRating = 0;
+					cards[ index[ cursor ].name ].votes = 0;
 					console.log( "Scraping " + index[ cursor ].name );
 				}
+
+				// Fetch data for the card we're scraping
+				fetch( card );
 				
 				
 			}
 			
 			function fetch( card ){
 			
-				console.log( "Fetching " + card.mvids[ subcursor ] );
 				fetchCount++;
 			
 				// Fetch the card's gatherer page via proxy
@@ -226,19 +230,25 @@
 					var newRating = parseFloat( rtag.innerHTML );
 					var newVotes = parseInt( vtag.innerHTML );
 					
-					var oldScore = cards[ card.name ].userRating * cards[ card.name ].votes;
+					var oldRating = cards[ card.name ].userRating;
+					var oldScore = oldRating * cards[ card.name ].votes;
 					var totalScore = oldScore + ( newRating * newVotes );
 					var totalVotes = newVotes + cards[ card.name ].votes;
 				
-					cards[ card.name ].userRating = totalScore / totalVotes;
+					cards[ card.name ].userRating = totalVotes > 0 ? totalScore / totalVotes : 0;
 					cards[ card.name ].votes = totalVotes;
+					
+					console.log( "  Fetched " + card.mvids[ subcursor ] + " (Votes: " + newVotes + ", Rating: " + ( Math.floor( oldRating * 100 ) / 100 ) + " -> " + ( Math.floor( cards[ card.name ].userRating * 100 ) / 100 ) + ")" );
+				}
+				else{
+					console.log( "  Fetched " + card.mvids[ subcursor ] + " NO DATA" );
 				}
 				
 				// Scrape for other values here as needed in the future
 				
 				// Scrape the next card or save the finished data
-				if ( cursor >= index.length )
-					save();
+				if ( cursor >= index.length - 1 )
+					save( cards );
 				else
 					scrape();
 				
