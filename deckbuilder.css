@@ -207,7 +207,6 @@ html,body,div,span,input,select,table,img{
 	position:absolute;
 	bottom:0.35em;
 	right:3.5em;
-	font-weight:400;
 	font-size:1.0em;
 	z-index:9;
 }
