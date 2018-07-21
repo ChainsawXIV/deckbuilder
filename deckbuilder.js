@@ -20,7 +20,7 @@ function Deck( container, callback ){
 	this.masterTable = container.querySelector( ".masterTable" );
 	this.loadedFrom = "AUTOSAVE";
 	this.cards = {};
-	this.format = "";
+	this.format = "default";
 	this.name = "";
 	this.folder = "General";
 	this.minCards = -1;
@@ -30,8 +30,9 @@ function Deck( container, callback ){
 	this.offline = false;
 	this.identity = ["W","U","B","R","G"];
 	this.formats = {
-		default:{ minCards:60 },
-		Commander:{ minCards:100, maxCards:100, commander:true }
+		default:{ minCards:60, dupeLimit:4 },
+		Commander:{ minCards:100, maxCards:100, commander:true, dupeLimit:1 },
+		Brawl:{ minCards:60, maxCards:60, commander:true, dupeLimit:1 }
 	}
 	
 	
@@ -261,7 +262,8 @@ function Deck( container, callback ){
 		if ( !context.formats[ format ] ) format = "default";
 		
 		// If the new format isn't commander, remove the commander
-		context.clearCommander();
+		if ( !context.formats[ format ].commander )
+			context.clearCommander();
 		
 		// Set the min and max card counts from the format data
 		context.minCards = context.formats[ format ].minCards || -1;
@@ -498,11 +500,7 @@ function Deck( container, callback ){
 		var legal = true;
 		var issue = "";
 		
-		var defaultValidCount = 4;
-		if ( context.format == "Commander" )
-			defaultValidCount = 1;
-		
-		var validCount = ( card.deckLimit === undefined ) ? defaultValidCount : card.deckLimit;
+		var validCount = ( card.deckLimit === undefined ) ? context.formats[ context.format ].dupeLimit : card.deckLimit;
 		
 		// Always allow any number of each basic land type
 		if ( card.supertypes ){
@@ -538,7 +536,7 @@ function Deck( container, callback ){
 		}
 		
 		// Validate color identity in the Commander format
-		if ( context.format == "Commander" && legal ){
+		if ( context.formats[ context.format ].commander && legal ){
 			
 			// Cards must match the color identity of the commander
 			if ( card.colorIdentity ){
@@ -599,7 +597,7 @@ function Deck( container, callback ){
 		}
 
 		// Validate that commander decks have a proper commander
-		if ( context.format == "Commander" ){
+		if ( context.formats[ context.format ].commander ){
 			if ( !context.commander ){
 				legal = 0;
 				issues.push( "You must select a commander." );
@@ -611,11 +609,19 @@ function Deck( container, callback ){
 						issues.push( "Your commander must be legendary." );
 					}
 				}
+				else{
+					legal = 0;
+					issues.push( "Your commander must be legendary." );
+				}
 				if ( context.commander.types ){
 					if ( context.commander.types.indexOf( "Creature" ) < 0 ){
 						legal = 0;
 						issues.push( "Your commander must be a creature." );
 					}
+				}
+				else{
+					legal = 0;
+					issues.push( "Your commander must be a creature." );
 				}
 			}
 		}

@@ -412,7 +412,8 @@ html,body,div,span,input,select,table,img{
 .masterTable .listTable td:nth-of-type(3) a.commanderFlag{
 	display:none;
 }
-.masterTable[format="Commander"] .listTable td:nth-of-type(3) a.commanderFlag{
+.masterTable[format="Commander"] .listTable td:nth-of-type(3) a.commanderFlag,
+.masterTable[format="Brawl"] .listTable td:nth-of-type(3) a.commanderFlag{
 	display:inline-block;
 }
 
