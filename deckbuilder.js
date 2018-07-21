@@ -497,7 +497,12 @@ function Deck( container, callback ){
 		var card = context.cardData[ cardName ];
 		var legal = true;
 		var issue = "";
-		var validCount = ( card.deckLimit === undefined ) ? 4 : card.deckLimit;
+		
+		var defaultValidCount = 4;
+		if ( context.format == "Commander" )
+			defaultValidCount = 1;
+		
+		var validCount = ( card.deckLimit === undefined ) ? defaultValidCount : card.deckLimit;
 		
 		// Always allow any number of each basic land type
 		if ( card.supertypes ){
@@ -532,17 +537,11 @@ function Deck( container, callback ){
 			
 		}
 		
-		// Validate special conditions of the Commander format
+		// Validate color identity in the Commander format
 		if ( context.format == "Commander" && legal ){
-		
-			// Everything but basic lands are limited to one per deck
-			if ( card.count > 1 && validCount >= 0 ){
-				legal = false;
-				issue = "Too many copies of " + card.name + ".";
-			}
 			
 			// Cards must match the color identity of the commander
-			else if ( card.colorIdentity ){
+			if ( card.colorIdentity ){
 				for ( var i = 0; i < card.colorIdentity.length; i++ ){
 					if ( context.identity.indexOf( card.colorIdentity[ i ] ) < 0 ){
 						legal = false;
@@ -552,8 +551,8 @@ function Deck( container, callback ){
 			}
 			
 		}
-		// Validate the usual card count maximum of four in other formats
-		else if ( card.count > validCount && validCount >= 0 ){
+		// Validate the card count maximum per deck
+		if ( card.count > validCount && validCount >= 0 ){
 			legal = false;
 			issue = "Too many copies of " + card.name + ".";
 		}
