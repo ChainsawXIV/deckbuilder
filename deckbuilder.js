@@ -26,7 +26,7 @@ function Deck( container, callback ){
 	this.minCards = -1;
 	this.maxCards = -1;
 	this.count = 0;
-	this.commander = null;
+	this.commander = [];
 	this.offline = false;
 	this.identity = ["W","U","B","R","G"];
 	this.formats = {
@@ -232,10 +232,8 @@ function Deck( container, callback ){
 				context.decklist.setCards( context.cards );
 				
 				// Remove from commander slot if required
-				if ( context.commander ){
-					if ( context.commander.name == cardName )
-						context.clearCommander();
-				}
+				if ( context.commander.indexOf( context.cardData[ cardName ] ) >= 0 )
+					context.setCommander( cardKey );
 
 			}
 			else
@@ -288,35 +286,35 @@ function Deck( container, callback ){
 
 		var cardName = nameFromKey( cardKey );
 		
-		// Remove commander status from any old commander rows
-		if ( context.commander )
-			context.cardData[ context.commander.name ].commander = false;
-		
 		// If toggling the existing commander, toggle it off
-		if ( context.commander ){
-			if ( cardName == context.commander.name ){
-
-				// Unset the commander from the deck
-				context.clearCommander();
-				
-				return;
-				
-			}
+		if ( context.commander.indexOf( context.cardData[ cardName ] ) >= 0 ){
+			
+			// Unset the commander status of the card
+			context.cardData[ cardName ].commander = false;
+			
+			// Remove the commander from the command list
+			context.commander.splice( context.commander.indexOf( context.cardData[ cardName ] ), 1 );
+			
+			// Update the allowed colors for the deck
+			context.setColorIdentity();
+			
 		}
+		else{
 
-		// Add commander status to any rows for the new commander
-		context.cardData[ cardName ].commander = true;
+			// Add commander status to the card's data
+			context.cardData[ cardName ].commander = true;
+
+			// Add the commander card to the deck data
+			context.commander.push( context.cardData[ cardName ] );
+			
+			// Update the allowed colors for the deck
+			context.setColorIdentity();
+			
+			// Make sure the commander is actually in the deck list
+			if ( !context.cardData[ cardName ].count ){
+				context.addCard( cardKey, 1 );
+			}
 		
-		// Store the commander's data and color identity for the deck
-		context.commander = context.cardData[ cardName ];
-		if ( context.commander.colorIdentity )
-			context.identity = context.commander.colorIdentity;
-		else
-			context.identity = [];
-		
-		// Make sure the commander is actually in the deck list
-		if ( !context.commander.count ){
-			context.addCard( cardKey, 1 );
 		}
 		
 		// Update counts and legality for all cards in all lists
@@ -330,18 +328,45 @@ function Deck( container, callback ){
 		
 	}
 	
+	// 
+	this.setColorIdentity = function setColorIdentity(){
+		
+		// Clear the existing identity if any
+		context.identity = [];
+		
+		// Stop here if there's no commander set
+		if ( context.commander.length == 0 )
+			return;
+		
+		// Rebuild the deck's color identity
+		for ( var commandIndex = 0; commandIndex < context.commander.length; commandIndex++ ){
+			var identity = context.commander[ commandIndex ].colorIdentity;
+			if ( identity ){
+				for ( var colorIndex = 0; colorIndex < identity.length; colorIndex++ ){
+					var color = identity[ colorIndex ];
+					if ( context.identity.indexOf( color ) < 0 )
+						context.identity.push( color );
+				}
+			}
+		}		
+		
+	}
+	
 	// Clear the commander selection from the deck entirely
 	this.clearCommander = function clearCommander(){
 	
 		// Validate that there's a commander to remove
-		if ( context.commander ){
+		if ( context.commander.length ){
 			
-			// Clear the commander flag from the card
-			context.commander.commander = false;
-		
-			// Clear the commander and color identity from the deck
-			context.commander = null;
-			context.identity = ["W","U","B","R","G"];
+			// Clear the commander flag from each card
+			for ( var i = 0; i < context.commander.length; i++ )
+				context.commander[ i ].commander = false;
+			
+			// Clear the command list from the deck
+			context.commander = [];
+			
+			// Recalculate deck color identity
+			context.setColorIdentity();
 			
 			// Check legality for the cards on the catalog page
 			context.catalog.refreshPage();
@@ -377,10 +402,9 @@ function Deck( container, callback ){
 		var out = '';
 		for ( var cardName in context.cards ){
 			out += context.cards[ cardName ].count + "x " + cardName;
-			if ( context.commander ){
-				// If there's a commander, mark it in the deck list
-				if ( cardName == context.commander.name )
-					out += " *CMDR*";
+			// If there's a commander, mark it in the deck list
+			if ( context.cards[ cardName ].commander ){
+				out += " *CMDR*";
 			}
 			out += "\r\n";
 		}
@@ -401,8 +425,11 @@ function Deck( container, callback ){
 		};
 		
 		// Reduce the commander to only its name
-		if ( context.commander )
-			bundle.commander = context.commander.name;
+		if ( context.commander.length ){
+			bundle.commander = [];
+			for ( var i = 0; i < context.commander.length; i++ )
+				bundle.commander.push( context.commander[ i ].name );
+		}
 		
 		// Reduce the card list to only the key data
 		var cl = {};
@@ -469,8 +496,15 @@ function Deck( container, callback ){
 		}
 			
 		// Designate the commander if specified and exists
-		if ( bundle.commander && context.cards[ bundle.commander ] )
-			context.setCommander( keyFromName( bundle.commander ) );
+		if ( bundle.commander ){
+			if ( !Array.isArray( bundle.commander ) ){
+				context.setCommander( keyFromName( bundle.commander ) );
+			}
+			else{
+				for ( var i = 0; i < bundle.commander.length; i++ )
+					context.setCommander( keyFromName( bundle.commander[ i ] ) );
+			}
+		}
 
 		// Propagate the changes to the card lists
 		context.decklist.setCards( context.cards );
@@ -599,31 +633,46 @@ function Deck( container, callback ){
 
 		// Validate that commander decks have a proper commander
 		if ( context.formats[ context.format ].commander ){
-			if ( !context.commander ){
+			if ( !context.commander.length ){
 				legal = 0;
 				issues.push( "You must select a commander." );
 			}
-			else if ( !context.commander.legalCommander ){
-				if ( context.commander.supertypes ){
-					if ( context.commander.supertypes.indexOf( "Legendary" ) < 0 ){
-						legal = 0;
-						issues.push( "Your commander must be legendary." );
-					}
+			else{
+				
+				// Validate each of the commanders in the command list
+				for ( var i = 0; i < context.commander.length; i++ ){
+					
+					// Skip these for commanders with a special override
+					if ( !context.commander[ i ].legalCommander ){
+						
+						// Validate the each commander is a legend
+						if ( context.commander[ i ].supertypes ){
+							if ( context.commander[ i ].supertypes.indexOf( "Legendary" ) < 0 ){
+								legal = 0;
+								issues.push( "Your commander must be legendary." );
+							}
+						}
+						else{
+							legal = 0;
+							issues.push( "Your commander must be legendary." );
+						}
+						
+						// Validate that each commander is a creature
+						if ( context.commander[ i ].types ){
+							if ( context.commander[ i ].types.indexOf( "Creature" ) < 0 ){
+								legal = 0;
+								issues.push( "Your commander must be a creature." );
+							}
+						}
+						else{
+							legal = 0;
+							issues.push( "Your commander must be a creature." );
+						}
+						
+					}	
+					
 				}
-				else{
-					legal = 0;
-					issues.push( "Your commander must be legendary." );
-				}
-				if ( context.commander.types ){
-					if ( context.commander.types.indexOf( "Creature" ) < 0 ){
-						legal = 0;
-						issues.push( "Your commander must be a creature." );
-					}
-				}
-				else{
-					legal = 0;
-					issues.push( "Your commander must be a creature." );
-				}
+				
 			}
 		}
 		
@@ -1044,7 +1093,7 @@ function CardList( container, template, deck ){
 			var key = keyFromName( card.name );
 			var commander = 0;
 			if ( context.deck.commander ){
-				if ( card.name == context.deck.commander.name )
+				if ( context.deck.commander.indexOf( card ) >= 0 )
 					commander = 1;
 			}
 			var count = context.deck.cards[ card.name ] ? context.deck.cards[ card.name ].count : 0;
@@ -1807,7 +1856,7 @@ function importList( fileInput ){
 	reader.onload = function( e ){
 	
 		// Initialize a save bundle to populate data into
-		var bundle = { name:"", format:"", folder:"", cards:{}, commander:null };
+		var bundle = { name:"", format:"", folder:"", cards:{}, commander:[] };
 		
 		// Go through each row of the file and add it to the bundle
 		var rows = e.target.result.split( "\n" );
@@ -1828,7 +1877,7 @@ function importList( fileInput ){
 				var commander = ( rows[ i ].match( /\*cmdr\*/i ) ) ? true : false;
 				if ( commander ){
 					bundle.format = "Commander";
-					bundle.commander = cardName;
+					bundle.commander.push( cardName );
 				}
 				
 			}
