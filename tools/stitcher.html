@@ -7,6 +7,7 @@
 		
 			sets = null;
 			cards = null;
+			ratings = null;
 			startTime = null;
 			index = [];
 			cursor = 0;
@@ -20,6 +21,8 @@
 				"Nahiri, the Lithomancer":{ legalCommander:true },
 				"Ob Nixilis of the Black Oath":{ legalCommander:true },
 				"Teferi, Temporal Archmage":{ legalCommander:true },
+				"Rowan Kenrith":{ legalCommander:true },
+				"Will Kenrith":{ legalCommander:true },
 				"Shadowborn Apostle":{ deckLimit:-1 },
 				"Relentless Rats":{ deckLimit:-1 },
 				"Once More with Feeling":{ deckLimit:1 }
@@ -39,15 +42,33 @@
 						cards = data;
 						document.getElementById( "report" ).innerHTML += "Set data loaded...</br>";
 						
-						startTime = Date.now();
-						stitch();
+						// Load the optional previous ratings
+						if ( document.getElementById( "ratings" ).files ){
+						
+							loadJSON( document.getElementById( "ratings" ), function( data ){
+								ratings = data;
+								document.getElementById( "report" ).innerHTML += "Existing rating data loaded...</br>";
+								
+								startTime = Date.now();
+								stitch( false );
+							} );
+							
+						}
+						else{
+						
+							document.getElementById( "report" ).innerHTML += "Scraping ratings data...</br>";
+							
+							startTime = Date.now();
+							stitch( true );
+						
+						}
 						
 					} );
 				} );
 			
 			}
 			
-			function stitch(){
+			function stitch( scrape ){
 				
 				// Iterate through all the cards in the game
 				for ( var cardName in cards ){
@@ -102,6 +123,27 @@
 						
 					}
 					
+					// Integrate existing rating data if provided
+					if ( ratings ){
+						if ( ratings[ cardName ].userRating ) baseCard.userRating = ratings[ cardName ].userRating;
+						if ( ratings[ cardName ].votes ) baseCard.votes = ratings[ cardName ].votes;
+					}
+					
+					// If the card can be a partner commander and with who
+					if ( baseCard.supertypes ){
+						if ( baseCard.supertypes.indexOf( "Legendary" ) >= 0 ){
+							if ( baseCard.text ){
+								if ( baseCard.text.match( /Partner/ ) ){
+									baseCard.partner = true;
+									var partnerWith = baseCard.text.match( /Partner with ([\w\s,]+)[\(\n]/ );
+									if ( partnerWith )
+										partnerWith = partnerWith[ 1 ].replace( /[\s]+$/, "" );
+										baseCard.partnerWith = partnerWith;
+								}
+							}
+						}
+					}
+					
 					// If there's extra data for the card, integrate that
 					if ( extras[ cardName ] ){
 						for ( var key in extras[ cardName ] )
@@ -142,21 +184,31 @@
 				}
 				
 				document.getElementById( "report" ).innerHTML += "Static data compiled...</br>";
-				document.getElementById( "report" ).innerHTML += '<span id="buffer"></span></br>';
 
-				// Compile a list of cards to fetch data for
-				for( var name in cards ){
-					if( cards[ name ].mvids ){
-						fetchGoal += cards[ name ].mvids.length;
-						index.push( { "name":name, "mvids":cards[ name ].mvids } );
-						delete cards[ name ][ "mvids" ];
-					}
-				}
+				if ( scrape ){
 				
-				// Start fetching user ratings
-				cursor = 0;
-				subcursor = -1;
-				scrape();
+					document.getElementById( "report" ).innerHTML += '<span id="buffer"></span></br>';
+				
+					// Compile a list of cards to fetch data for
+					for( var name in cards ){
+						if( cards[ name ].mvids ){
+							fetchGoal += cards[ name ].mvids.length;
+							index.push( { "name":name, "mvids":cards[ name ].mvids } );
+							delete cards[ name ][ "mvids" ];
+						}
+					}
+					
+					// Start fetching user ratings
+					cursor = 0;
+					subcursor = -1;
+					scrape();
+				
+				}
+				else{
+				
+					save( cards );
+				
+				}
 			
 			}
 			
@@ -188,7 +240,6 @@
 
 				// Fetch data for the card we're scraping
 				fetch( card );
-				
 				
 			}
 			
@@ -311,6 +362,7 @@
 		Select local <a href="https://mtgjson.com/">MTG JSON</a> files to build from.<br/><br/>
 		Sets File: <input id="sets" type="file" /><br/>
 		Cards File: <input id="cards" type="file" /><br/>
+		Ratings File: <input id="ratings" type="file" /> (Optional)<br/>
 		<button id="build" onclick="build();">Build</button>
 		<div id="report"></div>
 		
