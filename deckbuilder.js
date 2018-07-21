@@ -362,7 +362,7 @@ function Deck( container, callback ){
 		this.load( {
 			name:"",
 			folder:"General",
-			format:"",
+			format:"default",
 			cards:{}
 		} );
 		
@@ -448,7 +448,8 @@ function Deck( container, callback ){
 		
 		// Set the proper format in the format menu
 		context.setFormat( bundle.format );
-		context.formatElement.querySelector( 'option[value="' + bundle.format + '"]' ).selected = "selected";
+		var selection = bundle.format == "default" ? "" : bundle.format;
+		context.formatElement.querySelector( 'option[value="' + selection + '"]' ).selected = "selected";
 		
 		// Set the proper folder in the folder menu
 		if ( bundle.folder == "" ) bundle.folder = "General";
