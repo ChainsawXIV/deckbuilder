@@ -33,6 +33,7 @@ html,body,div,span,input,select,table,img{
 	height:100%;
 	position:relative;
 	background-color:#383838;
+	display:inline-table;
 }
 
 ::-webkit-scrollbar{
@@ -59,6 +60,7 @@ html,body,div,span,input,select,table,img{
 .masterTable .searchContainer,
 .masterTable .deckContainer{
 	width:40%;
+	vertical-align:top;
 }
 .masterTable .overviewContainer{
 	width:20%;
