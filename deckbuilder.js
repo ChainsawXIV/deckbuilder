@@ -649,28 +649,62 @@ function Deck( container, callback ){
 						if ( context.commander[ i ].supertypes ){
 							if ( context.commander[ i ].supertypes.indexOf( "Legendary" ) < 0 ){
 								legal = 0;
-								issues.push( "Your commander must be legendary." );
+								issues.push( "Only legends can be commanders." );
 							}
 						}
 						else{
 							legal = 0;
-							issues.push( "Your commander must be legendary." );
+							issues.push( "Only legends can be commanders." );
 						}
 						
 						// Validate that each commander is a creature
 						if ( context.commander[ i ].types ){
 							if ( context.commander[ i ].types.indexOf( "Creature" ) < 0 ){
 								legal = 0;
-								issues.push( "Your commander must be a creature." );
+								issues.push( "Only creatures can be commanders." );
 							}
 						}
 						else{
 							legal = 0;
-							issues.push( "Your commander must be a creature." );
+							issues.push( "Only creatures can be commanders." );
 						}
 						
 					}	
 					
+				}
+				
+				// Limit to at most two commanders
+				if ( context.commander.length > 2 ){
+					legal = 0;
+					issues.push( "You may have at most two commanders." );
+				}
+				// Only allow multiple commanders if they're partners
+				else if ( context.commander.length > 1 ){
+					for ( var i = 0; i < context.commander.length; i++ ){
+						
+						// Don't allow partnering with non-Partner commanders
+						if ( !context.commander[ i ].partner ){
+							legal = 0;
+							issues.push( "Multiple commanders without Partner.");
+							break;
+						}
+						// Partner With can't partner except with thier partner
+						else if( context.commander[ i ].partnerWith ){
+							var partnerWith = context.commander[ i ].partnerWith;
+							var partnerFound = false;
+							for ( var n = 0; n < context.commander.length; n++ ){
+								var candidate = context.commander[ n ];
+								if ( partnerWith == candidate.name )
+									partnerFound = true;
+							}
+							if( !partnerFound ){
+								legal = 0;
+								issues.push( "Incompatible Partner commanders.");
+								break;
+							}
+						}
+						
+					}
 				}
 				
 			}
