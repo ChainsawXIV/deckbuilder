@@ -31,8 +31,8 @@ function Deck( container, callback ){
 	this.identity = ["W","U","B","R","G"];
 	this.formats = {
 		default:{ minCards:60, dupeLimit:4 },
-		Commander:{ minCards:100, maxCards:100, commander:true, dupeLimit:1 },
-		Brawl:{ minCards:60, maxCards:60, commander:true, dupeLimit:1 }
+		Commander:{ minCards:100, maxCards:100, commander:true, dupeLimit:1, walkerCommanders:false },
+		Brawl:{ minCards:60, maxCards:60, commander:true, dupeLimit:1, walkerCommanders:true }
 	}
 	
 	
@@ -657,16 +657,31 @@ function Deck( container, callback ){
 							issues.push( "Only legends can be commanders." );
 						}
 						
+						// If allowed commanders must be creatures or walkers
+						if ( context.formats[ context.format ].walkerCommanders ){
+							if ( context.commander[ i ].types ){
+								if ( context.commander[ i ].types.indexOf( "Creature" ) < 0 && context.commander[ i ].types.indexOf( "Planeswalker" ) ){
+									legal = 0;
+									issues.push( "Only creatures or planeswalkers can be commanders." );
+								}
+							}
+							else{
+								legal = 0;
+								issues.push( "Only creatures or planeswalkers can be commanders." );
+							}
+						}
 						// Validate that each commander is a creature
-						if ( context.commander[ i ].types ){
-							if ( context.commander[ i ].types.indexOf( "Creature" ) < 0 ){
+						else{
+							if ( context.commander[ i ].types ){
+								if ( context.commander[ i ].types.indexOf( "Creature" ) < 0 ){
+									legal = 0;
+									issues.push( "Only creatures can be commanders." );
+								}
+							}
+							else{
 								legal = 0;
 								issues.push( "Only creatures can be commanders." );
 							}
-						}
-						else{
-							legal = 0;
-							issues.push( "Only creatures can be commanders." );
 						}
 						
 					}	
