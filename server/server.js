@@ -417,6 +417,7 @@ function DeckServer( callback ){
 				// Provide id and public deck lists to other users
 				else{
 					data.userid = targetData.userid;
+					data.username = targetData.username;
 					data.decks = {};
 					for ( var deck in targetData.decks ){
 						if ( !targetData.decks[ deck ].secret )
@@ -834,6 +835,7 @@ function DeckServer( callback ){
 		
 		// Condition the user data to make sure it's complete
 		buffer.userid = user.userid || null;
+		buffer.name = user.name || null;
 		buffer.email = user.email || null;
 		buffer.realName = user.realName || null;
 		buffer.sub = user.sub || null;
