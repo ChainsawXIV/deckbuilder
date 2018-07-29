@@ -65,8 +65,15 @@ DeckServer( function( DS ){
 		// Validate the path or serve a 403
 		var uri = url.parse( request.url ).pathname;
 		if ( !validatePath( uri ) ){
-			response.writeHead(403,{"Content-Type": "text/plain"});
-			response.write("403 Forbidden\n");
+			response.writeHead( 403, {
+				"Access-Control-Allow-Origin":"*",
+				"Access-Control-Allow-Methods":"POST, OPTIONS",
+				"Access-Control-Allow-Credentials":false,
+				"Access-Control-Max-Age":"86400",
+				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-OVerride, Content-Type, Accept",
+				"Content-Type": "text/plain"
+			} );
+			response.write( "403 Forbidden\n" );
 			response.end();
 			log( "Responding 403 to request for  " + request.url, 2 );
 			return;
@@ -75,8 +82,15 @@ DeckServer( function( DS ){
 		// Serve a similar response to requests without a POST
 		if ( request.method !== "POST" ){
 			log( "METHOD: " + request.method, 2 );
-			response.writeHead(403,{"Content-Type": "text/plain"});
-			response.write("403 Forbidden\n");
+			response.writeHead( 403, {
+				"Access-Control-Allow-Origin":"*",
+				"Access-Control-Allow-Methods":"POST, OPTIONS",
+				"Access-Control-Allow-Credentials":false,
+				"Access-Control-Max-Age":"86400",
+				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-OVerride, Content-Type, Accept",
+				"Content-Type": "text/plain"
+			} );
+			response.write( "403 Forbidden\n" );
 			response.end();
 			log( "Responding 403 to request without POST", 2 );
 			return;
@@ -85,15 +99,21 @@ DeckServer( function( DS ){
 		// Get the command and handle it
 		var command = uri.match( /^\/([\w\d-]+)[\/]?$/ )[1];
 		
-		
 		// Accumulate the arguments in the POST
 		var requestBody = "";
 		request.on( "data", function( data ){
 			requestBody += data;
 			// Block excessively large posts
 			if( requestBody.length > 1e7 ){
-				response.writeHead(413,{"Content-Type": "text/plain"});
-				response.write("413 Request Too large\n");
+				response.writeHead( 413, {
+					"Access-Control-Allow-Origin":"*",
+					"Access-Control-Allow-Methods":"POST, OPTIONS",
+					"Access-Control-Allow-Credentials":false,
+					"Access-Control-Max-Age":"86400",
+					"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-OVerride, Content-Type, Accept",
+					"Content-Type": "text/plain"
+				} );
+				response.write( "413 Request Too large\n" );
 				response.end();
 				log( "Responding 413 to oversized request", 2 );
 			}
@@ -105,19 +125,57 @@ DeckServer( function( DS ){
 				sendError();
 				return;
 			}
-			response.writeHead( 200, { "Content-Type":"text/json" } );
+			response.writeHead( 200, { 
+				"Content-Type":"text/json",
+				"Access-Control-Allow-Origin":"*",
+				"Access-Control-Allow-Methods":"POST, OPTIONS",
+				"Access-Control-Allow-Credentials":false,
+				"Access-Control-Max-Age":"86400",
+				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-OVerride, Content-Type, Accept"
+			} );
 			response.write( JSON.stringify( data ) );
 			response.end();
 		}
 		function sendError(){
-			response.writeHead(500,{"Content-Type": "text/plain"});
-			response.write("500 Server Error\n");
+			response.writeHead( 400, {
+				"Access-Control-Allow-Origin":"*",
+				"Access-Control-Allow-Methods":"POST, OPTIONS",
+				"Access-Control-Allow-Credentials":false,
+				"Access-Control-Max-Age":"86400",
+				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-OVerride, Content-Type, Accept",
+				"Content-Type": "text/plain"
+			} );
+			response.write( "400 Bad Request\n" );
 			response.end();
 		}
 		
 		// When the request is fully recieved, handle it
 		request.on( "end", function(){
 			var data = qs.parse( requestBody );
+			
+			// Validate parsed JSON data if present
+			var user = {};
+			if ( data.user ){
+				try{
+					user = JSON.parse( data.user );
+				}
+				catch( error ){
+					sendError();
+					return;
+				}
+			}
+			var deck = {};
+			if ( data.deck ){
+				try{
+					deck = JSON.parse( data.deck );
+				}
+				catch( error ){
+					sendError();
+					return;
+				}
+			}
+			
+			// Handle the various commands
 			switch( command ){
 				case "login":
 					DS.logIn( data.googleToken, function( userData ){
@@ -126,37 +184,44 @@ DeckServer( function( DS ){
 					break;
 				
 				case "putuser":
-					DS.putUser( JSON.parse( data.user ), function( userData ){
+					DS.putUser( user, function( userData ){
 						sendJSON( userData );
 					} );
 					break;
 				
 				case "getuser":
-					DS.getUser( JSON.parse( data.user ), function( userData ){
+					DS.getUser( user, data.target, function( userData ){
 						sendJSON( userData );
 					} );
 					break;
 				
 				case "putdeck":
-					DS.putDeck( JSON.parse( data.user ), JSON.parse( data.deck ), function( deckData ){
+					DS.putDeck( user, deck, function( deckData ){
 						sendJSON( deckData );
 					} );
 					break;
 				
 				case "getdeck":
-					DS.getDeck( JSON.parse( data.user ), data.deckid, function( deckData ){
+					DS.getDeck( user, data.deckid, function( deckData ){
 						sendJSON( deckData );
 					} );
 					break;
 				
 				case "deletedeck":
-					DS.deleteDeck( JSON.parse( data.user ), data.deckid, function( deckData ){
+					DS.deleteDeck( user, data.deckid, function( deckData ){
 						sendJSON( deckData );
 					} );
 					break;
 				
 				default:
-					response.writeHead( 404, {"Content-Type": "text/plain"} );
+					response.writeHead( 404, {
+						"Access-Control-Allow-Origin":"*",
+						"Access-Control-Allow-Methods":"POST, OPTIONS",
+						"Access-Control-Allow-Credentials":false,
+						"Access-Control-Max-Age":"86400",
+						"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-OVerride, Content-Type, Accept",
+						"Content-Type": "text/plain"
+					} );
 					response.write( "404 Not Found\n" );
 					response.end();
 					log( "Responding 404 to unknown command " + command, 0 );
@@ -186,6 +251,18 @@ function DeckServer( callback ){
 	
 	// User management methods
 	this.logIn = function ds_logIn( googleToken, callback ){
+		
+		// Protect against missing parameters
+		if ( googleToken === undefined ){
+			log( "Login request missing googleToken", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof callback !== "function" ){
+			log( "Login request missing callback function", -2 );
+			callback( false );
+			return;
+		}
 		
 		context.authClient.verifyIdToken(
 			{ idToken:googleToken, audience:"131516550233-2efdikia10mp3erns90el5jlrskc9d21.apps.googleusercontent.com" },
@@ -233,6 +310,24 @@ function DeckServer( callback ){
 	
 	this.putUser = function ds_putUser( user, callback ){
 		
+		// Protect against bad parameters
+		if ( user === undefined ){
+			log( "Put User request missing user data", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof callback !== "function" ){
+			log( "Put User request missing callback function", -2 );
+			callback( false );
+			return;
+		}
+		if ( typeof user !== "object" ){
+			log( "Put User request had malformed user data", 1 );
+			callback( false );
+			return;
+		}
+		user = ds_helper_conditionUser( user );
+		
 		// Verify the user's identity
 		ds_helper_loadUser( "userid", user.userid, function( userData ){
 			
@@ -246,20 +341,48 @@ function DeckServer( callback ){
 				}
 				else{
 					log( "Attempt to put user " + user.userid + " with invalid session", -1 );
+					callback( false );
 				}
 			}
 			else{
 				log( "Attempt to put user " + user.userid + " who doesn't exist", 1 );
+				callback( false );
 			}
-			
-			callback( false );
 			
 		} );
 		
 	}
 	
 	this.getUser = function ds_getUser( user, userid, callback ){
-		
+
+		// Protect against bad parameters
+		if ( user === undefined ){
+			log( "Get User request missing user data", 1 );
+			callback( false );
+			return;
+		}
+		if ( userid === undefined ){
+			log( "Get User request missing target userid", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof callback !== "function" ){
+			log( "Get User request missing callback function", -2 );
+			callback( false );
+			return;
+		}
+		if ( typeof user !== "object" ){
+			log( "Get User request with malformed user data", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof userid !== "string" ){
+			log( "Get User request with malformed target userid", 1 );
+			callback( false );
+			return;
+		}
+		user = ds_helper_conditionUser( user );
+	
 		// Load up the data for the requested user
 		ds_helper_loadUser( "userid", userid, function( targetData ){
 			
@@ -315,41 +438,84 @@ function DeckServer( callback ){
 	
 	// Deck management methods	
 	this.putDeck = function ds_putDeck( user, deck, callback ){
+
+		// Protect against bad parameters
+		if ( user === undefined ){
+			log( "Put Deck request missing user data", 1 );
+			callback( false );
+			return;
+		}
+		if ( deck === undefined ){
+			log( "Put Deck request missing deck data", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof callback !== "function" ){
+			log( "Put Deck request missing callback function", -2 );
+			callback( false );
+			return;
+		}
+		if ( typeof user !== "object" ){
+			log( "Put Deck request with malformed user data", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof deck !== "object" ){
+			log( "Put Deck request with malformed deck data", 1 );
+			callback( false );
+			return;
+		}
+		user = ds_helper_conditionUser( user );
+		deck = ds_helper_conditionDeck( deck );
+		
+		// Do initial setup the first time a deck is saved
+		if ( !deck.deckid ){
+			deck = ds_helper_newDeck( user, deck );
+			log( "Initialized new deck " + deck.deckid + " for user " + user.userid, 3 );
+		}
+		
+		var deckData = deck;
 		
 		// Verify the user's identity
 		ds_helper_loadUser( "userid", user.userid, function( userData ){
+
 			
 			if ( userData ){
 				if ( userData.session == user.session ){
 		
-					// Don't allow users to save decks for other users
-					if ( deck.owner != user.userid ){
-						if ( !deck.secret ){
-							log( "Copied deck " + deck.deckid + " by user " + deck.owner + " for user " + user.userid, 3, context );
-							var deck = ds_helper_newDeck( user, deck );
-						}
-						else{
-							log( "Blocked attempt to copy secret deck " + deck.deckid + " by user " + deck.owner + " for user " + user.userid, -1, context );
-							callback( false );
-							return;
-						}
-					}
-					
-					// Load the previous version of the deck to check against
-					ds_helper_loadDeck( deck.deckid, function( oldDeck ){
+					// Load any existing deck to check against
+					ds_helper_loadDeck( deck.deckid, function( baseDeck ){
 						
-						// Don't save an older version over a newer version
-						if ( oldDeck ){
-							if ( oldDeck.version > deck.version ){
-								log( "Blocked overwrite of deck " + deck.deckid + " with older version", 2, context );
+						var deck = deckData;
+						
+						// Perform extra validation if there's an existing deck
+						if ( baseDeck ){
+							
+							// Don't allow users to save decks for other users
+							if ( baseDeck.owner != userData.userid ){
+								if ( !baseDeck.secret ){
+									log( "Copied deck " + baseDeck.deckid + " by user " + baseDeck.owner + " for user " + userData.userid, 3, context );
+									var deck = ds_helper_newDeck( userData, baseDeck );
+								}
+								else{
+									log( "Blocked attempt to copy secret deck " + baseDeck.deckid + " by user " + baseDeck.owner + " for user " + userData.userid, -1, context );
+									callback( false );
+									return;
+								}
+							}
+							
+							// Don't save an older version over a newer version
+							if ( baseDeck.version > deck.version ){
+								log( "Blocked overwrite of deck " + baseDeck.deckid + " with older version", 2, context );
 								callback( false );
 								return;
 							}
+							
 						}
 						
 						// Update the user's list of decks
-						user.decks[ deck.deckid ] = { deck:deck.deckid, folder:deck.folder, secret:deck.secret };
-						ds_helper_saveUser( user, function(){
+						userData.decks[ deck.deckid ] = { deck:deck.deckid, folder:deck.folder, secret:deck.secret };
+						ds_helper_saveUser( userData, function(){
 							
 							// Save the deck data
 							log( "Put deck " + deck.deckid + " for user " + deck.owner, 3, context );
@@ -362,10 +528,12 @@ function DeckServer( callback ){
 				}
 				else{
 					log( "Attempt to put deck " + deck.deckid + " by user " + user.userid + " with invalid session", -1 );
+					callback( false );
 				}
 			}
 			else{
 				log( "Attempt to put deck " + deck.deckid + " by user " + user.userid + " who doesn't exist", -1 );
+				callback( false );
 			}
 			
 		} );
@@ -373,7 +541,35 @@ function DeckServer( callback ){
 	}
 	
 	this.getDeck = function ds_getDeck( user, deckid, callback ){
-		
+
+		// Protect against bad parameters
+		if ( user === undefined ){
+			log( "Get Deck request missing user data", 1 );
+			callback( false );
+			return;
+		}
+		if ( deckid === undefined ){
+			log( "Get Deck request missing deckid", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof callback !== "function" ){
+			log( "Get Deck request missing callback function", -2 );
+			callback( false );
+			return;
+		}
+		if ( typeof user !== "object" ){
+			log( "Get Deck request with malformed user data", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof deckid !== "string" ){
+			log( "Get Deck request with malformed deckid", 1 );
+			callback( false );
+			return;
+		}
+		user = ds_helper_conditionUser( user );
+	
 		// Get the deck data
 		ds_helper_loadDeck( deckid, function( deck ){
 			
@@ -402,10 +598,12 @@ function DeckServer( callback ){
 						// Log a possible hack attempt if not
 						else{
 							log( "Attempt to get secret deck " + deck.deckid + " by user " + user.userid + " with invalid session", -1 );
+							callback( false );
 						}
 					}
 					else{
 						log( "Attempt to get secret deck " + deck.deckid + " by user " + user.userid + " who doesn't exist", -1 );
+						callback( false );
 					}
 					
 				} );
@@ -422,7 +620,35 @@ function DeckServer( callback ){
 	}
 	
 	this.deleteDeck = function ds_deleteDeck( user, deckid, callback ){
-		
+
+		// Protect against bad parameters
+		if ( user === undefined ){
+			log( "Delete Deck request missing user data", 1 );
+			callback( false );
+			return;
+		}
+		if ( deckid === undefined ){
+			log( "Delete Deck request missing deckid", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof callback !== "function" ){
+			log( "Delete Deck request missing callback function", -2 );
+			callback( false );
+			return;
+		}
+		if ( typeof user !== "object" ){
+			log( "Delete Deck request with malformed user data", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof deckid !== "string" ){
+			log( "Delete Deck request with malformed deckid", 1 );
+			callback( false );
+			return;
+		}
+		user = ds_helper_conditionUser( user );
+	
 		// Verify the user's identity
 		ds_helper_loadUser( "userid", user.userid, function( userData ){
 			
@@ -445,11 +671,11 @@ function DeckServer( callback ){
 						// Delete the deck
 						else{
 							log( "Deleting deck " + deck.deckid + " by user " + deck.owner, 3, context );
-							ds_helper_deleteDeck( deckid, function( data ){
+							ds_helper_deleteDeck( deck, function( deck ){
 								
 								// Remove the deck from the user's deck list
 								delete user.decks[ deckid ];
-								log( 'Deleted deck ' + id + ' from ' + owner + "'s deck lists", 3, context );
+								log( 'Deleted deck ' + deckid + ' from ' + deck.owner + "'s deck lists", 3, context );
 								ds_helper_saveUser( user, function(){
 									
 									// Remove the deck from server memory
@@ -466,11 +692,13 @@ function DeckServer( callback ){
 				}
 				// Log a possible hack attempt if not
 				else{
-					log( "Attempt to delete deck " + deck.deckid + " by user " + user.userid + " with invalid session", -1 );
+					log( "Attempt to delete deck " + deckid + " by user " + user.userid + " with invalid session", -1 );
+					callback( false );
 				}
 			}
 			else{
-				log( "Attempt to delete deck " + deck.deckid + " by user " + user.userid + " who doesn't exist", -1 );
+				log( "Attempt to delete deck " + deckid + " by user " + user.userid + " who doesn't exist", -1 );
+				callback( false );
 			}
 			
 		} );
@@ -517,12 +745,28 @@ function DeckServer( callback ){
 	
 	function ds_helper_loadUser( key, value, callback ){
 		
+		// Assemble the query parameters
+		var params = { TableName:'mdb_users' };
+		
 		// Load from the server's memory if available
 		if ( key == "email" ){
 			if ( context.users[ value ] ){
 				context.users[ value ].lastUsed = Date.now();
 				callback( context.users[ value ] );
 				return;
+			}
+			// Otherwise load it from the database
+			else{
+				params.Key = { email:value };
+				db.get( params, function( err, data ){
+					if ( err ){
+						log( 'Unable to load user with email ' + value + '. Error JSON:' + JSON.stringify( err, null, 2 ), -2, context );
+						callback( false );
+					}
+					else{
+						handleEntry( data );
+					}
+				} );
 			}
 		}
 		else if ( key == "userid" ){
@@ -531,50 +775,56 @@ function DeckServer( callback ){
 				callback( context.userids[ value ] );
 				return;
 			}
+			else{
+				params.IndexName = "userid-index";
+				params.ExpressionAttributeNames = { "#k_userid":"userid" };
+				params.ExpressionAttributeValues = { ":v_userid":value };
+				params.KeyConditionExpression = "#k_userid = :v_userid";
+				db.query( params, function( err, data ){
+					if ( err ){
+						log( 'Unable to load user with userid ' + value + '. Error JSON:' + JSON.stringify( err, null, 2 ), -2, context );
+						callback( false );
+					}
+					else{
+						if ( data.Items.length )
+							data.Item = data.Items[ 0 ];
+						handleEntry( data );
+					}
+				} );
+			}
 		}
 		else{
 			callback( false );
 			return;
 		}
 		
-		// Load from the database if needed
-		var by = {};
-			by[ key ] = value;
-		var params = { TableName:'mdb_users', Key:by };
-		db.get( params, function( err, data ){
-			if ( err ){
-				log( 'Unable to load user with ' + key + ' ' + value + '. Error JSON:' + JSON.stringify( err, null, 2 ), -2, context );
-				callback( false );
+		// Handle database returns
+		function handleEntry( data ){
+			if ( data.Item ){
+				
+				// Initialize and/or parse nested objects as needed
+				data.Item.decks = data.Item.decks || '{}';
+				data.Item.decks = JSON.parse( data.Item.decks );
+				data.Item.prefs = data.Item.prefs || '{}';
+				data.Item.prefs = JSON.parse( data.Item.prefs );
+				
+				// Ensure the completeness of the user data
+				data.Item = ds_helper_conditionUser( data.Item );
+				
+				// Store the user data in memory for ease of use
+				data.Item.lastUsed = Date.now();
+				context.users[ data.Item.email ] = data.Item;
+				context.userids[ data.Item.userid ] = data.Item;
+				
+
+				log( 'Loaded user with ' + key + ' ' + value, 3, context );
+				callback( data.Item );
 			}
 			else{
-				
-				if ( data.Item ){
-					
-					// Initialize and/or parse nested objects as needed
-					data.Item.decks = data.Item.decks || '{}';
-					data.Item.decks = JSON.parse( data.Item.decks );
-					data.Item.prefs = data.Item.prefs || '{}';
-					data.Item.prefs = JSON.parse( data.Item.prefs );
-					
-					// Ensure the completeness of the user data
-					data.Item = ds_helper_conditionUser( data.Item );
-					
-					// Store the user data in memory for ease of use
-					data.Item.lastUsed = Date.now();
-					context.users[ data.Item.email ] = data.Item;
-					context.userids[ data.Item.userid ] = data.Item;
-					
-
-					log( 'Loaded user with ' + key + ' ' + value, 3, context );
-					callback( data.Item );
-				}
-				else{
-					log( 'No user found with ' + key + ' ' + value, 3, context );
-					callback( false );
-				}
-				
+				log( 'No user found with ' + key + ' ' + value, 3, context );
+				callback( false );
 			}
-		} );
+		}
 		
 	}
 	
@@ -603,8 +853,8 @@ function DeckServer( callback ){
 		deck.version = Date.now();
 		
 		// Store the deck data in server memory
-		context.decks[ deck.deckid ].lastUsed = Date.now();
 		context.decks[ deck.deckid ] = deck;
+		context.decks[ deck.deckid ].lastUsed = Date.now();
 		
 		// Persist the deck data to the database
 		var params = { TableName:'mdb_decks', Item:deck };
@@ -646,7 +896,7 @@ function DeckServer( callback ){
 						callback( deck );
 					}
 					else{
-						log( "No data found in DB for deck " + deck.deckid + " by user " + deck.owner, 1, context );
+						log( "No data found in DB for deck " + deckid, 1, context );
 						callback( false );
 					}
 				}
@@ -693,6 +943,7 @@ function DeckServer( callback ){
 		
 		var id = deck.deckid;
 		var owner = deck.owner;
+		
 		var params = { TableName:'mdb_decks', Key:{ 'deckid': deck.deckid } };
 		db.delete( params, function( err, data ){
 			if ( err ){
