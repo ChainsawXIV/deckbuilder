@@ -830,15 +830,17 @@ function DeckServer( callback ){
 	
 	function ds_helper_conditionUser( user ){
 		
-		// Condition the user data to make sure it's complete
-		user.userid = user.userid || null;
-		user.email = user.email || null;
-		user.realName = user.realName || null;
-		user.sub = user.sub || null;
-		user.decks = user.decks || {};
-		user.prefs = user.prefs || {};
+		var buffer = {};
 		
-		return user;
+		// Condition the user data to make sure it's complete
+		buffer.userid = user.userid || null;
+		buffer.email = user.email || null;
+		buffer.realName = user.realName || null;
+		buffer.sub = user.sub || null;
+		buffer.decks = user.decks || {};
+		buffer.prefs = user.prefs || {};
+		
+		return buffer;
 		
 	}
 
@@ -908,17 +910,19 @@ function DeckServer( callback ){
 	
 	function ds_helper_conditionDeck( deck ){
 		
-		// Condition the deck data to make sure it's complete
-		deck.deckid = deck.deckid || null;
-		deck.owner = deck.owner || null;
-		deck.format = deck.format || null;
-		deck.name = deck.name || null;
-		deck.folder = deck.folder || null;
-		deck.tempName = deck.tempName || null;
-		deck.secret = deck.secret || false;
-		deck.cards = deck.cards || {};
+		var buffer = {};
 		
-		return deck;
+		// Condition the deck data to make sure it's complete
+		buffer.deckid = deck.deckid || null;
+		buffer.owner = deck.owner || null;
+		buffer.format = deck.format || null;
+		buffer.name = deck.name || null;
+		buffer.folder = deck.folder || null;
+		buffer.tempName = deck.tempName || null;
+		buffer.secret = deck.secret || false;
+		buffer.cards = deck.cards || {};
+		
+		return buffer;
 		
 	}
 
