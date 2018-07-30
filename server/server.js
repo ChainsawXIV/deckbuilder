@@ -928,6 +928,7 @@ function DeckServer( callback ){
 		buffer.secret = deck.secret || false;
 		buffer.tempName = deck.tempName || null;
 		buffer.version = deck.version || null;
+		buffer.commander = deck.commander || [];
 		
 		// TODO: Constrain the cards object to its schema
 		
