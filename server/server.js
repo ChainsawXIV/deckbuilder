@@ -834,13 +834,16 @@ function DeckServer( callback ){
 		var buffer = {};
 		
 		// Condition the user data to make sure it's complete
-		buffer.userid = user.userid || null;
-		buffer.name = user.name || null;
 		buffer.email = user.email || null;
-		buffer.realName = user.realName || null;
-		buffer.sub = user.sub || null;
 		buffer.decks = user.decks || {};
 		buffer.prefs = user.prefs || {};
+		buffer.realName = user.realName || null;
+		buffer.sub = user.sub || null;
+		buffer.userid = user.userid || null;
+		buffer.session = user.session || null;
+		buffer.name = user.name || null;
+		
+		// TODO: Constrain the decks and prefs objects to their schemas
 		
 		return buffer;
 		
@@ -916,13 +919,17 @@ function DeckServer( callback ){
 		
 		// Condition the deck data to make sure it's complete
 		buffer.deckid = deck.deckid || null;
-		buffer.owner = deck.owner || null;
-		buffer.format = deck.format || null;
-		buffer.name = deck.name || null;
-		buffer.folder = deck.folder || null;
-		buffer.tempName = deck.tempName || null;
-		buffer.secret = deck.secret || false;
 		buffer.cards = deck.cards || {};
+		buffer.folder = deck.folder || null;
+		buffer.format = deck.format || null;
+		buffer.lastUsed = deck.lastUsed || null;
+		buffer.name = deck.name || null;
+		buffer.owner = deck.owner || null;
+		buffer.secret = deck.secret || false;
+		buffer.tempName = deck.tempName || null;
+		buffer.version = deck.version || null;
+		
+		// TODO: Constrain the cards object to its schema
 		
 		return buffer;
 		
