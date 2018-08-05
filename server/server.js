@@ -253,7 +253,7 @@ function DeckServer( callback ){
 	this.logIn = function ds_logIn( googleToken, callback ){
 		
 		// Protect against missing parameters
-		if ( googleToken === undefined ){
+		if ( googleToken === undefined || googleToken === null ){
 			log( "Login request missing googleToken", 1 );
 			callback( false );
 			return;
@@ -311,7 +311,7 @@ function DeckServer( callback ){
 	this.putUser = function ds_putUser( user, callback ){
 		
 		// Protect against bad parameters
-		if ( user === undefined ){
+		if ( user === undefined || user === null ){
 			log( "Put User request missing user data", 1 );
 			callback( false );
 			return;
@@ -356,12 +356,12 @@ function DeckServer( callback ){
 	this.getUser = function ds_getUser( user, userid, callback ){
 
 		// Protect against bad parameters
-		if ( user === undefined ){
+		if ( user === undefined || user === null ){
 			log( "Get User request missing user data", 1 );
 			callback( false );
 			return;
 		}
-		if ( userid === undefined ){
+		if ( userid === undefined || userid === null ){
 			log( "Get User request missing target userid", 1 );
 			callback( false );
 			return;
@@ -441,12 +441,12 @@ function DeckServer( callback ){
 	this.putDeck = function ds_putDeck( user, deck, callback ){
 
 		// Protect against bad parameters
-		if ( user === undefined ){
+		if ( user === undefined || user === null ){
 			log( "Put Deck request missing user data", 1 );
 			callback( false );
 			return;
 		}
-		if ( deck === undefined ){
+		if ( deck === undefined || deck === null ){
 			log( "Put Deck request missing deck data", 1 );
 			callback( false );
 			return;
@@ -479,7 +479,6 @@ function DeckServer( callback ){
 		
 		// Verify the user's identity
 		ds_helper_loadUser( "userid", user.userid, function( userData ){
-
 			
 			if ( userData ){
 				if ( userData.session == user.session ){
@@ -521,6 +520,7 @@ function DeckServer( callback ){
 						ds_helper_saveUser( userData, function(){
 							
 							// Save the deck data
+							deck.owner = userData.userid;
 							log( "Put deck " + deck.deckid + " for user " + deck.owner, 3, context );
 							ds_helper_saveDeck( deck, callback );
 							
@@ -546,12 +546,12 @@ function DeckServer( callback ){
 	this.getDeck = function ds_getDeck( user, deckid, callback ){
 
 		// Protect against bad parameters
-		if ( user === undefined ){
+		if ( user === undefined || user === null ){
 			log( "Get Deck request missing user data", 1 );
 			callback( false );
 			return;
 		}
-		if ( deckid === undefined ){
+		if ( deckid === undefined || deckid === null ){
 			log( "Get Deck request missing deckid", 1 );
 			callback( false );
 			return;
@@ -625,12 +625,12 @@ function DeckServer( callback ){
 	this.deleteDeck = function ds_deleteDeck( user, deckid, callback ){
 
 		// Protect against bad parameters
-		if ( user === undefined ){
+		if ( user === undefined || user === null ){
 			log( "Delete Deck request missing user data", 1 );
 			callback( false );
 			return;
 		}
-		if ( deckid === undefined ){
+		if ( deckid === undefined || deckid === null ){
 			log( "Delete Deck request missing deckid", 1 );
 			callback( false );
 			return;
