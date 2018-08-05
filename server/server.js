@@ -420,7 +420,7 @@ function DeckServer( callback ){
 					data.username = targetData.username;
 					data.decks = {};
 					for ( var deck in targetData.decks ){
-						if ( !targetData.decks[ deck ].secret )
+						if ( !targetData.decks[ deck ].secret && !targetData.decks[ deck ].name != "AUTOSAVE" )
 							data.decks[ deck ] = targetData.decks[ deck ];
 					}
 					log( 'Sending public user data for user ' + userid + ' to user ' + user.userid, 3, context );
