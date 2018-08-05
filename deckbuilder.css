@@ -490,22 +490,64 @@ html,body,div,span,input,select,table,img{
 	background-color:#888;
 	border:1px solid black;
 	border-radius:10em;
-	height:2em;
-	width:2em;
-	margin-right:0.3em;
+	height:1.9em;
+	width:1.9em;
+	position:relative;
+	top:0.09em;
+	margin-right:0.00em;
 }
 .deckProperties .imageButton:hover{
 	background-color:#AAA;
 }
 .deckProperties .imageButton img{
-	width:1.3em;
+	width:1.5em;
 	position:relative;
-	top:0.32em;
-	left:0.0em;
+	top:0.20em;
+	left:0.01em;
+	border-radius:2em;
 }
 .deckProperties .imageButton.disabled{
 	opacity:0.3;
 }
+
+.deckProperties #login path{
+	stroke:black;
+	stroke-width:0.3px;
+}
+.deckProperties #login path:nth-of-type(5){
+	stroke-width:0px;
+}
+.deckProperties #login .abcRioButton{
+	width:1.9em !important;
+	height:1.60em !important;
+	border-radius:1.9em;
+	background-color:transparent;
+	box-shadow:none;
+	margin-bottom:-0.10em;
+}
+.deckProperties #login .abcRioButton:hover{
+	box-shadow:none;
+}
+.deckProperties #login .abcRioButtonContentWrapper{
+	border:none;
+}
+.deckProperties #login .abcRioButton .abcRioButtonIcon{
+	background-color:transparent;
+	width:1.9em;
+	height:1.9em;
+}
+.deckProperties #login .abcRioButton .abcRioButtonSvg{
+	width:1.4em;
+	height:1.4em;
+	margin:-0.13em -0.09em;
+}
+.deckProperties #login .abcRioButtonContents{
+	display:none;
+}
+.deckProperties #user{
+	display:none;
+}
+
 
 .deckData{
 	overflow-y:scroll;

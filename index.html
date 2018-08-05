@@ -20,6 +20,10 @@
 		<script src="filesaver.js"></script>
 		<script src="deckbuilder.js"></script>
 		
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="131516550233-2efdikia10mp3erns90el5jlrskc9d21.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+		
 		<script>
 		
 			// Main page boot up sequence
@@ -30,7 +34,7 @@
 				DECK = new Deck( document );
 				
 			}
-
+			
 		</script>
 		
 		<!-- Google Analytics -->
@@ -42,7 +46,6 @@
 
 			gtag('config', 'UA-112060061-1');
 		</script>
-
 		
 	</head>
 	<body onload="start();">
@@ -89,6 +92,8 @@
 						<a class="imageButton" onclick="document.getElementById( 'fileSelect' ).click();" title="Import Deck List"><img src="images/up.svg" />
 							<input style="display:none;" id="fileSelect" onchange="importWarn( this );" type="file" />
 						</a>
+						<a class="g-signin2 imageButton" id="login" data-onsuccess="onSignIn" data-theme="dark"></a>
+						<a class="imageButton" id="user" onclick="onSignOut();" title="Sign Out"><img src="" /></a>
 					</div>
 				</div>
 				

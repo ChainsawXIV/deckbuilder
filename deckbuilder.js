@@ -9,6 +9,7 @@ function Deck( container, callback ){
 	this.catalog = null;
 	this.decklist = null;
 	this.storage = null;
+	this.remote = new Remote( this );
 	this.dialog = null;
 	this.callback = callback || function(){};
 	this.nameElement = container.querySelector( ".deckName input" );
@@ -28,6 +29,13 @@ function Deck( container, callback ){
 	this.count = 0;
 	this.commander = [];
 	this.offline = false;
+	this.deckid = null;
+	this.autosaveId = null;
+	this.lastUsed = null;
+	this.owner = null;
+	this.version = null;
+	this.autosaveVersion = null;
+	this.secret = null;
 	this.identity = ["W","U","B","R","G"];
 	this.formats = {
 		default:{ minCards:60, dupeLimit:4 },
@@ -157,16 +165,7 @@ function Deck( container, callback ){
 			} );
 			
 			// Attempt to load the last WIP deck from storage
-			context.storage.loadDeck( "AUTOSAVE", function loadAutosave( bundle ){
-				
-				// Load the autosave data if it exists
-				if( bundle )
-					context.load( bundle );
-					
-				// Invoke the callback when the deck is ready
-				context.callback();
-				
-			} );
+			context.loadAutosave( context.callback );
 			
 		} );
 		
@@ -253,7 +252,7 @@ function Deck( container, callback ){
 	}
 
 	// Set the deck format and validate rules
-	this.setFormat = function setFormat( format ){
+	this.setFormat = function setFormat( format, dontSave ){
 		
 		// Use default rules for formats without their own data
 		context.format = format;
@@ -277,7 +276,8 @@ function Deck( container, callback ){
 		context.catalog.refreshPage();
 		
 		// Save the changes to the deck
-		context.autoSave();
+		if ( !dontSave )
+			context.autoSave();
 		
 	}
 	
@@ -421,8 +421,27 @@ function Deck( container, callback ){
 			cards:context.cards,	
 			format:context.format,	
 			name:context.name, 
-			folder:context.folder, 
+			folder:context.folder,
+			deckid:context.deckid,
+			lastUsed:context.lastUsed,
+			owner:context.owner,
+			version:context.version,
+			secret:context.secret
 		};
+		
+		// Use the autosave info if this is an autosave
+		if ( saveAs == "AUTOSAVE" ){
+			bundle.deckid = context.autosaveId;
+			bundle.version = context.autosaveVersion;
+		}
+		
+		// Update the time stamp on the deck
+		if ( Date.now() > bundle.version )
+			bundle.version = Date.now();
+		
+		// Strip the autosave id for non-autosaves
+		if ( saveAs != "AUTOSAVE" && context.deckid == context.autosaveId )
+			bundle.deckid = null;
 		
 		// Reduce the commander to only its name
 		if ( context.commander.length ){
@@ -450,6 +469,7 @@ function Deck( container, callback ){
 	// Save the deck to a named slot in local
 	this.save = function save( overwrite ){
 	
+		context.loadedFrom = context.name;
 		context.storage.save( context.bundle(), null, overwrite );
 	
 	}
@@ -467,14 +487,25 @@ function Deck( container, callback ){
 		// Note which record the deck was loaded from
 		context.loadedFrom = bundle.name;
 	
+		// Collect the autosave id if loading autosave
+		if ( bundle.name == "AUTOSAVE" && bundle.deckid )
+			context.autosaveId = bundle.deckid;
+	
 		// Recover the deck name from the bundle
 		context.name = bundle.name;
 		if ( bundle.tempName && context.name == "AUTOSAVE" ) context.name = bundle.tempName;
 		else if ( context.name == "AUTOSAVE" ) context.name = "";
 		context.nameElement.value = context.name;
 		
+		// Set basic deck properties from the bundle
+		context.deckid = bundle.deckid;
+		context.lastUsed = bundle.lastUsed;
+		context.owner = bundle.owner;
+		context.version = bundle.version;
+		context.secret = bundle.secret;
+		
 		// Set the proper format in the format menu
-		context.setFormat( bundle.format );
+		context.setFormat( bundle.format, true );
 		var selection = bundle.format == "default" ? "" : bundle.format;
 		context.formatElement.querySelector( 'option[value="' + selection + '"]' ).selected = "selected";
 		
@@ -523,7 +554,46 @@ function Deck( container, callback ){
 		return missingCards;
 			
 	}
+
+	// Load the autosave data to the deck list
+	this.loadAutosave = function loadAutosave( callback ){
+		
+		context.storage.loadDeck( "AUTOSAVE", function loadAutosave( bundle ){
 			
+			// If no deck was found stop here
+			if( !bundle ){
+				callback();
+				return;
+			}
+			
+			// Load the autosave data if it exists
+			if( bundle )
+				context.load( bundle );
+			
+			// Stash the autosave information for later
+			context.autosaveId = bundle.deckid;
+			context.autosaveVersion = bundle.version;
+			
+			// Check for a deckid associated with the loaded deck
+			context.storage.loadDeck( context.name, function loadBaseDeck( baseDeck ){
+				
+				// Associate the data of the deck this is based on
+				if( baseDeck ){
+					context.deckid = baseDeck.deckid;
+					context.loadedFrom = baseDeck.name;
+					context.version = baseDeck.version;
+					context.lastUsed = baseDeck.lastUsed;
+					context.owner = baseDeck.owner;
+				}
+				
+				// Invoke the callback when the deck is ready
+				callback();
+				
+			}	);
+			
+		} );
+		
+	}	
 
 	/* RULES VALIDATION METHODS */
 	
@@ -1433,6 +1503,8 @@ function Storage( callback, deck ){
 	this.decks = {};
 	this.folders = {};
 	this.decklistDirty = true;
+	this.remote = deck.remote;
+	this.ready = false;
 	
 	callback = callback || function(){};
 	
@@ -1445,7 +1517,7 @@ function Storage( callback, deck ){
 
 		// Listen for and report errors
 		request.onerror = function( event ){
-			alert( "Failed to get database due to an error:" + event.target.errorCode );
+			alert( "Failed to get local database due to an error:" + event.target.errorCode );
 		};
 		// Initialize or upgrade the database schema
 		request.onupgradeneeded = function( event ){
@@ -1469,10 +1541,13 @@ function Storage( callback, deck ){
 		request.onsuccess = function( event ){
 			context.database = event.target.result;
 			context.database.onerror = function( event ){
-				alert( "Failed to save due to a database error: " + event.target.errorCode );
+				alert( "Failed to save locally due to a database error: " + event.target.errorCode );
 			};
 			// Preload the deck list for future use
 			context.loadList();
+			
+			// Mark the storage module as ready
+			context.ready = true;
 			
 			// Invoke the callback function
 			callback();
@@ -1481,56 +1556,66 @@ function Storage( callback, deck ){
 	};
 
 	// Write a deck to the database, overwriting existing entry if any
-	this.save = function save( deck, callback, overwrite ){
+	this.save = function save( deck, callback, overwrite, serverToLocal ){
 		callback = callback || function(){};
 	
 		// Produce a user facing error if database is disconnected
 		if ( !context.database ){
-			alert( "No database available to save to." );
+			alert( "No local database available to save to." );
 			return;
 		}
 		
-		// Prompt the user to name the deck before saving if needed
-		if ( !deck.name ){
-			context.deck.dialog.show( {
-				allowClose:true,
-				title:"Save Deck",
-				body:'You must name your deck before it can be saved.<br><input type="text" class="nameInput" />',
-				cancel:{},
-				confirm:{ text:"SAVE", callback:function(){
-					var name = this.parentNode.parentNode.querySelector( ".nameInput" ).value
-					context.deck.name = name;
-					context.deck.nameElement.value = name;
-					context.deck.dialog.hide();
-					context.deck.autoSave();
-					context.deck.save();
-				} },
-				onLoad:function( dialog ){
-					dialog.querySelector( ".nameInput" ).focus();
-				}
-			} );
-			return;
-		}
-		
-		// Prompt the user for confirmation before stomping saves
-		if ( !overwrite && context.deck.name != context.deck.loadedFrom && context.decks[ context.deck.name ] ){
-			context.deck.dialog.show( {
-				title:"Save Deck",
-				body:"A deck with this name already exists and will be overwritten if you proceed with saving. Continue?",
-				allowClose:false,
-				confirm:{ callback:function(){ 
-					context.deck.save( true );
-					context.deck.loadedFrom = context.deck.name;
-				} },
-				cancel:{}
-			} );
-			return;
+		// Don't check the details when resaving form server
+		if ( !serverToLocal ){
+			
+			// Prompt the user to name the deck before saving if needed
+			if ( !deck.name ){
+				context.deck.dialog.show( {
+					allowClose:true,
+					title:"Save Deck",
+					body:'You must name your deck before it can be saved.<br><input type="text" class="nameInput" />',
+					cancel:{},
+					confirm:{ text:"SAVE", callback:function(){
+						var name = this.parentNode.parentNode.querySelector( ".nameInput" ).value
+						context.deck.name = name;
+						context.deck.nameElement.value = name;
+						context.deck.dialog.hide();
+						context.deck.autoSave();
+						context.deck.save();
+					} },
+					onLoad:function( dialog ){
+						dialog.querySelector( ".nameInput" ).focus();
+					}
+				} );
+				return;
+			}
+			
+			// Prompt the user for confirmation before stomping saves
+			if ( !overwrite && context.deck.name != context.deck.loadedFrom && context.decks[ context.deck.name ] ){
+				context.deck.dialog.show( {
+					title:"Save Deck",
+					body:"A deck with this name already exists and will be overwritten if you proceed with saving. Continue?",
+					allowClose:false,
+					confirm:{ callback:function(){ 
+						context.deck.save( true );
+						context.deck.loadedFrom = context.deck.name;
+					} },
+					cancel:{}
+				} );
+				return;
+			}
+			
+			// Clear the deckid if saving a brand new deck
+			if ( !context.decks[ context.deck.name ] ){
+				context.deck.deckid = null;
+			}
+			
 		}
 
 		// Initialize the transaction and report any errors
 		var trans = context.database.transaction( [ "decks" ], "readwrite" );
 		trans.onerror = function( event ){
-			alert( "Failed to save due to a transaction error: " + event.target.errorCode );
+			alert( "Failed to save locally due to a transaction error: " + event.target.errorCode );
 		}
 		
 		// Save the deck data to the database
@@ -1548,6 +1633,36 @@ function Storage( callback, deck ){
 			// Invoke the callback when save is done
 			callback( request.result );
 			
+			// Save the deck remotely if logged in
+			if ( !serverToLocal ){
+				context.remote.saveDeck( bundle, function( remoteDeck ){
+					
+					remoteDeck = JSON.parse( remoteDeck );
+					
+					// Note the data of the autosave in case we don't have it
+					if ( remoteDeck.name == "AUTOSAVE" ){
+						context.deck.autosaveId = remoteDeck.deckid;
+						context.deck.autosaveVersion = remoteDeck.version;
+					}
+					
+					// Assign the returned deckid if the deck didn't have one
+					if ( !context.deck.deckid || context.deck.deckid == context.deck.autosaveId ){
+						context.deck.deckid = remoteDeck.deckid;
+					}
+					
+					// Push updates to the live deck if this one is active
+					if ( remoteDeck.deckid == context.deck.deckid ){
+						context.deck.lastUsed = remoteDeck.lastUsed;
+						context.deck.owner = remoteDeck.owner;
+						context.deck.version = remoteDeck.version;
+					}
+					
+					// Resave the deck locally with updates from the server
+					context.save( remoteDeck, function(){}, true, true );
+					
+				} );
+			}
+			
 		}
 	
 	};
@@ -1558,21 +1673,21 @@ function Storage( callback, deck ){
 	
 		// Produce a user facing error if database is disconnected
 		if ( !context.database ){
-			alert( "No database available to save catalog to." );
+			alert( "No local database available to save catalog to." );
 			return;
 		}		
 		
 		// Initialize the transaction and report any errors
 		var trans = context.database.transaction( [ "cards" ], "readwrite" );
 		trans.onerror = function( event ){
-			alert( "Failed to save catalog due to a transaction error: " + event.target.errorCode );
+			alert( "Failed to save local catalog due to a transaction error: " + event.target.errorCode );
 		}
 		
 		// Save the deck data to the database
 		var store = trans.objectStore( "cards" );
 		var request = store.put( catalog );
 		request.onerror = function( event ){
-			alert( "Failed to save catalog due to request error: " + event.target.errorCode );
+			alert( "Failed to save local catalog due to request error: " + event.target.errorCode );
 		};
 		request.onsuccess = function( event ){
 		
@@ -1584,26 +1699,26 @@ function Storage( callback, deck ){
 	};
 	
 	// Delete a deck from the database
-	this.remove = function remove( deckName, callback ){
+	this.remove = function remove( deckName, callback, deckid, localOnly ){
 		callback = callback || function(){};
 	
 		// Produce a user facing error if the database is gone
 		if ( !context.database ){
-			alert( "No database available to delete from." );
+			alert( "No local database available to delete from." );
 			return;
 		}
 	
 		// Initialize the transaction and report any errors
 		var trans = context.database.transaction( [ "decks" ], "readwrite" );
 		trans.onerror = function( event ){
-			alert( "Failed to delete due to a transaction error: " + event.target.errorCode );
+			alert( "Failed to delete from local due to a transaction error: " + event.target.errorCode );
 		}
 		
 		// Delete the specified entry from the database
 		var store = trans.objectStore( "decks" );
 		var request = store.delete( deckName );
 		request.onerror = function( event ){
-			alert( "Failed to delete due to request error: " + event.target.errorCode );
+			alert( "Failed to delete from local due to request error: " + event.target.errorCode );
 		};
 		request.onsuccess = function( event ){
 		
@@ -1614,6 +1729,10 @@ function Storage( callback, deck ){
 			callback( request.result );
 			
 		}
+		
+		// Save to server if available
+		if ( deckid != "undefined" && !localOnly )
+			context.remote.deleteDeck( deckid, function(){} );
 	
 	};
 
@@ -1623,21 +1742,21 @@ function Storage( callback, deck ){
 
 		// Produce a user facing error if the database is gone
 		if ( !context.database ){
-			alert( "No database available to load from." );
+			alert( "No local database available to load from." );
 			return;
 		}
 
 		// Initialize the transaction and report any errors
 		var trans = context.database.transaction( [ "decks" ], "readonly" );
 		trans.onerror = function( event ){
-			alert( "Failed to load due to a transaction error: " + event.target.errorCode );
+			alert( "Failed to load local data due to a transaction error: " + event.target.errorCode );
 		}
 		
 		// Request the specified deck's data from the database
 		var store = trans.objectStore( "decks" );
 		var request = store.get( deckName );
 		request.onerror = function( event ){
-			alert( "Failed to delete due to request error: " + event.target.errorCode );
+			alert( "Failed to load  from local due to request error: " + event.target.errorCode );
 		};
 		request.onsuccess = function( event ){
 		
@@ -1648,27 +1767,64 @@ function Storage( callback, deck ){
 	
 	};
 
+	// Load all the decks from the database as a big blob
+	this.loadAllDecks = function loadAllDecks( callback ){
+		callback = callback || function(){};
+	
+		// Produce a user facing error if the database is gone
+		if ( !context.database ){
+			alert( "No local database available to load from." );
+			return;
+		}
+
+		// Initialize the transaction and report any errors
+		var trans = context.database.transaction( [ "decks" ], "readonly" );
+		trans.onerror = function( event ){
+			alert( "Failed to load local data due to a transaction error: " + event.target.errorCode );
+		}
+		
+		// Recurse over the database gathering deck names
+		var decks = {};
+		var store = trans.objectStore( "decks" );
+		store.openCursor().onsuccess = function( event ){
+			var cursor = event.target.result;
+			if ( cursor ){
+				
+				// Record the data for each deck
+				var key = cursor.value.deckid || cursor.value.name;
+				decks[ key ] = cursor.value;
+				
+				cursor.continue();
+			}
+			// When all decks have been evaluated, send the list to the callback
+			else{
+				callback( decks );
+			}
+		};
+		
+	};
+	
 	// Load the master card catalog from local data
-	this.loadCatalog = function loadDeck( callback ){
+	this.loadCatalog = function loadCatalog( callback ){
 		var callback = callback || function(){};
 
 		// Produce a user facing error if the database is gone
 		if ( !context.database ){
-			alert( "No database available to load catalog from." );
+			alert( "No local database available to load catalog from." );
 			return;
 		}
 
 		// Initialize the transaction and report any errors
 		var trans = context.database.transaction( [ "cards" ], "readonly" );
 		trans.onerror = function( event ){
-			alert( "Failed to load catalog due to a transaction error: " + event.target.errorCode );
+			alert( "Failed to load local catalog due to a transaction error: " + event.target.errorCode );
 		}
 		
 		// Request the specified deck's data from the database
 		var store = trans.objectStore( "cards" );
 		var request = store.get( "master" );
 		request.onerror = function( event ){
-			alert( "Failed to load catalog due to request error: " + event.target.errorCode );
+			alert( "Failed to load local catalog due to request error: " + event.target.errorCode );
 		};
 		request.onsuccess = function( event ){
 		
@@ -1689,14 +1845,14 @@ function Storage( callback, deck ){
 	
 		// Produce a user facing error if the database is gone
 		if ( !context.database ){
-			alert( "No database available to load from." );
+			alert( "No local database available to load from." );
 			return;
 		}
 
 		// Initialize the transaction and report any errors
 		var trans = context.database.transaction( [ "decks" ], "readonly" );
 		trans.onerror = function( event ){
-			alert( "Failed to load due to a transaction error: " + event.target.errorCode );
+			alert( "Failed to load local data due to a transaction error: " + event.target.errorCode );
 		}
 		
 		// Recurse over the database gathering deck names
@@ -1711,7 +1867,7 @@ function Storage( callback, deck ){
 					
 					// Record each deck's key and organization folder
 					var folder = cursor.value.folder || "General";
-					context.decks[ cursor.key ] = { name:cursor.key, folder:folder };
+					context.decks[ cursor.key ] = { name:cursor.key, folder:folder, deckid:cursor.value.deckid };
 					
 					// Build the folder structure for the decks
 					if ( !context.folders[ folder ] ) context.folders[ folder ] = {};
@@ -1730,11 +1886,256 @@ function Storage( callback, deck ){
 	
 	};
 
+	// Clears all the decks from the local database and memory
+	this.clear = function clear(){
+		
+		// Get a complete list of decks to delete
+		context.loadList( function( deckList ){
+			
+			// Delete each of the decks in turn
+			for ( var deckName in context.decks )
+				context.remove( deckName, function(){}, null, true );
+			
+		} );
+		
+	};
+	
 	this.connect( callback );
 	
 	return this;
 
 };
+
+// Component class for accessing remote storage
+function Remote( deck ){
+	
+	var context = this;
+	
+	this.deck = deck;
+	this.address = "http://18.144.35.251:8000/";
+	this.user = {};
+	this.loggedIn = false;
+	this.googleToken = null;
+	this.loginCallback = null;
+	this.deferredAction = null;
+	this.temp = "TEST";
+	
+	// Send credentials to the server and start a session
+	this.logIn = function logIn( googleToken, callback ){
+		
+		googleToken = googleToken || context.googleToken;
+		callback = callback || context.loginCallback;
+		
+		// Defer this if local storage isn't ready yet
+		if ( !context.deck.storage ){
+			context.googleToken = googleToken;
+			context.loginCallback = callback;
+			context.deferredAction = window.setTimeout( context.logIn, 100 );
+			return;
+		}
+		if ( !context.deck.storage.ready ){
+			context.googleToken = googleToken;
+			context.loginCallback = callback;
+			context.deferredAction = window.setTimeout( context.logIn, 100 );
+			return;
+		}
+		
+		post( "login", "googleToken=" + googleToken, function( user ){
+			context.user = JSON.parse( user );
+			context.loggedIn = true;
+			
+			// Download all the user's deck data
+			context.getAllDecks( function( remoteDecks ){
+				
+				// Load up all decks from local storage
+				context.deck.storage.loadAllDecks( function( localDecks ){
+					
+					// Compare each remote deck to its local counterpart
+					for ( var remoteId in remoteDecks ){
+						
+						// Find any local deck with a matching name
+						var deckid = remoteId;
+						for ( var localId in localDecks ){
+							if ( localDecks[ localId ].name == remoteDecks[ remoteId ].name )
+								deckid = localId;
+						}
+						
+						// If the deck exists in both figure out which to keep
+						if ( localDecks[ deckid ] ){
+							
+							// Keep whichever version of the deck is stamped newer
+							var keepLocal = false;
+							if ( localDecks[ deckid ].version > remoteDecks[ remoteId ].version && Object.keys( localDecks[ deckid ].cards ).length > 0 )
+								keepLocal = true;
+							
+							// Push the local version of the deck up to the server
+							if ( keepLocal ){
+								context.deck.storage.save( localDecks[ deckid ], function(){}, true, false );
+							}
+							// Ovewrite the local version with the remove version
+							else{
+								context.deck.storage.save( remoteDecks[ remoteId ], function(){}, true, true );
+							}
+							
+							// Remove the local deck from the temp list
+							delete localDecks[ deckid ];
+							
+						}
+						// Otherwise add the remote deck to local storage
+						else{
+							context.deck.storage.save( remoteDecks[ remoteId ], function(){}, true, true );
+						}
+							
+					}
+					
+					// Write all remaining local decks back to the server
+					for ( var localId in localDecks )
+						context.deck.storage.save( localDecks[ localId ], function(){}, true, false );
+					
+					// Reload the resolved AUTOSAVE into the editor
+					context.deck.loadAutosave( function(){} );
+					
+				} );
+				
+			} );
+						
+			callback( context.user );
+			
+		} );
+		
+	};
+	
+	// Clean up after a user logs out of their account
+	this.logOut = function logOut( callback ){
+		
+		// Can't log out if we're not logged in
+		if ( !context.loggedIn )
+			return;
+		
+		var auth2 = gapi.auth2.getAuthInstance();
+		auth2.signOut().then( function(){
+				
+			context.loggedIn = false;
+			context.user = null;
+			context.deck.storage.clear();
+			context.deck.resetDeck();
+			
+			callback();
+		});		
+		
+	};
+
+	// Update the user data on the server
+	this.saveUser = function saveUser( callback ){
+		
+		// Can't save if we're not logged in
+		if ( !context.loggedIn )
+			return;
+		
+		post( "putuser", "user=" + JSON.stringify( context.user ), function( user ){
+			context.user = JSON.parse( user );
+			callback( user );
+		} );
+		
+	};
+
+	// Request information about a user from the server
+	this.getUser = function getUser( userid, callback ){
+		
+		post( "getuser", "user=" + JSON.stringify( context.user ) + "&target=" + userid, callback );
+		
+	};
+
+	// Save a deck to the server
+	this.saveDeck = function saveDeck( deck, callback ){
+		
+		// Can't save if we're not logged in
+		if ( !context.loggedIn )
+			return;
+		
+		post( "putdeck", "user=" + JSON.stringify( context.user ) + "&deck=" + JSON.stringify( deck ), function( deck ){
+			context.getUser( context.user.userid, function( user ){
+				var temp = JSON.parse( deck );
+				context.user = JSON.parse( user );
+				callback( deck );
+			} );
+		} );
+		
+	};
+
+	// Request a deck drom the server
+	this.getDeck = function getDeck( deckid, callback ){
+		
+		post( "getdeck", "user=" + JSON.stringify( context.user ) + "&deckid=" + deckid, function( data ){
+			callback( data );
+		}	);
+		
+	};
+
+	// Get all the user's decks from the server
+	this.getAllDecks = function getAllDecks( callback ){
+		
+		// This man has no deck
+		if ( !context.user.decks )
+			return {};
+		
+		// Download all the decks
+		var decks = {};
+		var pending = 0;
+		for ( var deckid in context.user.decks ){
+			pending++;
+			context.getDeck( deckid, function( data ){
+				
+				// Acumulate the deck data
+				data = JSON.parse( data );
+				decks[ data.deckid ] = data;
+				
+				// Do the callback when all decks are done
+				// Race condition in case of break point here
+				pending--;
+				if ( pending == 0 )
+					callback( decks );
+				
+			} );
+		}
+		
+	};
+	
+	// Delete a deck from the server
+	this.deleteDeck = function deleteDeck( deckid, callback ){
+		
+		// Can't delete if we're not logged in
+		if ( !context.loggedIn )
+			return;
+		
+		post( "deletedeck", "user=" + JSON.stringify( context.user ) + "&deckid=" + deckid, function( deck ){
+			context.getUser( context.user.userid, function( user ){
+				context.user = JSON.parse( user );
+				callback( deck );
+			} );
+		} );
+		
+	};
+	
+	// General POST message sender
+	function post( command, content, callback ){
+	
+		var xhr = new XMLHttpRequest();
+		xhr.open( "POST", context.address + command, true );
+		xhr.setRequestHeader( "Content-Type", "application/x-www-form-urlencoded" );
+		xhr.onreadystatechange = function(){
+			if ( this.readyState == XMLHttpRequest.DONE && this.status == 200 ){
+				if ( typeof callback === "function" )
+					callback( xhr.responseText );
+				else
+					console.error( "Bad callback function in XHR call" );
+			}
+		}
+		xhr.send( content );
+	
+	}
+	
+}
 
 // Component class for managing the popup dialog box
 function DialogBox( container ){
@@ -2017,7 +2418,7 @@ function showDeckList(){
 				// Add the deck links to the list
 				for ( var d = 0; d < sortedDecks.length; d++ ){
 					code += '<li><a onclick="loadWarn( \'' + sortedDecks[ d ] + '\' )" title="Load Deck">' + sortedDecks[ d ] + "</a>"
-					code += '<a class="deleteDeck" onclick="DECK.storage.remove( \'' + sortedDecks[ d ] + '\', showDeckList );" title="Delete Deck"><span>&#215;</span></a></li>';
+					code += '<a class="deleteDeck" onclick="DECK.storage.remove( \'' + sortedDecks[ d ] + '\', showDeckList, \'' + decks[ sortedDecks[ d ] ].deckid + '\' );" title="Delete Deck"><span>&#215;</span></a></li>';
 				}
 				code += "</ul>";
 			}
@@ -2035,6 +2436,53 @@ function showDeckList(){
 		} );		
 		
 	} );
+	
+}
+
+// Convert the signing button to a signout button
+function onSignIn( googleUser ){
+
+	var profile = googleUser.getBasicProfile();
+	var id_token = googleUser.getAuthResponse().id_token;
+		
+	DECK.remote.logIn( id_token, function( user ){
+		
+		// Update the login button the interface
+		var userIcon = document.getElementById( "user" );
+			userIcon.querySelector( "img" ).src = profile.getImageUrl();
+			userIcon.style.display = "inline-block";
+		var loginIcon = document.getElementById( "login" );
+			loginIcon.style.display = "none";
+		
+	} );
+	
+}
+
+// Convert the signout button to a signin button
+function onSignOut( confirmed ){
+	
+	if ( confirmed ){
+		DECK.remote.logOut( function(){
+			
+			var userIcon = document.getElementById( "user" );
+				userIcon.style.display = "none";
+			var loginIcon = document.getElementById( "login" );
+				loginIcon.style.display = "inline-block";
+				
+		} );
+	}
+	else{
+		DECK.dialog.show( {
+			title:"Sign Out",
+			body:"Signing out will clear all local deck data from this device. Your deck data will be restored next time you log in. Continue?",
+			allowClose:false,
+			confirm:{ callback:function(){
+				onSignOut( true );
+				DECK.dialog.hide();
+			} },
+			cancel:{}
+		} );	
+	}
 	
 }
 
