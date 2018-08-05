@@ -517,7 +517,7 @@ function DeckServer( callback ){
 						}
 						
 						// Update the user's list of decks
-						userData.decks[ deck.deckid ] = { deck:deck.deckid, folder:deck.folder, secret:deck.secret };
+						userData.decks[ deck.deckid ] = { deck:deck.deckid, folder:deck.folder, secret:deck.secret, name:deck.name };
 						ds_helper_saveUser( userData, function(){
 							
 							// Save the deck data
