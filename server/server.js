@@ -505,12 +505,14 @@ function DeckServer( callback ){
 								}
 							}
 							
+							/* Let the client solve for save versioning
 							// Don't save an older version over a newer version
 							if ( baseDeck.version > deck.version ){
 								log( "Blocked overwrite of deck " + baseDeck.deckid + " with older version", 2, context );
 								callback( false );
 								return;
 							}
+							*/
 							
 						}
 						
