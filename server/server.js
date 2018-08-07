@@ -31,6 +31,7 @@ for( var i = 0; i < process.argv.length; i++ ){
 }
 
 var ALLOWED_PATHS = [
+	/^\/ping$/,
 	/^\/login$/,
 	/^\/putuser$/,
 	/^\/getuser$/,
@@ -79,6 +80,24 @@ DeckServer( function( DS ){
 			return;
 		}
 		
+		// Get the command and handle it
+		var command = uri.match( /^\/([\w\d-]+)[\/]?$/ )[1];
+		
+		// Respond to load balancer pings
+		if ( command == "ping" ){
+			response.writeHead( 200, { 
+				"Content-Type":"text/json",
+				"Access-Control-Allow-Origin":"*",
+				"Access-Control-Allow-Methods":"POST, OPTIONS",
+				"Access-Control-Allow-Credentials":false,
+				"Access-Control-Max-Age":"86400",
+				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-OVerride, Content-Type, Accept"
+			} );
+			response.write( "pong" );
+			response.end();
+			return;
+		}
+		
 		// Serve a similar response to requests without a POST
 		if ( request.method !== "POST" ){
 			log( "METHOD: " + request.method, 2 );
@@ -95,9 +114,6 @@ DeckServer( function( DS ){
 			log( "Responding 403 to request without POST", 2 );
 			return;
 		}
-		
-		// Get the command and handle it
-		var command = uri.match( /^\/([\w\d-]+)[\/]?$/ )[1];
 		
 		// Accumulate the arguments in the POST
 		var requestBody = "";

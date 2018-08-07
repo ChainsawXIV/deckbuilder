@@ -1912,7 +1912,7 @@ function Remote( deck ){
 	var context = this;
 	
 	this.deck = deck;
-	this.address = "http://18.144.35.251:8000/";
+	this.address = "https://storage.deckmaven.com/";
 	this.user = {};
 	this.loggedIn = false;
 	this.googleToken = null;
