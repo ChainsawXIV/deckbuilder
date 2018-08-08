@@ -90,6 +90,12 @@ function Deck( container, callback ){
 	/* MAIN INIT FUNCTIONS */
 	
 	function init(){
+		
+		// Save the deck before leaving the page
+		window.onbeforeunload = function(){
+			if( context.remote.deferredSave )
+				return "Your latest changes are still being saved.";
+		};
 	
 		// Create an empty list for the deck
 		context.decklist = new CardList(
@@ -475,9 +481,9 @@ function Deck( container, callback ){
 	}
 	
 	// Save the deck to the draft slot in storage
-	this.autoSave = function autoSave(){
+	this.autoSave = function autoSave( immediate ){
 	
-		context.storage.save( context.bundle( "AUTOSAVE" ), null, true );
+		context.storage.save( context.bundle( "AUTOSAVE" ), null, true, immediate );
 	
 	};
 	
@@ -1556,7 +1562,7 @@ function Storage( callback, deck ){
 	};
 
 	// Write a deck to the database, overwriting existing entry if any
-	this.save = function save( deck, callback, overwrite, serverToLocal ){
+	this.save = function save( deck, callback, overwrite, serverToLocal, immediate ){
 		callback = callback || function(){};
 	
 		// Produce a user facing error if database is disconnected
@@ -1635,6 +1641,7 @@ function Storage( callback, deck ){
 			
 			// Save the deck remotely if logged in
 			if ( !serverToLocal ){
+				var immediate = bundle.name == "AUTOSAVE" ? immediate : true;
 				context.remote.saveDeck( bundle, function( remoteDeck ){
 					
 					remoteDeck = JSON.parse( remoteDeck );
@@ -1660,7 +1667,7 @@ function Storage( callback, deck ){
 					// Resave the deck locally with updates from the server
 					context.save( remoteDeck, function(){}, true, true );
 					
-				} );
+				}, immediate );
 			}
 			
 		}
@@ -1918,7 +1925,7 @@ function Remote( deck ){
 	this.googleToken = null;
 	this.loginCallback = null;
 	this.deferredAction = null;
-	this.temp = "TEST";
+	this.deferredSave = null;
 	
 	// Send credentials to the server and start a session
 	this.logIn = function logIn( googleToken, callback ){
@@ -2047,15 +2054,33 @@ function Remote( deck ){
 	};
 
 	// Save a deck to the server
-	this.saveDeck = function saveDeck( deck, callback ){
+	this.saveDeck = function saveDeck( deck, callback, immediate ){
 		
 		// Can't save if we're not logged in
 		if ( !context.loggedIn )
 			return;
 		
+		// Clear any impending deferred save
+		clearTimeout( context.deferredSave );
+		context.deferredSave = null;
+		
+		// Schedule the save for later if not marked immediate
+		if ( !immediate ){
+			context.deferredSave = window.setTimeout( function(){
+				context.deferredSave = null;
+				post( "putdeck", "user=" + JSON.stringify( context.user ) + "&deck=" + JSON.stringify( deck ), function( deck ){
+					context.getUser( context.user.userid, function( user ){
+						context.user = JSON.parse( user );
+						callback( deck );
+					} );
+				} );
+			}, 5000 );
+			return;
+		}
+		
+		// Save the deck to the remote database
 		post( "putdeck", "user=" + JSON.stringify( context.user ) + "&deck=" + JSON.stringify( deck ), function( deck ){
 			context.getUser( context.user.userid, function( user ){
-				var temp = JSON.parse( deck );
 				context.user = JSON.parse( user );
 				callback( deck );
 			} );
@@ -2462,7 +2487,9 @@ function onSignIn( googleUser ){
 function onSignOut( confirmed ){
 	
 	if ( confirmed ){
+		DECK.autoSave( true );
 		DECK.remote.logOut( function(){
+			
 			
 			var userIcon = document.getElementById( "user" );
 				userIcon.style.display = "none";
