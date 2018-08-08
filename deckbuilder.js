@@ -328,7 +328,7 @@ function Deck( container, callback ){
 		
 	}
 	
-	// 
+	// Set the color identity of the deck based on its commander(s)
 	this.setColorIdentity = function setColorIdentity(){
 		
 		// Clear the existing identity if any
