@@ -533,6 +533,7 @@ function Deck( container, callback ){
 		}
 			
 		// Designate the commander if specified and exists
+		context.clearCommander();
 		if ( bundle.commander ){
 			if ( !Array.isArray( bundle.commander ) ){
 				context.setCommander( keyFromName( bundle.commander ) );
