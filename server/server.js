@@ -853,15 +853,30 @@ function DeckServer( callback ){
 		
 		// Condition the user data to make sure it's complete
 		buffer.email = user.email || null;
-		buffer.decks = user.decks || {};
-		buffer.prefs = user.prefs || {};
 		buffer.realName = user.realName || null;
 		buffer.sub = user.sub || null;
 		buffer.userid = user.userid || null;
 		buffer.session = user.session || null;
 		buffer.name = user.name || null;
 		
-		// TODO: Constrain the decks and prefs objects to their schemas
+		// Copy supported pref properties
+		buffer.prefs = {};
+		if( user.prefs ){
+			//buffer.prefs.PROP = user.prefs.PROP;
+		}
+		
+		// Copy supported deck properties
+		buffer.decks = {};
+		if( user.decks ){
+			for ( var deckid in user.decks ){
+				buffer.decks[ deckid ] = { 
+					deck:deckid,
+					folder:user.decks[ deckid ].folder,
+					secret:user.decks[ deckid ].secret,
+					name:user.decks[ deckid ].name
+				};
+			}
+		}
 		
 		return buffer;
 		
@@ -937,7 +952,6 @@ function DeckServer( callback ){
 		
 		// Condition the deck data to make sure it's complete
 		buffer.deckid = deck.deckid || null;
-		buffer.cards = deck.cards || {};
 		buffer.folder = deck.folder || null;
 		buffer.format = deck.format || null;
 		buffer.lastUsed = deck.lastUsed || null;
@@ -946,9 +960,26 @@ function DeckServer( callback ){
 		buffer.secret = deck.secret || false;
 		buffer.tempName = deck.tempName || null;
 		buffer.version = deck.version || null;
-		buffer.commander = deck.commander || [];
+
+		// Copy the name(s) of the commander(s)
+		buffer.commander = [];
+		if( deck.commander ){
+			for ( var i = 0; i < deck.commander.length; i++ ){
+				if ( typeof deck.commander[ i ] === "string" )
+					buffer.commander.push( deck.commander[ i ] );
+			}
+		}
 		
-		// TODO: Constrain the cards object to its schema
+		// Copy the valid properties of the deck's cards
+		buffer.cards = {};
+		if( deck.cards ){
+			for ( var cardName in deck.cards ){
+				buffer.cards[ cardName ] = { 
+					name:deck.cards[ cardName ].name,
+					count:deck.cards[ cardName ].count
+				};
+			}
+		}
 		
 		return buffer;
 		
