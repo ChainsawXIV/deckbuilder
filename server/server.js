@@ -258,12 +258,37 @@ function DeckServer( callback ){
 	
 	var context = this;
 	
-	this.decks = {};
 	this.users = {};
 	this.userids = {};
+	this.decks = {};
+	this.cleanupAfter = 1000 * 60 * 60 * 24;	// Keep decks and users in memory this long (24h)
+	this.cleanupInterval = 1000 * 60 * 15;		// Purge older decks and users this often (15m)
+	this.cleanupTimer = null;
 	
 	// Set up Google authentication services
 	this.authClient = new OAuth2Client( "131516550233-2efdikia10mp3erns90el5jlrskc9d21.apps.googleusercontent.com" );
+	
+	// In-memory list management
+	function ds_helper_cleanup(){
+		
+		// Cleanup stale users
+		for( var userid in context.userids ){
+			if ( Date.now() > context.userids[ userid ].lastUsed + context.cleanupAfter ){
+				delete context.users[ context.userids[ userid ].email ];
+				delete context.userids[ userid ];
+			}
+		}
+		
+		// Cleanup stale decks
+		for ( var deckid in context.decks ){
+			if ( Date.now() > context.decks[ deckid ].lastUsed + context.cleanupAfter ){
+				delete context.decks[ deckid ];
+			}
+		}
+		
+	}
+	this.cleanupTimer = setInterval( ds_helper_cleanup, context.cleanupInterval );
+	
 	
 	// User management methods
 	this.logIn = function ds_logIn( googleToken, callback ){
