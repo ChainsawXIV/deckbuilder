@@ -989,9 +989,14 @@ function DeckServer( callback ){
 		// Copy the name(s) of the commander(s)
 		buffer.commander = [];
 		if( deck.commander ){
-			for ( var i = 0; i < deck.commander.length; i++ ){
-				if ( typeof deck.commander[ i ] === "string" )
-					buffer.commander.push( deck.commander[ i ] );
+			if ( typeof deck.commander === "string" ){
+				buffer.commander.push( deck.commander );
+			}
+			else if ( Array.isArray( deck.commander ) ){
+				for ( var i = 0; i < deck.commander.length; i++ ){
+					if ( typeof deck.commander[ i ] === "string" )
+						buffer.commander.push( deck.commander[ i ] );
+				}
 			}
 		}
 		
