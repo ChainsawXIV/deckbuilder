@@ -901,7 +901,7 @@ function Deck( container, callback ){
 				continue;
 			
 			// Count the number of non-land cards
-			spells++;
+			spells += card.count;
 			
 			// Count each color if the card has any
 			if ( card.colorIdentity ){
