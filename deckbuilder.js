@@ -1028,7 +1028,8 @@ function CardList( container, template, deck ){
 		colors:{ type:"color" },
 		colorIdentity:{ type:"color" },
 		formats:{ type:"list", populate:true },
-		sort:{ type:"sort" }
+		sort:{ type:"sort" },
+		view:{ type:"view" }
 	};
 	
 	/* UI INITIALIZATION */
@@ -1494,6 +1495,15 @@ function CardList( container, template, deck ){
 						context.sortDescending = true;
 						
 					scheduleFilterUpdate( 500 );
+				} );
+			}
+			// Handle the view mode list specially
+			else if ( type == "view" ){
+				element.addEventListener( "change", function(){
+					
+					// Set the appropriate property on the list container
+					context.container.setAttribute( "viewMode", this.value );
+					
 				} );
 			}
 			

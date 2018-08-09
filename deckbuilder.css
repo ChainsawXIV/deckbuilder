@@ -103,12 +103,13 @@ html,body,div,span,input,select,table,img{
 .filterGroup.name input{
 	width:31%;
 }
-.filterGroup.formats .filterLabel{
+.filterGroup.view .filterLabel{
 	padding-left:0.5em;
-	width:10.5%;
+	width:7%;
 }
-.filterGroup.formats select{
-	width:17.5%;
+.filterGroup.view select{
+	width:20.3%;
+	margin-left:0.7%;
 }
 .filterGroup.sort .filterLabel{
 	padding-left:0.5em;
@@ -133,7 +134,14 @@ html,body,div,span,input,select,table,img{
 .filterGroup.supertypes select,
 .filterGroup.types select,
 .filterGroup.subtypes select{
-	width:22.6%;
+	width:13.26%;
+}
+.filterGroup.formats .filterLabel{
+	padding-left:0.5em;
+	width:10.5%;
+}
+.filterGroup.formats select{
+	width:17.5%;
 }
 
 .filterGroup.text .filterLabel{
@@ -422,6 +430,78 @@ html,body,div,span,input,select,table,img{
 }
 .masterTable .listTable tr[legal="0"] td:nth-of-type(3) .cardCount{
 	color:red;
+}
+
+/* Compact mode card list styles */
+
+.searchFrame[viewMode=compact] .listSection,
+.deckFrame[viewMode=compact] .listSection{
+	padding-top:1em;
+}
+.searchFrame[viewMode=compact] .listTable td:nth-of-type(1),
+.deckFrame[viewMode=compact] .listTable td:nth-of-type(1),
+.searchFrame[viewMode=compact] .cardText,
+.deckFrame[viewMode=compact] .cardText,
+.searchFrame[viewMode=compact] br,
+.deckFrame[viewMode=compact] br{
+	display:none;
+}
+.searchFrame[viewMode=compact] .cardType,
+.deckFrame[viewMode=compact] .cardType,
+.searchFrame[viewMode=compact] .cardCMC,
+.deckFrame[viewMode=compact] .cardCMC,
+.searchFrame[viewMode=compact] .cardStats,
+.deckFrame[viewMode=compact] .cardStats,
+.searchFrame[viewMode=compact] .cardRating,
+.deckFrame[viewMode=compact] .cardRating{
+	display:none;
+}
+.searchFrame[viewMode=compact] .cardManaCost,
+.deckFrame[viewMode=compact] .cardManaCost{
+	float:right;
+}
+.searchFrame[viewMode=compact] .cardRarity,
+.deckFrame[viewMode=compact] .cardRarity{
+	float:left;
+	margin-right:0.5em;
+	position:relative;
+	top:0.6em;
+	height:0.6em;
+	width:0.6em;
+}
+.searchFrame[viewMode=compact] .listTable td:nth-of-type(2),
+.deckFrame[viewMode=compact] .listTable td:nth-of-type(2){
+	padding-bottom:0.0em;
+	padding-top:0.0em;
+	vertical-align:middle;
+}
+.searchFrame[viewMode=compact] .listTable td:nth-of-type(3),
+.deckFrame[viewMode=compact] .listTable td:nth-of-type(3){
+	width:5.5em;
+	padding-bottom:0.0em;
+	padding-top:0.0em;
+	vertical-align:middle;
+}
+.searchFrame[viewMode=compact] .listTable td:nth-of-type(3) .cardCount,
+.deckFrame[viewMode=compact] .listTable td:nth-of-type(3) .cardCount{
+	display:inline-block;
+	float:left;
+	top:0.3em;
+	margin-right:1.0em;
+}
+.searchFrame[viewMode=compact] .listTable td:nth-of-type(3) a,
+.deckFrame[viewMode=compact] .listTable td:nth-of-type(3) a{
+	height:0.7em;
+	width:0.8em;
+	top:0.22em;
+}
+.searchFrame[viewMode=compact] .listTable td:nth-of-type(3) a span,
+.deckFrame[viewMode=compact] .listTable td:nth-of-type(3) a span{
+	top:-0.4em;
+}
+.searchFrame[viewMode=compact] .listTable td:nth-of-type(3) a.remove span,
+.deckFrame[viewMode=compact] .listTable td:nth-of-type(3) a.remove span{
+	top:-0.5em;
 }
 
 /* Deck Data Section */
