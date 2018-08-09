@@ -148,11 +148,18 @@ function Deck( container, callback ){
 		// Populate the folder list before loading decks
 		context.storage.loadList( function loadFolders( folders ){
 			
-			// Populate the folder list
-			for ( var folderName in folders ){
-				if ( folderName != "General" )
-					context.folderList.innerHTML += '<option value="' + folderName + '">' + folderName + '</option>';
-				
+			// Sort a list of the folder names
+			var folderNames = [];
+			for ( var folderName in folders )
+				folderNames.push( folderName );
+			if ( folderNames.indexOf( "General" ) < 0 )
+				folderNames.push( "General" );
+			folderNames.sort();
+			
+			// Populate the select element
+			context.folderList.innerHTML = "";
+			for ( var i = 0; i < folderNames.length; i++ ){
+				context.folderList.innerHTML += '<option value="' + folderNames[ i ] + '">' + folderNames[ i ] + '</option>';
 			}
 			
 			// Attach event listeners to the folder list
@@ -175,6 +182,18 @@ function Deck( container, callback ){
 						opt.value = name;
 						opt.innerHTML = name;
 						context.folderList.appendChild( opt );
+						
+						// Sort the options in the folder list
+						var options = [];
+						for ( var i = 0; i < context.folderList.options.length; i++ )
+							options.push( context.folderList.options[ i ] );
+						options.sort( function( a, b ){
+							if ( a.text > b.text )
+								context.folderList.insertBefore( b, a );
+							else
+								context.folderList.insertBefore( a, b );
+						} );
+
 						opt.selected = "selected";
 					} },
 					onLoad:function( dialog ){
@@ -202,7 +221,7 @@ function Deck( container, callback ){
 			// Attempt to load the last WIP deck from storage
 			context.loadAutosave( context.callback );
 			
-		} );
+		}, true );
 		
 	};
 
@@ -1908,7 +1927,7 @@ function Storage( callback, deck ){
 	};
 	
 	// Gather a list of stored decks and send it to the callback function
-	this.loadList = function loadList( callback ){
+	this.loadList = function loadList( callback, includeAutosave ){
 		callback = callback || function(){};
 	
 		// Used the cached deck list unless specified otherwise
@@ -1935,7 +1954,7 @@ function Storage( callback, deck ){
 			var cursor = event.target.result;
 			if ( cursor ){
 				
-				if ( cursor.key != "AUTOSAVE" ){
+				if ( cursor.key != "AUTOSAVE" || includeAutosave ){
 					
 					// Record each deck's key and organization folder
 					var folder = cursor.value.folder || "General";
@@ -1968,7 +1987,7 @@ function Storage( callback, deck ){
 			for ( var deckName in context.decks )
 				context.remove( deckName, function(){}, null, true );
 			
-		} );
+		}, true );
 		
 	};
 	
