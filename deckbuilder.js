@@ -650,7 +650,7 @@ function Deck( container, callback ){
 		}
 
 		// Validate the card's legality in the chosen format
-		if ( context.format != "" ){
+		if ( context.format != "" && context.format != "default" ){
 		
 			// Cards with no format information are always banned
 			if ( !card.formats ){
