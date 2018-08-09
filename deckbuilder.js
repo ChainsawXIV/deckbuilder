@@ -1217,9 +1217,18 @@ function CardList( container, template, deck ){
 		var descending = descending || context.sortDescending;
 		context.sortedCards.sort( function sordCards( a, b ){
 			var order = ( descending ) ? 1 : -1;
+			var propa = a[ property ];
+			var propb = b[ property ];
+			
+			// Treat no user rating as a rating of zero
+			if ( property == "userRating" ){
+				propa = propa || 0;
+				propb = propb || 0;
+			}
+			
 			// Sort first by the specified property
-			if ( a[ property ] > b[ property ] ) return -1 * order;
-			else if ( a[ property ] < b[ property ] ) return 1 * order;
+			if ( propa > propb ) return -1 * order;
+			else if ( propa < propb ) return 1 * order;
 			// Break ties by sorting by card name, always a-z
 			else {
 				if ( a[ "name" ] > b[ "name" ] ) return 1;
