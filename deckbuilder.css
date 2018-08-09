@@ -449,10 +449,12 @@ html,body,div,span,input,select,table,img{
 .deckProperties select{
 	width:68%;
 }
-.deckProperties .deckFolder select{
+.deckProperties .deckFolder select,
+.deckProperties .deckName input{
 	width:60%;
 }
-.deckProperties .deckFolder a{
+.deckProperties .deckFolder a,
+.deckProperties .deckName a{
 	position:relative;
 	top:0.60em;
 	margin-top:-0.5em;
@@ -467,15 +469,30 @@ html,body,div,span,input,select,table,img{
 	cursor:pointer;
 	user-select:none;
 }
-.deckProperties .deckFolder a:hover{
+.deckProperties .deckFolder a:hover,
+.deckProperties .deckName a:hover{
 	background-color:rgba(128,128,128,0.6);
 }
-.deckProperties .deckFolder a span{
+.deckProperties .deckFolder a span,
+.deckProperties .deckName a span{
 	position:relative;
 	top:-0.30em;
 	left:0.15em;
 	font-size:1.5em;
 	font-weight:700;
+}
+.deckProperties .deckName a{
+	top:0.4em;
+}
+.deckProperties .deckName a[secret=secret]{
+	background-color:rgba(255,0,0,0.5);
+}
+.deckProperties .deckName a span{
+	font-weight:400;
+	font-size:1.3em;
+	position:relative;
+	top:-0.29em;
+	left:0em;
 }
 
 .deckProperties .buttonHolder{

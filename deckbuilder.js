@@ -16,6 +16,7 @@ function Deck( container, callback ){
 	this.formatElement = container.querySelector( ".deckFormat select" );
 	this.folderList = container.querySelector( ".deckFolder select" );
 	this.newFolderButton = container.querySelector( ".deckFolder a" );
+	this.privateDeckButton = container.querySelector( ".deckName a" );
 	this.issuesElement = container.querySelector( ".deckIssues" );
 	this.metricsElement = container.querySelector( ".deckMetrics" );
 	this.masterTable = container.querySelector( ".masterTable" );
@@ -168,6 +169,22 @@ function Deck( container, callback ){
 						dialog.querySelector( ".nameInput" ).focus();
 					}
 				} );
+			} );
+			
+			// Attach event listeners to the set private button
+			context.privateDeckButton.addEventListener( "click", function(){
+				var button = context.privateDeckButton;
+				if ( button.getAttribute( "secret" ) == "secret" ){
+					button.setAttribute( "secret", "" );
+					button.title = "Make Deck Private";
+					context.secret = false;
+				}
+				else{
+					button.setAttribute( "secret", "secret" );
+					button.title = "Make Deck Public";
+					context.secret = true;
+				}
+				context.autoSave( true );
 			} );
 			
 			// Attempt to load the last WIP deck from storage
@@ -483,7 +500,7 @@ function Deck( container, callback ){
 	// Save the deck to the draft slot in storage
 	this.autoSave = function autoSave( immediate ){
 	
-		context.storage.save( context.bundle( "AUTOSAVE" ), null, true, immediate );
+		context.storage.save( context.bundle( "AUTOSAVE" ), null, true, false, immediate );
 	
 	};
 	
@@ -509,6 +526,18 @@ function Deck( container, callback ){
 		context.owner = bundle.owner;
 		context.version = bundle.version;
 		context.secret = bundle.secret;
+		
+		// Set the secret button status
+		if ( bundle.secret ){
+			context.privateDeckButton.setAttribute( "secret", "secret" );
+			context.privateDeckButton.title = "Make Deck Public";
+			context.secret = true;
+		}
+		else{
+			context.privateDeckButton.setAttribute( "secret", "" );
+			context.privateDeckButton.title = "Make Deck Private";
+			context.secret = false;
+		}
 		
 		// Set the proper format in the format menu
 		context.setFormat( bundle.format, true );
