@@ -119,6 +119,18 @@ function Deck( container, callback ){
 
 		// Populate the list of formats for the deck
 		var options = context.catalog.filterTypes.formats.options;
+		options.sort( function( a, b ){
+			ablock = a.match( /Block/ ) ? true : false;
+			bblock = b.match( /Block/ ) ? true : false;
+			if ( ablock && !bblock )
+				return 1;
+			else if ( !ablock && bblock )
+				return -1;
+			else if ( a > b )
+				return 1;
+			else
+				return -1;
+		} );
 		for ( var i = 0; i < options.length; i++ )
 			context.formatElement.innerHTML += '<option value="' + options[ i ] + '">' + options[ i ] + '</option>';
 			
@@ -1373,7 +1385,21 @@ function CardList( container, template, deck ){
 				var content = "";
 				
 				// Sort them alphabetically for ease of use
-				options.sort();
+				if ( field == "formats" ){
+					options.sort( function( a, b ){
+						ablock = a.match( /Block/ ) ? true : false;
+						bblock = b.match( /Block/ ) ? true : false;
+						if ( ablock && !bblock )
+							return 1;
+						else if ( !ablock && bblock )
+							return -1;
+						else if ( a > b )
+							return 1;
+						else
+							return -1;
+					} );				}
+				else
+					options.sort();
 				
 				// Include a blank entry at the top of the list
 				options.unshift( "" );
