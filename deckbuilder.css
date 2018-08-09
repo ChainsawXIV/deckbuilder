@@ -626,7 +626,7 @@ html,body,div,span,input,select,table,img{
 .interstitial,
 .interstitial tr,
 .interstitial td{
-	position:absolute;
+	position:fixed;
 	top:0em;
 	left:0em;
 	z-index:101;
