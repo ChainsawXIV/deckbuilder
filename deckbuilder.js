@@ -1284,7 +1284,7 @@ function CardList( container, template, deck ){
 			list += '<span class="cardCMC">(' + card.cmc + ')</span>';
 			if ( card.rarity )
 				list += ' <span class="cardRarity" rarity="' + card.rarity + '" title="' + rarityTitle + '"></span>';
-			if ( card.userRating )
+			if ( card.userRating && card.votes )
 				list += ' <span class="cardRating">\u2605' + formatRating( card.userRating ) + '</span>';
 			list += '<br><span class="cardType">' + card.type + '</span>';
 			if ( card.power !== undefined && card.toughness !== undefined )
