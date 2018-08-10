@@ -2042,6 +2042,11 @@ function Remote( deck ){
 		}
 		
 		post( "login", "googleToken=" + googleToken, function( user ){
+			
+			if ( !user ){
+				return;
+			}
+			
 			context.user = JSON.parse( user );
 			context.loggedIn = true;
 			
@@ -2134,8 +2139,10 @@ function Remote( deck ){
 			return;
 		
 		post( "putuser", "user=" + JSON.stringify( context.user ), function( user ){
-			context.user = JSON.parse( user );
-			callback( user );
+			if ( user ){
+				context.user = JSON.parse( user );
+				callback( user );
+			}
 		} );
 		
 	};
@@ -2143,7 +2150,10 @@ function Remote( deck ){
 	// Request information about a user from the server
 	this.getUser = function getUser( userid, callback ){
 		
-		post( "getuser", "user=" + JSON.stringify( context.user ) + "&target=" + userid, callback );
+		post( "getuser", "user=" + JSON.stringify( context.user ) + "&target=" + userid, function( user ){
+			if ( user )
+				callback( user );
+		} );
 		
 	};
 
@@ -2163,10 +2173,14 @@ function Remote( deck ){
 			context.deferredSave = window.setTimeout( function(){
 				context.deferredSave = null;
 				post( "putdeck", "user=" + JSON.stringify( context.user ) + "&deck=" + JSON.stringify( deck ), function( deck ){
-					context.getUser( context.user.userid, function( user ){
-						context.user = JSON.parse( user );
-						callback( deck );
-					} );
+					if ( deck ){
+						context.getUser( context.user.userid, function( user ){
+							if ( user ){
+								context.user = JSON.parse( user );
+								callback( deck );
+							}
+						} );
+					}
 				} );
 			}, 5000 );
 			return;
@@ -2186,7 +2200,8 @@ function Remote( deck ){
 	this.getDeck = function getDeck( deckid, callback ){
 		
 		post( "getdeck", "user=" + JSON.stringify( context.user ) + "&deckid=" + deckid, function( data ){
-			callback( data );
+			if ( data )
+				callback( data );
 		}	);
 		
 	};
@@ -2206,8 +2221,10 @@ function Remote( deck ){
 			context.getDeck( deckid, function( data ){
 				
 				// Acumulate the deck data
-				data = JSON.parse( data );
-				decks[ data.deckid ] = data;
+				if ( data ){
+					data = JSON.parse( data );
+					decks[ data.deckid ] = data;
+				}
 				
 				// Do the callback when all decks are done
 				// Race condition in case of break point here
@@ -2229,8 +2246,10 @@ function Remote( deck ){
 		
 		post( "deletedeck", "user=" + JSON.stringify( context.user ) + "&deckid=" + deckid, function( deck ){
 			context.getUser( context.user.userid, function( user ){
-				context.user = JSON.parse( user );
-				callback( deck );
+				if ( user ){					
+					context.user = JSON.parse( user );
+					callback( deck );
+				}
 			} );
 		} );
 		
@@ -2248,6 +2267,9 @@ function Remote( deck ){
 					callback( xhr.responseText );
 				else
 					console.error( "Bad callback function in XHR call" );
+			}
+			else if ( this.readyState == XMLHttpRequest.DONE ){
+				callback( false );
 			}
 		}
 		xhr.send( content );
