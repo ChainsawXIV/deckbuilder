@@ -37,6 +37,9 @@ function Deck( container, callback ){
 	this.version = null;
 	this.autosaveVersion = null;
 	this.secret = null;
+	this.hoverCard = null;
+	this.companionCard = null;
+	this.meldCard = null;
 	this.identity = ["W","U","B","R","G"];
 	this.formats = {
 		default:{ minCards:60, dupeLimit:4 },
@@ -87,7 +90,6 @@ function Deck( container, callback ){
 	request.open( "GET", "https://deckmaven.com/data.json", true );
 	request.send();	
 	
-	
 	/* MAIN INIT FUNCTIONS */
 	
 	function init(){
@@ -98,6 +100,144 @@ function Deck( container, callback ){
 				return "Your latest changes are still being saved.";
 		};
 	
+		// Show enlarged card when hovering over Gatherer links
+		context.hoverCard = document.querySelector( ".hoverCard" );
+		context.companionCard = document.querySelector( ".companionCard" );
+		context.meldCard = document.querySelector( ".meldCard" );
+		window.addEventListener( "mousemove", function( e ){
+			
+			// Get the parent of an image in case it's a link
+			var target = e.target;
+			if ( target.tagName == "IMG" )
+				target = target.parentNode;
+			
+			// Verify that the element is a valid link
+			if ( target.tagName == "A" && target.href ){
+				
+				// Parse the multiverseid from the URL
+				var id = target.href.match( /multiverseid=([\d]+)$/ );
+				if ( id ){
+					
+					// Show the floating card
+					context.hoverCard.src = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + id[ 1 ] + "&type=card";
+					context.hoverCard.style.display = "inline-block";
+					
+					// Position the card near the cursor
+					var y = e.clientY + 10;
+					if ( y > window.innerHeight - 310 )
+						y = e.clientY - 310;
+					context.hoverCard.style.top = y + "px";
+					context.companionCard.style.top = y + "px";
+					context.meldCard.style.top = y + "px";
+					var x = e.clientX + 10;
+					var xb = x + 225;
+					var xc = x + 450;
+					if ( x > window.innerWidth - 225 ){
+						x = e.clientY - 233;
+						xb = x + 225;
+						xc = x + 450;
+					}
+					context.hoverCard.style.left = x + "px";
+					context.companionCard.style.left = xb + "px";
+					context.meldCard.style.left = xc + "px";
+					
+					// Get the full card data
+					var key = target.getAttribute( "key" );
+					if ( key ){
+						
+						var cardName = nameFromKey( key );
+						var card = context.cardData[ cardName ];
+						
+						// Rotate split cards
+						if ( card.layout == "split" ){
+							context.hoverCard.style.transformOrigin = "top left";
+							context.hoverCard.style.transform = "rotate(90deg)";
+							context.hoverCard.style.left = ( x + 310 ) + "px";
+							if ( window.innerHeight < e.clientY + 233 )
+								context.hoverCard.style.top = ( e.clientY - 223 ) + "px";
+							else
+								context.hoverCard.style.top = ( e.clientY + 10 ) + "px"
+						}
+						else{
+							context.hoverCard.style.transform = "";
+						}
+						
+						// Show companion cards if any
+						if ( card.names && ( card.layout == "meld" || card.layout == "double-faced" || card.layout == "flip" ) ){
+							var cardb = context.cardData[ card.names[ 1 ] ];
+							if ( cardb.multiverseid ){
+								context.companionCard.src = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + cardb.multiverseid + "&type=card";
+								context.companionCard.style.display = "inline-block";
+								
+								// Move everything left if needed
+								if ( x > window.innerWidth - 450 ){
+									x = e.clientY - 458;
+									xb = x + 225;
+									xc = x + 450;
+								}
+								context.hoverCard.style.left = x + "px";
+								context.companionCard.style.left = xb + "px";
+								context.meldCard.style.left = xc + "px";
+								
+								// Rotate flip cards
+								if ( cardb.layout == "flip" ){
+									context.companionCard.style.transformOrigin = "50% 50%";
+									context.companionCard.style.transform = "rotate(180deg)";
+								}
+								else{
+									context.companionCard.style.transform = "";
+								}
+								
+							}
+							
+							// Show melded card if there is one
+							if ( card.names.length > 2 ){
+								var cardc = context.cardData[ card.names[ 2 ] ];
+								if ( cardc.multiverseid ){
+										
+									// Move everything left if needed
+									if ( x > window.innerWidth - 450 ){
+										x = e.clientY - 283;
+										xb = x + 225;
+										xc = x + 450;
+									}
+									context.hoverCard.style.left = x + "px";
+									context.companionCard.style.left = xb + "px";
+									context.meldCard.style.left = xc + "px";
+									
+									context.meldCard.src = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + cardc.multiverseid + "&type=card";
+									context.meldCard.style.display = "inline-block";
+								}
+							}
+							else{
+								// Hide the extra card
+								context.meldCard.style.display = "none";
+							}
+							
+						}
+						else{
+							// Hide the extra cards
+							context.companionCard.style.display = "none";
+							context.meldCard.style.display = "none";
+							context.companionCard.style.transform = "";
+						}
+						
+					}
+					
+					return;
+					
+				}
+			}
+			
+			// Hide the hover card
+			context.hoverCard.style.display = "none";
+			context.companionCard.style.display = "none";
+			context.meldCard.style.display = "none";
+			context.hoverCard.style.transform = "";
+			context.companionCard.style.transform = "";
+			
+		} );
+
 		// Create an empty list for the deck
 		context.decklist = new CardList(
 			context.container.querySelector( ".deckFrame" ),
@@ -1315,11 +1455,11 @@ function CardList( container, template, deck ){
 			
 			// Compose left hand section with the card image
 			list += '<tr key="' + key + '" legal="1" commander="' + commander + '" count="' + count + '"><td>';
-			list += '<a href="' + link + '" target="_blank"><img class="cardImage" src="' + image + '" onerror="this.src = \'images/cardback.jpg\'" /></a>';
+			list += '<a href="' + link + '" target="_blank" key="' + key + '"><img class="cardImage" src="' + image + '" onerror="this.src = \'images/cardback.jpg\'" /></a>';
 			list += '</td><td>';
 			
 			// Compose the card entry with its various data fields
-			list += '<a class="cardTitle" href="' + link + '" target="_blank">' + card.name + '</a>';
+			list += '<a class="cardTitle" href="' + link + '" target="_blank" key="' + key + '">' + card.name + '</a>';
 			if ( card.manaCost )
 				list += '<span class="cardManaCost">' + card.manaCost + '</span>';
 			list += '<span class="cardCMC">(' + card.cmc + ')</span>';
@@ -2629,5 +2769,6 @@ function onSignOut( confirmed ){
 	}
 	
 }
+
 
 

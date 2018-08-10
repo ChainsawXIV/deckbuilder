@@ -896,3 +896,18 @@ html,body,div,span,input,select,table,img{
 	user-select:none;
 }
 
+/* Hovering Card Image */
+
+.hoverCard,
+.companionCard,
+.meldCard{
+	position:absolute;
+	z-index:1000;
+	top:0px;
+	left:0px;
+	height:310px;
+	width:223px;
+	border-radius:11px;
+	display:none;
+	transform-origin:top left;
+}
