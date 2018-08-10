@@ -911,3 +911,19 @@ html,body,div,span,input,select,table,img{
 	display:none;
 	transform-origin:top left;
 }
+
+/* Loading Dialog */
+.loadBar{
+	width:100%;
+	height:1.5em;
+	border-radius:0.2em;
+	border:1px solid black;
+	background-color:rgba(0,0,0,0.5);
+	padding:0.1em 0.15em;
+}
+.loadBar .progress{
+	height:1.1em;
+	border-radius:0.2em;
+	border:1px solid rgba(0,160,0,1.0);
+	background-color:rgba(0,128,0,1.0);
+}

@@ -50,9 +50,13 @@ function Deck( container, callback ){
 	
 	/* INITIALIZATION AND LOADING */
 	
+	// Show a loading bar dialog
+	context.dialog = new DialogBox( context.container.querySelector( ".interstitial" ) );
+	showLoad( "Downloading card library...", 0, 1 );
+	
 	// Fetch the master card data and set up the card lists
 	var request = new XMLHttpRequest();
-	request.onreadystatechange = function initializeDeck(){
+	request.onreadystatechange = function initializeDeck( e ){
 		if( request.readyState == 4 ){
 			
 			// Set up the storage system regardless of outcome
@@ -87,12 +91,18 @@ function Deck( container, callback ){
 			
 		}
 	};
+	request.onprogress = function downloadUpdate( e ){
+		//showLoad( "Doaloading card library...", e.loaded, e.total );
+		showLoad( "Doaloading card library...", e.loaded, 9386144 );
+	}
 	request.open( "GET", "https://deckmaven.com/data.json", true );
 	request.send();	
 	
 	/* MAIN INIT FUNCTIONS */
 	
 	function init(){
+		
+		showLoad( "Configuring user interface..." );
 		
 		// Save the deck before leaving the page
 		window.onbeforeunload = function(){
@@ -254,9 +264,6 @@ function Deck( container, callback ){
 		);
 		context.catalog.setCards( context.cardData );
 		
-		// Set up the general purpose dialog box
-		context.dialog = new DialogBox( context.container.querySelector( ".interstitial" ) );
-
 		// Populate the list of formats for the deck
 		var options = context.catalog.filterTypes.formats.options;
 		options.sort( function( a, b ){
@@ -285,7 +292,9 @@ function Deck( container, callback ){
 			context.autoSave();
 		} );
 	
+	
 		// Populate the folder list before loading decks
+		showLoad( "Loading list of saved decks..." );
 		context.storage.loadList( function loadFolders( folders ){
 			
 			// Sort a list of the folder names
@@ -359,7 +368,11 @@ function Deck( container, callback ){
 			} );
 			
 			// Attempt to load the last WIP deck from storage
-			context.loadAutosave( context.callback );
+			showLoad( "Loading most recent deck list... " );
+			context.loadAutosave( function(){
+				context.dialog.hide();
+				context.callback();
+			}	);
 			
 		}, true );
 		
@@ -1119,6 +1132,22 @@ function Deck( container, callback ){
 		
 		// Put the content into its container
 		context.metricsElement.innerHTML = content;
+		
+	}
+	
+	
+	/* UI HELPERS */
+	function showLoad( message, loaded, total ){
+		
+		// Calculate progress
+		var progress = total > 0 ? loaded / total : 1;
+		var pct = Math.round( progress * 100 ) + "%";
+		
+		// Construct dialog box contents
+		var content = message + '<span style="float:right;">' + pct + '</span><br>';
+		content += '<div class="loadBar"><div class="progress"style="width:' + pct + ';"></div></div>';
+		
+		context.dialog.show( { title:"Loading", body:content , allowClose:false } );
 		
 	}
 	
