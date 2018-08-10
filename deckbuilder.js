@@ -1398,6 +1398,35 @@ function CardList( container, template, deck ){
 				propb = propb || 0;
 			}
 			
+			// Order rarity appropriately
+			if ( property == "rarity" ){
+				if ( propa == "L" )
+					propa = 0;
+				else if ( propa == "C" )
+					propa = 1;
+				else if ( propa == "U" )
+					propa = 2;
+				else if ( propa == "R" )
+					propa = 3;
+				else if ( propa == "M" )
+					propa = 4;
+				else
+					propa = 5;
+				
+				if ( propb == "L" )
+					propb = 0;
+				else if ( propb == "C" )
+					propb = 1;
+				else if ( propb == "U" )
+					propb = 2;
+				else if ( propb == "R" )
+					propb = 3;
+				else if ( propb == "M" )
+					propb = 4;
+				else
+					propa = 5;
+			}
+			
 			// Sort first by the specified property
 			if ( propa > propb ) return -1 * order;
 			else if ( propa < propb ) return 1 * order;
