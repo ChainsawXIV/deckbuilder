@@ -387,9 +387,17 @@ function Deck( container, callback ){
 		var cardName = nameFromKey( cardKey );
 		var card = context.cardData[ cardName ];
 		
-		// If this is the back face of card add the front face instead
 		if ( card.names ){
-			if ( card.name !== card.names[ 0 ] ){
+			// Add both component cards for cards with meld
+			if ( card.layout == "meld" ){
+				if ( card.name == card.names[ 2 ] ){
+					context.addCard( keyFromName( card.names[ 0 ] ), quantity );
+					context.addCard( keyFromName( card.names[ 1 ] ), quantity );
+					return;
+				}
+			}
+			// If this is the back face of card add the front face instead
+			else if ( card.name !== card.names[ 0 ] ){
 				cardName = card.names[ 0 ];
 				card = context.cardData[ cardName ];
 			}
@@ -424,6 +432,24 @@ function Deck( container, callback ){
 	this.removeCard = function removeCard( cardKey, quantity ){
 	
 		var cardName = nameFromKey( cardKey );
+		var card = context.cardData[ cardName ];
+		
+		if ( card.names ){
+			// Remove both component cards for cards with meld
+			if ( card.layout == "meld" ){
+				if ( card.name == card.names[ 2 ] ){
+					context.removeCard( keyFromName( card.names[ 0 ] ), quantity );
+					context.removeCard( keyFromName( card.names[ 1 ] ), quantity );
+					return;
+				}
+			}
+			// If this is the back face of a card remove the front face instead
+			else if ( card.name !== card.names[ 0 ] ){
+				cardName = card.names[ 0 ];
+				card = context.cardData[ cardName ];
+			}
+		}
+		
 		if ( context.cards[ cardName ] ){
 			// If there would be no copies left in the deck
 			if ( context.cards[ cardName ].count <= quantity ){
@@ -1276,6 +1302,13 @@ function CardList( container, template, deck ){
 			var primaryCount = context.deck.cards[ card.name ] ? context.deck.cards[ card.name ].count : 0;
 			if ( !primaryCount && card.names )
 				primaryCount = context.deck.cards[ card.names[ 0 ] ] ? context.deck.cards[ card.names[ 0 ] ].count : 0;
+			
+			// Set count for the result of a meld to the lower of its parts
+			if ( card.layout == "meld" && card.name == card.names[ 2 ] ){
+				var aCount = context.deck.cards[ card.names[ 0 ] ] ? context.deck.cards[ card.names[ 0 ] ].count : 0;
+				var bCount = context.deck.cards[ card.names[ 1 ] ] ? context.deck.cards[ card.names[ 1 ] ].count : 0;
+				primaryCount = Math.min( aCount, bCount );
+			}
 			
 			// Populate the card count into the element
 			if( !primaryCount ){
