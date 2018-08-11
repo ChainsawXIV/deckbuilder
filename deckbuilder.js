@@ -174,7 +174,12 @@ function Deck( container, callback ){
 						
 						// Show companion cards if any
 						if ( card.names && ( card.layout == "meld" || card.layout == "double-faced" || card.layout == "flip" ) ){
+							
+							// Get the other card in the pair
 							var cardb = context.cardData[ card.names[ 1 ] ];
+							if ( cardb.name == card.name )
+								cardb = context.cardData[ card.names[ 0 ] ];
+							
 							if ( cardb.multiverseid ){
 								context.companionCard.src = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + cardb.multiverseid + "&type=card";
 								context.companionCard.style.display = "inline-block";
