@@ -363,8 +363,8 @@
 						var data = JSON.parse( this.responseText );
 						for ( var i = 0; i < data.results.length; i++ ){
 							var productId = data.results[ i ].productId;
-							var price = data.results[ i ].marketPrice;
-							if ( !prices[ productId ] || data.results[ i ].subTypeName == "Normal" )
+							var price = data.results[ i ].lowPrice;
+							if ( !prices[ productId ] || prices[ productId ].price > price )
 								prices[ productId ] = price;
 						}
 						
