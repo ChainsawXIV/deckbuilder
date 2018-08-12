@@ -1089,6 +1089,20 @@ function Deck( container, callback ){
 		
 		// Display the number of cards in the deck
 		content += "Card Count: " + context.count + "<br>";
+		
+		// Display the estimated cost of the deck
+		var price = 0;
+		for ( var cardName in context.cards ){
+			if ( context.cards[ cardName ].price )
+				price += ( context.cards[ cardName ].price * context.cards[ cardName ].count );
+		}
+		var pre = Math.floor( price ) + "";
+		var post = Math.round( ( price % 1 ) * 100 ) + "";
+		while ( post.length < 2 )
+			post += "0";
+		var num = pre + "." + post;
+		
+		content += "Price: $" + num + "<br>";
 
 		// Count the number of cards with each color and casting cost
 		var mix = {W:0,U:0,B:0,R:0,G:0,C:0};
