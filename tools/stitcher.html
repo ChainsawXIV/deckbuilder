@@ -263,17 +263,10 @@
 									name = name.match( /^(.+) \/\/ / )[ 1 ];
 								
 								if ( cards[ name ] ){
-									if ( cards[ name ].price )
-										console.log( "Re-Pricing " + name + " from $" + cards[ name ].price + " to $" + price );
-									cards[ name ].price = price;
-								}
-								
-								if ( name.match( / \/\/ / ) ){
-									name = name.match( / \/\/ (.+)$/ )[ 1 ];
-								
-									if ( cards[ name ] ){
-										if ( cards[ name ].price )
-											console.log( "Re-Pricing " + name + " from $" + cards[ name ].price + " to $" + price );
+									if ( !cards[ name ].price )
+										cards[ name ].price = price;
+									else if ( price < cards[ name ].price ){
+										console.log( "Replaced price for " + name + ": " + cards[ name ].price + " -> " + price );
 										cards[ name ].price = price;
 									}
 								}
