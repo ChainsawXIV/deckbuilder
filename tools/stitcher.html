@@ -7,13 +7,22 @@
 		
 			sets = null;
 			cards = null;
-			ratings = null;
+			previous = null;
 			startTime = null;
+			getRatings = null;
+			getPrices = null;
+			products = [];
+			prices = {};
 			index = [];
+			publicKey = null;
+			privateKey = null;
+			accessToken = null;
+			bearerToken = null;
 			cursor = 0;
 			subcursor = -1;
 			fetchCount = 0;
 			fetchGoal = 0;
+			proxy = 'https://cors-anywhere.herokuapp.com/';
 			
 			extras = {
 				"Daretti, Scrap Savant":{ legalCommander:true },
@@ -29,6 +38,9 @@
 			};
 		
 			function build(){
+			
+				getRatings = document.getElementById( "getRatings" ).checked;
+				getPrices = document.getElementById( "getPrices" ).checked;
 
 				document.getElementById( "report" ).innerHTML = "Starting build process...</br>";
 			
@@ -42,24 +54,24 @@
 						cards = data;
 						document.getElementById( "report" ).innerHTML += "Set data loaded...</br>";
 						
-						// Load the optional previous ratings
-						if ( document.getElementById( "ratings" ).files ){
+						// Load the optional previous ratings & prices
+						if ( document.getElementById( "previous" ).files ){
 						
-							loadJSON( document.getElementById( "ratings" ), function( data ){
-								ratings = data;
-								document.getElementById( "report" ).innerHTML += "Existing rating data loaded...</br>";
+							loadJSON( document.getElementById( "previous" ), function( data ){
+								previous = data;
+								document.getElementById( "report" ).innerHTML += "Existing data loaded...</br>";
 								
 								startTime = Date.now();
-								stitch( false );
+								stitch();
 							} );
 							
 						}
 						else{
 						
-							document.getElementById( "report" ).innerHTML += "Scraping ratings data...</br>";
+							document.getElementById( "report" ).innerHTML += "No existing data provided...</br>";
 							
 							startTime = Date.now();
-							stitch( true );
+							stitch();
 						
 						}
 						
@@ -68,7 +80,7 @@
 			
 			}
 			
-			function stitch( scrape ){
+			function stitch(){
 				
 				// Iterate through all the cards in the game
 				for ( var cardName in cards ){
@@ -124,9 +136,12 @@
 					}
 					
 					// Integrate existing rating data if provided
-					if ( ratings ){
-						if ( ratings[ cardName ].userRating ) baseCard.userRating = ratings[ cardName ].userRating;
-						if ( ratings[ cardName ].votes ) baseCard.votes = ratings[ cardName ].votes;
+					if ( previous ){
+						if ( previous[ cardName ] ){
+							if ( previous[ cardName ].userRating ) baseCard.userRating = previous[ cardName ].userRating;
+							if ( previous[ cardName ].votes ) baseCard.votes = previous[ cardName ].votes;
+							if ( previous[ cardName ].price ) baseCard.price = previous[ cardName ].price;
+						}
 					}
 					
 					// If the card can be a partner commander and with who
@@ -189,23 +204,14 @@
 				
 				document.getElementById( "report" ).innerHTML += "Static data compiled...</br>";
 
-				if ( scrape ){
+				if ( getRatings ){
+
+					fetchRatings();
 				
-					document.getElementById( "report" ).innerHTML += '<span id="buffer"></span></br>';
+				}
+				else if ( getPrices ){
 				
-					// Compile a list of cards to fetch data for
-					for( var name in cards ){
-						if( cards[ name ].mvids ){
-							fetchGoal += cards[ name ].mvids.length;
-							index.push( { "name":name, "mvids":cards[ name ].mvids } );
-							delete cards[ name ][ "mvids" ];
-						}
-					}
-					
-					// Start fetching user ratings
-					cursor = 0;
-					subcursor = -1;
-					scrape();
+					fetchPrices();
 				
 				}
 				else{
@@ -216,7 +222,164 @@
 			
 			}
 			
-			function scrape(){
+			function fetchRatings(){
+			
+				document.getElementById( "report" ).innerHTML += '<span id="buffer"></span></br>';
+			
+				// Compile a list of cards to fetch data for
+				for( var name in cards ){
+					if( cards[ name ].mvids ){
+						fetchGoal += cards[ name ].mvids.length;
+						index.push( { "name":name, "mvids":cards[ name ].mvids } );
+						delete cards[ name ][ "mvids" ];
+					}
+				}
+				
+				// Start fetching user ratings
+				cursor = 0;
+				subcursor = -1;
+				scrapeRatings();
+			
+			}
+			
+			function fetchPrices(){
+			
+				publicKey = document.getElementById( "publicKey" ).value;
+				privateKey = document.getElementById( "privateKey" ).value;
+				accessToken = document.getElementById( "accessToken" ).value;
+				
+				authenticate( function(){
+				
+					document.getElementById( "report" ).innerHTML += '<span id="buffer2"></span></br>';
+					loadProducts( 0, function( products ){
+					
+						loadPrices( 0, function( prices ){
+						
+							for ( var i = 0; i < products.length; i++ ){
+								var id = products[ i ].productId;
+								var price = prices[ id ];
+								var name = products[ i ].productName;
+								if ( cards[ name ] ){
+									if ( cards[ name ].price )
+										console.log( "Re-Pricing " + name + " from $" + cards[ name ].price + " to $" + price );
+									cards[ name ].price = price;
+								}
+							}
+							
+							save( cards );
+						
+						} );
+					
+					} );
+				
+				} );
+			
+			}
+				
+			function authenticate( callback ){
+				
+				document.getElementById( "report" ).innerHTML += "Authenticating...<br/>";
+
+				var xhr = new XMLHttpRequest();
+				xhr.open( "POST", proxy + "https://api.tcgplayer.com/token", true );
+				xhr.setRequestHeader( "Content-Type", "application/x-www-form-urlencoded" );
+				xhr.setRequestHeader( "X-Tcg-Access-Token", accessToken );
+				xhr.onreadystatechange = function(){
+				
+					if ( this.readyState == XMLHttpRequest.DONE && this.status == 200 ){
+					
+						document.getElementById( "report" ).innerHTML += "Authenticated...<br/>";
+						var data = JSON.parse( this.responseText );
+						bearerToken = data.access_token;
+						callback( bearerToken );
+							
+					}
+					else if ( this.readyState == XMLHttpRequest.DONE ){
+					
+						document.getElementById( "report" ).innerHTML += "Failed to authenticate!<br/>";
+						
+					}
+					
+				}
+				xhr.send( "grant_type=client_credentials&client_id=" + publicKey + "&client_secret=" + privateKey );
+				
+			}
+				
+			function loadProducts( page, callback ){
+			
+				var limit = 100;
+				var offset = 1 + ( page * limit );
+				
+				var data = JSON.stringify( false );
+				var xhr = new XMLHttpRequest();
+				xhr.open( "GET", proxy + "http://api.tcgplayer.com/v1.9.0/catalog/products?categoryId=1&productTypes=Cards&offset=" + offset + "&limit=" + limit );
+				xhr.withCredentials = false;
+				xhr.setRequestHeader( "Authorization", "bearer " + bearerToken );
+				xhr.addEventListener( "readystatechange", function(){
+					if ( this.readyState === this.DONE ){
+						
+						var data = JSON.parse( this.responseText );
+						for ( var i = 0; i < data.results.length; i++ )
+							products.push( data.results[ i ] );
+							
+						document.getElementById( "buffer2" ).innerHTML = "Got product page " + page + " of " + Math.ceil( data.totalItems / 100 );
+							
+						if ( !data.results.length )
+							callback( products );
+						else
+							loadProducts( page + 1, callback );
+						
+					}
+				}	);
+				xhr.send(data);
+			
+			}
+			
+			function loadPrices( page, callback ){
+			
+				var start = page * 100;
+				var end = Math.min( start + 100, products.length ); 
+				
+				if ( !products[ start ] ){
+					callback( prices );
+					return;
+				}
+				
+				var ids = products[ start ].productId;
+				for ( var i = start + 1; i < end; i++ )
+					ids += "," + products[ i ].productId;
+			
+				var data = JSON.stringify( false );
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", proxy + "http://api.tcgplayer.com/v1.8.1/pricing/product/" + ids);
+				xhr.withCredentials = false;
+				xhr.setRequestHeader( "Authorization", "bearer " + bearerToken );
+				xhr.addEventListener( "readystatechange", function(){
+					if ( this.readyState === this.DONE ){
+
+						var pages = Math.ceil( products.length / 100 );
+						document.getElementById( "buffer2" ).innerHTML = "Got pricing page " + page + " of " + pages ;
+					
+						var data = JSON.parse( this.responseText );
+						for ( var i = 0; i < data.results.length; i++ ){
+							var productId = data.results[ i ].productId;
+							var price = data.results[ i ].marketPrice;
+							if ( !prices[ productId ] || data.results[ i ].subTypeName == "Normal" )
+								prices[ productId ] = price;
+						}
+						
+						if ( page < pages )
+							loadPrices( page + 1, callback );
+						else
+							callback( prices );
+						
+					}
+				} );
+				xhr.send(data);
+			
+			}
+			
+			function scrapeRatings(){
 			
 				// Update the progress display
 				var buffer = document.getElementById( "buffer" );
@@ -243,11 +406,11 @@
 				}
 
 				// Fetch data for the card we're scraping
-				fetch( card );
+				fetchRating( card );
 				
 			}
 			
-			function fetch( card ){
+			function fetchRating( card ){
 			
 				fetchCount++;
 			
@@ -257,7 +420,7 @@
 					if( request.readyState == 4 ){
 					
 						// Extract the data we want from the page
-						extract( card, request.responseText );
+						extractRating( card, request.responseText );
 						
 					}
 				};
@@ -268,7 +431,7 @@
 				
 			}
 			
-			function extract( card, pageString ){
+			function extractRating( card, pageString ){
 				
 				// Clean up the page string to reduce error logging
 				pageString = pageString.replace( /script/gi, "fnord" );
@@ -301,14 +464,20 @@
 				
 				// Scrape for other values here as needed in the future
 				
-				// Scrape the next card or save the finished data
-				if ( cursor >= index.length - 1 )
-					save( cards );
+				// Scrape the next card or go to the next step
+				if ( cursor >= index.length - 1 ){
+					// Move on to prices if requested
+					if ( getPrices )
+						fetchRatings();
+					// Otherwise go ahead and save
+					else
+						save( cards );
+				}
 				else
-					scrape();
+					scrapeRatings();
 				
 			}
-
+			
 			function loadJSON( input, callback ){
 			
 				// Abort if no file was selected
@@ -359,14 +528,21 @@
 			}
 		
 		</script>
-	
+
+
+		
 	</head>
 	<body>
 	
 		Select local <a href="https://mtgjson.com/">MTG JSON</a> files to build from.<br/><br/>
 		Sets File: <input id="sets" type="file" /><br/>
 		Cards File: <input id="cards" type="file" /><br/>
-		Ratings File: <input id="ratings" type="file" /> (Optional)<br/>
+		Previous File: <input id="previous" type="file" /> (Optional)<br/>
+		Public Key: <input id="publicKey" /><br/>
+		Private Key: <input id="privateKey" /><br/>
+		Access Token: <input id="accessToken" /><br/>
+		Get Ratings: <input id="getRatings" type="checkbox" /><br/>
+		Get Prices: <input id="getPrices" type="checkbox" /><br/>
 		<button id="build" onclick="build();">Build</button>
 		<div id="report"></div>
 		
