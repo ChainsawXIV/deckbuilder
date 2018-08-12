@@ -352,6 +352,20 @@ html,body,div,span,input,select,table,img{
 .listTable .cardRating{
 	color:#CA4;
 }
+.listTable .cardPrice{
+	color:#4A4;
+	font-size:0.95em;
+	position:relative;
+	top:0.05em;
+	cursor:default;
+	font-weight:700;
+	display:inline-block;
+}
+.listTable .cardPrice .faded{
+	color:#666;
+	font-size:1.0em;
+	font-weight:700;
+}
 .listTable .cardType{
 	margin-right:0.2em;
 }
@@ -452,6 +466,8 @@ html,body,div,span,input,select,table,img{
 .deckFrame[viewMode=compact] .cardCMC,
 .searchFrame[viewMode=compact] .cardStats,
 .deckFrame[viewMode=compact] .cardStats,
+.searchFrame[viewMode=compact] .cardPrice,
+.deckFrame[viewMode=compact] .cardPrice,
 .searchFrame[viewMode=compact] .cardRating,
 .deckFrame[viewMode=compact] .cardRating{
 	display:none;

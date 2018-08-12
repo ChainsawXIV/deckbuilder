@@ -1465,6 +1465,12 @@ function CardList( container, template, deck ){
 				propb = propb || 0;
 			}
 			
+			// Treat no price as maximum price
+			if ( property == "price" ){
+				propa = propa || Number.MAX_VALUE;
+				propb = propb || Number.MAX_VALUE;
+			}
+			
 			// Order rarity appropriately
 			if ( property == "rarity" ){
 				if ( propa == "L" )
@@ -1563,6 +1569,10 @@ function CardList( container, template, deck ){
 				list += ' <span class="cardRarity" rarity="' + card.rarity + '" title="' + rarityTitle + '"></span>';
 			if ( card.userRating && card.votes )
 				list += ' <span class="cardRating">\u2605' + formatRating( card.userRating ) + '</span>';
+			if ( card.price ){
+				var priceData = formatPrice( card.price );
+				list += ' <span class="cardPrice" title="' + priceData.alt + '">' + priceData.value + '</span>';
+			}
 			list += '<br><span class="cardType">' + card.type + '</span>';
 			if ( card.power !== undefined && card.toughness !== undefined )
 				list += '<span class="cardStats">(<span class="cardPower">' + card.power + '</span>/<span class="cardToughness">' + card.toughness + '</span>)</span>';
@@ -1805,6 +1815,28 @@ function CardList( container, template, deck ){
 	
 	}
 
+	// Format price data into broad ranges with helper text
+	function formatPrice( price ){
+	
+		var pre = Math.floor( price ) + "";
+		var post = Math.round( ( price % 1 ) * 100 ) + "";
+		while ( post.length < 2 )
+			post += "0";
+		var num = pre + "." + post;
+	
+		if ( price < 0.50 )
+			return { alt:"Around $" + num, value:'<span class="faded">$$$$</span>$' };
+		else if ( price < 2.50 )
+			return { alt:"Around $" + num, value:'<span class="faded">$$$</span>$$' };
+		else if ( price < 10.00 )
+			return { alt:"Around $" + num, value:'<span class="faded">$$</span>$$$' };
+		else if ( price < 40.00 )
+			return { alt:"Around $" + num, value:'<span class="faded">$</span>$$$$' };
+		else
+			return { alt:"Around $" + num, value:'$$$$$' };
+		
+	}
+	
 	// Tag any text on a card in parenthesis for special formatting
 	function formatHelperText( text ){
 		
