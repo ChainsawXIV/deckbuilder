@@ -572,9 +572,11 @@ function Deck( container, callback ){
 		// Clear the existing identity if any
 		context.identity = [];
 		
-		// Stop here if there's no commander set
-		if ( context.commander.length == 0 )
+		// Clear identity and stop if there's no commander
+		if ( context.commander.length == 0 ){
+			context.identity = ["W","U","B","R","G"];
 			return;
+		}
 		
 		// Rebuild the deck's color identity
 		for ( var commandIndex = 0; commandIndex < context.commander.length; commandIndex++ ){
