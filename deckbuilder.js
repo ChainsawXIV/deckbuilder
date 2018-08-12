@@ -1102,7 +1102,7 @@ function Deck( container, callback ){
 			post += "0";
 		var num = pre + "." + post;
 		
-		content += "Price: $" + num + "<br>";
+		content += "Deck Cost: $" + num + "<br>";
 
 		// Count the number of cards with each color and casting cost
 		var mix = {W:0,U:0,B:0,R:0,G:0,C:0};
