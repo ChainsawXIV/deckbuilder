@@ -259,11 +259,25 @@
 								var id = products[ i ].productId;
 								var price = prices[ id ];
 								var name = products[ i ].productName;
+								if ( name.match( / \/\/ / ) )
+									name = name.match( /^(.+) \/\/ / )[ 1 ];
+								
 								if ( cards[ name ] ){
 									if ( cards[ name ].price )
 										console.log( "Re-Pricing " + name + " from $" + cards[ name ].price + " to $" + price );
 									cards[ name ].price = price;
 								}
+								
+								if ( name.match( / \/\/ / ) ){
+									name = name.match( / \/\/ (.+)$/ )[ 1 ];
+								
+									if ( cards[ name ] ){
+										if ( cards[ name ].price )
+											console.log( "Re-Pricing " + name + " from $" + cards[ name ].price + " to $" + price );
+										cards[ name ].price = price;
+									}
+								}
+								
 							}
 							
 							save( cards );
