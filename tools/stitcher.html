@@ -55,7 +55,7 @@
 						document.getElementById( "report" ).innerHTML += "Set data loaded...</br>";
 						
 						// Load the optional previous ratings & prices
-						if ( document.getElementById( "previous" ).files ){
+						if ( document.getElementById( "previous" ).files.length ){
 						
 							loadJSON( document.getElementById( "previous" ), function( data ){
 								previous = data;
