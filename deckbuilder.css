@@ -256,6 +256,16 @@ html,body,div,span,input,select,table,img{
 .navSection a:hover{
 	background-color:#AAA;
 }
+.navSection a img{
+	height:1em;
+	position:relative;
+	top:0.2em;
+	left:-0.05em;
+}
+.navSection a:nth-of-type(3) img,
+.navSection a:nth-of-type(4) img{
+	left:0.05em;
+}
 
 /* Card List Section */
 
@@ -428,6 +438,12 @@ html,body,div,span,input,select,table,img{
 	top:-0.245em;
 	left:-0.03em;
 }
+.masterTable .listTable td:nth-of-type(3) a.commanderFlag span img{
+	height:1em;
+	position: relative;
+	top: 0.1em;
+	left: 0.03em;
+}
 .masterTable .listTable tr[commander="1"] td:nth-of-type(3) a.commanderFlag{
 	background-color:#882288;
 }
@@ -584,6 +600,7 @@ html,body,div,span,input,select,table,img{
 }
 .deckProperties .deckName a{
 	top:0.4em;
+	height:1.3em;
 }
 .deckProperties .deckName a[secret=secret]{
 	background-color:rgba(255,0,0,0.5);
@@ -594,6 +611,12 @@ html,body,div,span,input,select,table,img{
 	position:relative;
 	top:-0.29em;
 	left:0em;
+}
+.deckProperties .deckName a span img{
+	height:0.9em;
+	position:relative;
+	left:0.05em;
+	top:0.2em;
 }
 
 .deckProperties .buttonHolder{

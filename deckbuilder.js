@@ -1600,7 +1600,7 @@ function CardList( container, template, deck ){
 			list += '<a class="add" title="Add to Deck" onclick="DECK.addCard( this.parentNode.parentNode.getAttribute(\'key\'), 1 );"><span>+</span></a>';
 			list += '<div class="cardCount" count="0">' + count + '</div>';
 			list += '<a class="remove" title="Remove from Deck" onclick="DECK.removeCard( this.parentNode.parentNode.getAttribute(\'key\'), 1 );"><span>-</span></a>';
-			list += '<a title="Make Commander" class="commanderFlag" onclick="DECK.setCommander( this.parentNode.parentNode.getAttribute(\'key\') );"><span>&#9813;</span></a>';
+			list += '<a title="Make Commander" class="commanderFlag" onclick="DECK.setCommander( this.parentNode.parentNode.getAttribute(\'key\') );"><span><img src="images/commander.svg" /></span></a>';
 			list += '</td></tr>';
 			
 		}
@@ -1627,11 +1627,11 @@ function CardList( container, template, deck ){
 	function updateNavigation(){
 	
 		// Just recreate the contents of the bar to keep things simple
-		context.navElement.innerHTML = '<a onclick="this.parentNode.cardList.setPage(0)" title="First Page">&#x23EE;</a> ';
-		context.navElement.innerHTML += '<a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage - 1 ) + ')" title="Previous Page">&#x23F4</a> ';
+		context.navElement.innerHTML = '<a onclick="this.parentNode.cardList.setPage(0)" title="First Page"><img src="images/first.svg"></a> ';
+		context.navElement.innerHTML += '<a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage - 1 ) + ')" title="Previous Page"><img src="images/previous.svg"></a> ';
 		context.navElement.innerHTML += '<span class="topTab"> Page ' + ( context.currentPage + 1 ) + ' of ' + ( context.pageCount ) + '</span>';
-		context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage + 1 ) + ')" title="Next Page">&#x23F5</a>';
-		context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.pageCount - 1 ) + ')" title="Last Page">&#x23ED</a>';
+		context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage + 1 ) + ')" title="Next Page"><img src="images/next.svg"></a>';
+		context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.pageCount - 1 ) + ')" title="Last Page"><img src="images/last.svg"></a>';
 		
 	}
 	
