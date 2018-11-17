@@ -858,7 +858,8 @@ function Deck( container, callback ){
 		var legal = true;
 		var issue = "";
 		
-		var validCount = ( card.deckLimit === undefined ) ? context.formats[ context.format ].dupeLimit : card.deckLimit;
+		var format = context.formats[ context.format ] ? context.format : "default";
+		var validCount = ( card.deckLimit === undefined ) ? context.formats[ format ].dupeLimit : card.deckLimit;
 		
 		// Always allow any number of each basic land type
 		if ( card.supertypes ){
@@ -894,7 +895,7 @@ function Deck( container, callback ){
 		}
 		
 		// Validate color identity in the Commander format
-		if ( context.formats[ context.format ].commander && legal ){
+		if ( context.formats[ format ].commander && legal ){
 			
 			// Cards must match the color identity of the commander
 			if ( card.colorIdentity ){
@@ -955,7 +956,8 @@ function Deck( container, callback ){
 		}
 
 		// Validate that commander decks have a proper commander
-		if ( context.formats[ context.format ].commander ){
+		var format = context.formats[ context.format ] ? context.format : "default";
+		if ( context.formats[ format ].commander ){
 			if ( !context.commander.length ){
 				legal = 0;
 				issues.push( "You must select a commander." );
@@ -981,7 +983,7 @@ function Deck( container, callback ){
 						}
 						
 						// If allowed commanders must be creatures or walkers
-						if ( context.formats[ context.format ].walkerCommanders ){
+						if ( context.formats[ format ].walkerCommanders ){
 							if ( context.commander[ i ].types ){
 								if ( context.commander[ i ].types.indexOf( "Creature" ) < 0 && context.commander[ i ].types.indexOf( "Planeswalker" ) ){
 									legal = 0;
