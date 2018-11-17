@@ -493,7 +493,7 @@ html,body,div,span,input,select,table,img{
 }
 .searchFrame[viewMode=compact] .listTable td:nth-of-type(3),
 .deckFrame[viewMode=compact] .listTable td:nth-of-type(3){
-	width:5.5em;
+	width:7.5em;
 	padding-bottom:0.0em;
 	padding-top:0.0em;
 	vertical-align:middle;
@@ -514,6 +514,11 @@ html,body,div,span,input,select,table,img{
 .searchFrame[viewMode=compact] .listTable td:nth-of-type(3) a span,
 .deckFrame[viewMode=compact] .listTable td:nth-of-type(3) a span{
 	top:-0.4em;
+}
+.searchFrame[viewMode=compact] .listTable td:nth-of-type(3) a.commanderFlag span,
+.deckFrame[viewMode=compact] .listTable td:nth-of-type(3) a.commanderFlag span{
+	top:-0.65em;
+	font-size:70%;
 }
 .searchFrame[viewMode=compact] .listTable td:nth-of-type(3) a.remove span,
 .deckFrame[viewMode=compact] .listTable td:nth-of-type(3) a.remove span{
