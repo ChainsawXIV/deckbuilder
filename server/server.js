@@ -191,8 +191,10 @@ DeckServer( function( DS ){
 				// Apply the data to the template
 				// Note this doesn't handle key values that are a 
 				//	substring of other key values, so don't do that
-				for( var key in data )
-					content.replace( "::" + key, data[ key ] );
+				for( var key in data ){
+					var pattern = new RegExp( "::" + key, "g" );
+					content = content.replace( pattern, data[ key ] );
+				}
 				
 				// Serve the page with injected data
 				callback( content );
