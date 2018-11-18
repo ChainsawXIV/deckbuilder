@@ -31,7 +31,7 @@ for( var i = 0; i < process.argv.length; i++ ){
 }
 
 var ALLOWED_PATHS = [
-	/^\/api\/ping$/,
+	/^\/ping$/,
 	/^\/api\/login$/,
 	/^\/api\/putuser$/,
 	/^\/api\/getuser$/,
@@ -98,7 +98,7 @@ DeckServer( function( DS ){
 			pathDeck = uri.match( /^\/[\w\d]{5,}\/([\w\d]+)$/ )[1].toLowerCase();
 		
 		// Respond to load balancer pings
-		if ( command == "ping" ){
+		if ( page == "ping" ){
 			response.writeHead( 200, { 
 				"Content-Type":"text/json",
 				"Access-Control-Allow-Origin":"*",
