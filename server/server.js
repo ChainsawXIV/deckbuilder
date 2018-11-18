@@ -31,13 +31,16 @@ for( var i = 0; i < process.argv.length; i++ ){
 }
 
 var ALLOWED_PATHS = [
-	/^\/ping$/,
-	/^\/login$/,
-	/^\/putuser$/,
-	/^\/getuser$/,
-	/^\/putdeck$/,
-	/^\/getdeck$/,
-	/^\/deletedeck$/
+	/^\/api\/ping$/,
+	/^\/api\/login$/,
+	/^\/api\/putuser$/,
+	/^\/api\/getuser$/,
+	/^\/api\/putdeck$/,
+	/^\/api\/getdeck$/,
+	/^\/api\/deletedeck$/,
+	/^\/[\w\d]{5,}$/,
+	/^\/[\w\d]{5,}\/[\w\d]+$/,
+	/^[\/]?$/
 ];
 
 
@@ -81,7 +84,18 @@ DeckServer( function( DS ){
 		}
 		
 		// Get the command and handle it
-		var command = uri.match( /^\/([\w\d-]+)[\/]?$/ )[1];
+		var command = "";
+		var page = "";
+		var pathUser = "";
+		var pathDeck = "";
+		if ( uri.match( /^\/api\// ) )
+			command = uri.match( /^\/api\/([\w\d-]+)[\/]?$/ )[1].toLowerCase();
+		if ( uri.match( /^\/[\w\d]{1,4}$/ ) )
+			page = uri.match( /^\/([\w\d]{1,4})$/ )[1].toLowerCase();
+		if ( uri.match( /^\/[\w\d]{5,}/ ) )
+			pathUser = uri.match( /^\/([\w\d]{5,})/ )[1].toLowerCase();
+		if ( uri.match( /^\/[\w\d]{5,}\/[\w\d]+$/ ) )
+			pathDeck = uri.match( /^\/[\w\d]{5,}\/([\w\d]+)$/ )[1].toLowerCase();
 		
 		// Respond to load balancer pings
 		if ( command == "ping" ){
@@ -96,6 +110,34 @@ DeckServer( function( DS ){
 			response.write( "pong" );
 			response.end();
 			return;
+		}
+		
+		// Serve non-api page requests
+		var data = { path:"https://deckmaven.com" };
+		if ( !page && !command && !pathUser && !pathDeck ){
+			// TODO: default home page
+			// TODO: Get the static data for the home page
+			loadPage( 'pages/home.html', data, function( content ){
+				sendPage( content );
+			} );
+		}
+		else if ( page ){
+			// TODO: other special pages (embed,search,edit,etc.)
+			// TODO: add these special keys to ALLOWED_PATHS
+		}
+		else if ( !page && !command && pathUser && !pathDeck ){
+			// TODO: user profile page
+			// TODO: Get the static data for the user
+			loadPage( 'pages/user.html', data, function( content ){
+				sendPage( content );
+			} );
+		}
+		else if ( !page && !command && pathUser && pathDeck ){
+			// TODO: deck page
+			// TODO: Get the static data for the deck
+			loadPage( 'pages/client.html', data, function( content ){
+				sendPage( content );
+			} );
 		}
 		
 		// Serve a similar response to requests without a POST
@@ -135,7 +177,43 @@ DeckServer( function( DS ){
 			}
 		} );
 		
+		// Page template processing
+		function loadPage( page, data, callback ){
+			// Serve up the specific file as binary data
+			fs.readFile( page, "utf8", function( err, content ) {
+			
+				// Serve an error message on any kind of error
+				if( err ) sendError();
+				
+				// Apply the data to the template
+				// Note this doesn't handle key values that are a 
+				//	substring of other key values, so don't do that
+				for( var key in data )
+					content.replace( "::" + key, data[ key ] );
+				
+				// Serve the page with injected data
+				callback( content );
+				
+			} );
+		}
+		
 		// Canned responses
+		function sendPage( content ){
+			if( !content ){
+				sendError();
+				return;
+			}
+			response.writeHead( 200, { 
+				"Content-Type":"text/html",
+				"Access-Control-Allow-Origin":"*",
+				"Access-Control-Allow-Methods":"POST, OPTIONS",
+				"Access-Control-Allow-Credentials":false,
+				"Access-Control-Max-Age":"86400",
+				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+			} );
+			response.write( content, "binary" );
+			response.end();			
+		}
 		function sendJSON( data ){
 			if( !data ){
 				sendError();
@@ -147,7 +225,7 @@ DeckServer( function( DS ){
 				"Access-Control-Allow-Methods":"POST, OPTIONS",
 				"Access-Control-Allow-Credentials":false,
 				"Access-Control-Max-Age":"86400",
-				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-OVerride, Content-Type, Accept"
+				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 			} );
 			response.write( JSON.stringify( data ) );
 			response.end();
@@ -158,7 +236,7 @@ DeckServer( function( DS ){
 				"Access-Control-Allow-Methods":"POST, OPTIONS",
 				"Access-Control-Allow-Credentials":false,
 				"Access-Control-Max-Age":"86400",
-				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-OVerride, Content-Type, Accept",
+				"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept",
 				"Content-Type": "text/plain"
 			} );
 			response.write( "400 Bad Request\n" );
@@ -366,6 +444,13 @@ function DeckServer( callback ){
 			log( "Put User request had malformed user data", 1 );
 			callback( false );
 			return;
+		}
+		if ( typeof user.name === "string" ){
+			if ( user.name.length < 5 && user.name != "" ){
+				log ( "User attempted to set an invalid user name.", 1 );
+				callback( false );
+				return;
+			}
 		}
 		user = ds_helper_conditionUser( user );
 		
