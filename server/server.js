@@ -120,10 +120,12 @@ DeckServer( function( DS ){
 			loadPage( 'pages/home.html', data, function( content ){
 				sendPage( content );
 			} );
+			return;
 		}
 		else if ( page ){
 			// TODO: other special pages (embed,search,edit,etc.)
 			// TODO: add these special keys to ALLOWED_PATHS
+			return;
 		}
 		else if ( !page && !command && pathUser && !pathDeck ){
 			// TODO: user profile page
@@ -131,6 +133,7 @@ DeckServer( function( DS ){
 			loadPage( 'pages/user.html', data, function( content ){
 				sendPage( content );
 			} );
+			return;
 		}
 		else if ( !page && !command && pathUser && pathDeck ){
 			// TODO: deck page
@@ -138,6 +141,7 @@ DeckServer( function( DS ){
 			loadPage( 'pages/client.html', data, function( content ){
 				sendPage( content );
 			} );
+			return;
 		}
 		
 		// Serve a similar response to requests without a POST
