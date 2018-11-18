@@ -1575,7 +1575,7 @@ function CardList( container, template, deck ){
 			
 			// Compose left hand section with the card image
 			list += '<tr key="' + key + '" legal="1" commander="' + commander + '" count="' + count + '"><td>';
-			list += '<a href="' + link + '" target="_blank" key="' + key + '"><img class="cardImage" src="' + image + '" onerror="this.src = \'images/cardback.jpg\'" /></a>';
+			list += '<a href="' + link + '" target="_blank" key="' + key + '"><img class="cardImage" src="' + image + '" onerror="this.src = \'https://deckmaven.com/images/cardback.jpg\'" /></a>';
 			list += '</td><td>';
 			
 			// Compose the card entry with its various data fields
@@ -1600,7 +1600,7 @@ function CardList( container, template, deck ){
 			list += '<a class="add" title="Add to Deck" onclick="DECK.addCard( this.parentNode.parentNode.getAttribute(\'key\'), 1 );"><span>+</span></a>';
 			list += '<div class="cardCount" count="0">' + count + '</div>';
 			list += '<a class="remove" title="Remove from Deck" onclick="DECK.removeCard( this.parentNode.parentNode.getAttribute(\'key\'), 1 );"><span>-</span></a>';
-			list += '<a title="Make Commander" class="commanderFlag" onclick="DECK.setCommander( this.parentNode.parentNode.getAttribute(\'key\') );"><span><img src="images/commander.svg" /></span></a>';
+			list += '<a title="Make Commander" class="commanderFlag" onclick="DECK.setCommander( this.parentNode.parentNode.getAttribute(\'key\') );"><span><img src="https://deckmaven.com/images/commander.svg" /></span></a>';
 			list += '</td></tr>';
 			
 		}
@@ -1627,11 +1627,11 @@ function CardList( container, template, deck ){
 	function updateNavigation(){
 	
 		// Just recreate the contents of the bar to keep things simple
-		context.navElement.innerHTML = '<a onclick="this.parentNode.cardList.setPage(0)" title="First Page"><img src="images/first.svg"></a> ';
-		context.navElement.innerHTML += '<a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage - 1 ) + ')" title="Previous Page"><img src="images/previous.svg"></a> ';
+		context.navElement.innerHTML = '<a onclick="this.parentNode.cardList.setPage(0)" title="First Page"><img src="https://deckmaven.com/images/first.svg"></a> ';
+		context.navElement.innerHTML += '<a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage - 1 ) + ')" title="Previous Page"><img src="https://deckmaven.com/images/previous.svg"></a> ';
 		context.navElement.innerHTML += '<span class="topTab"> Page ' + ( context.currentPage + 1 ) + ' of ' + ( context.pageCount ) + '</span>';
-		context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage + 1 ) + ')" title="Next Page"><img src="images/next.svg"></a>';
-		context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.pageCount - 1 ) + ')" title="Last Page"><img src="images/last.svg"></a>';
+		context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.currentPage + 1 ) + ')" title="Next Page"><img src="https://deckmaven.com/images/next.svg"></a>';
+		context.navElement.innerHTML += ' <a onclick="this.parentNode.cardList.setPage(' + ( context.pageCount - 1 ) + ')" title="Last Page"><img src="https://deckmaven.com/images/last.svg"></a>';
 		
 	}
 	
@@ -2299,7 +2299,7 @@ function Remote( deck ){
 	var context = this;
 	
 	this.deck = deck;
-	this.address = "https://storage.deckmaven.com/";
+	this.address = "https://storage.deckmaven.com/api/";
 	this.user = {};
 	this.loggedIn = false;
 	this.googleToken = null;
