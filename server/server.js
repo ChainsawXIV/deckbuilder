@@ -146,7 +146,6 @@ DeckServer( function( DS ){
 		
 		// Serve a similar response to requests without a POST
 		if ( request.method !== "POST" ){
-			log( "METHOD: " + request.method, 2 );
 			response.writeHead( 403, {
 				"Access-Control-Allow-Origin":"*",
 				"Access-Control-Allow-Methods":"POST, OPTIONS",
