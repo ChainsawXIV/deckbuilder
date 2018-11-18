@@ -1559,7 +1559,7 @@ function CardList( container, template, deck ){
 			var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
 			var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
 			if ( !card.multiverseid ){
-				image = 'images/cardback.jpg';
+				image = 'https://deckmaven.com/images/cardback.jpg';
 				link = 'http://gatherer.wizards.com/Pages/Default.aspx';
 			}
 			if ( !card.text )
