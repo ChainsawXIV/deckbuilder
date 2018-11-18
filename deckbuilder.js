@@ -2845,8 +2845,10 @@ function showDeckList(){
 				
 				// Add the deck links to the list
 				for ( var d = 0; d < sortedDecks.length; d++ ){
-					code += '<li><a onclick="loadWarn( \'' + sortedDecks[ d ] + '\' )" title="Load Deck">' + sortedDecks[ d ] + "</a>"
-					code += '<a class="deleteDeck" onclick="DECK.storage.remove( \'' + sortedDecks[ d ] + '\', showDeckList, \'' + decks[ sortedDecks[ d ] ].deckid + '\' );" title="Delete Deck"><span>&#215;</span></a></li>';
+					var name = sortedDecks[ d ].replace( /"/g, '\\\"' );
+					name = name.replace( /'/g, "\\\'" );
+					code += '<li><a onclick="loadWarn( \'' + name + '\' )" title="Load Deck">' + sortedDecks[ d ] + "</a>"
+					code += '<a class="deleteDeck" onclick="DECK.storage.remove( \'' + name + '\', showDeckList, \'' + decks[ sortedDecks[ d ] ].deckid + '\' );" title="Delete Deck"><span>&#215;</span></a></li>';
 				}
 				code += "</ul>";
 			}
