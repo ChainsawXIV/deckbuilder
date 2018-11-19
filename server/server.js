@@ -39,7 +39,7 @@ var ALLOWED_PATHS = [
 	/^\/api\/getdeck$/,
 	/^\/api\/deletedeck$/,
 	/^\/[\w\d]{5,}$/,
-	/^\/[\w\d]{5,}\/[\w\d]+$/,
+	/^\/[\w\d]{5,}\/[\w\d-]+$/,
 	/^[\/]?$/
 ];
 
@@ -94,8 +94,8 @@ DeckServer( function( DS ){
 			page = uri.match( /^\/([\w\d]{1,4})$/ )[1].toLowerCase();
 		if ( uri.match( /^\/[\w\d]{5,}/ ) )
 			pathUser = uri.match( /^\/([\w\d]{5,})/ )[1].toLowerCase();
-		if ( uri.match( /^\/[\w\d]{5,}\/[\w\d]+$/ ) )
-			pathDeck = uri.match( /^\/[\w\d]{5,}\/([\w\d]+)$/ )[1].toLowerCase();
+		if ( uri.match( /^\/[\w\d]{5,}\/[\w\d-]+$/ ) )
+			pathDeck = uri.match( /^\/[\w\d]{5,}\/([\w\d-]+)$/ )[1].toLowerCase();
 		
 		// Respond to load balancer pings
 		if ( page == "ping" ){
