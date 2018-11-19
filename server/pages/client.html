@@ -2,7 +2,7 @@
 <html>
 	<head>
 
-		<title>Deck Builder</title>
+		<title>Deckmaven - ::deckName</title>
 		
 		<meta name="keywords" content="mtg, magic the gathering, deck builder, deck, builder, magic, gathering, commander, mtgjson, card game, card, game, fast, easy, tool, app, application, free">
 		<meta name="description" content="A powerful and easy to use deck building tool for Magic the Gathering">
@@ -11,14 +11,29 @@
 		<meta name="author" content="Dashiel Nemeth">
 		<meta name="subject" content="Magic the Gathering deck building">
 		<meta name="language" content="English">
+	
+		<meta property="og:title" content="::deckName" />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://deckmaven.com/::userSlug/::deckSlug" />
+		<meta property="og:description" content="::deckFormat deck by ::userName" />
+		<meta property="og:site_name" content="Deckmaven" />
 		
-		<link rel="icon" type="image/png" href="::path/images/favicon.ico">
+		<meta property="og:image" content="https://omnibusgames.com/images/deckmaven01.jpg" />
+		<meta property="og:image:alt" content="Deckmaven Deck Editor" />
+		<meta property="og:image:width" content="792" />
+		<meta property="og:image:height" content="518" />
+		
+		<meta property="deckId" content="::deckId" />
+		<meta property="userId" content="::userId" />
+		<meta property="deckMode" content="view" />
+	
+		<link rel="icon" type="image/png" href="::rootPath/images/favicon.ico">
 		
 		<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700" rel="stylesheet">
-		<link href="::path/deckbuilder.css" rel="stylesheet">
+		<link href="::rootPath/deckbuilder.css" rel="stylesheet">
 		
-		<script src="::path/filesaver.js"></script>
-		<script src="::path/deckbuilder.js"></script>
+		<script src="::rootPath/filesaver.js"></script>
+		<script src="::rootPath/deckbuilder.js"></script>
 		
     <meta name="google-signin-scope" content="profile email">
     <meta name="google-signin-client_id" content="131516550233-2efdikia10mp3erns90el5jlrskc9d21.apps.googleusercontent.com">
@@ -50,9 +65,9 @@
 	</head>
 	<body onload="start();">
 	
-		<img class="hoverCard" src="::path/images/cardback.jpg" />
-		<img class="companionCard" src="::path/images/cardback.jpg" />
-		<img class="meldCard" src="::path/images/cardback.jpg" />
+		<img class="hoverCard" src="::rootPath/images/cardback.jpg" />
+		<img class="companionCard" src="::rootPath/images/cardback.jpg" />
+		<img class="meldCard" src="::rootPath/images/cardback.jpg" />
 	
 		<table class="masterTable"><tr>
 	
@@ -87,15 +102,15 @@
 			<td class="overviewContainer">
 			
 				<div class="deckProperties">
-					<span class="filterGroup deckName"><span class="filterLabel">Deck Name:</span><input type="text" class="filterField" filterType="deckName" /><a title="Make Deck Private"><span><img src="::path/images/hide.svg" /></span></a></span><br>
+					<span class="filterGroup deckName"><span class="filterLabel">Deck Name:</span><input type="text" class="filterField" filterType="deckName" /><a title="Make Deck Private"><span><img src="::rootPath/images/hide.svg" /></span></a></span><br>
 					<span class="filterGroup deckFolder"><span class="filterLabel">Folder:</span><select class="filterField" filterType="folders"><option value="General">General</option></select><a title="New Folder"><span>+</span></a></span><br>
 					<span class="filterGroup deckFormat"><span class="filterLabel">Format:</span><select class="filterField" filterType="formats"></select></span><br>
 					<div class="buttonHolder">
-						<a class="imageButton" onclick="DECK.resetDeck();" title="New Deck"><img src="::path/images/new.svg" /></a>
-						<a class="imageButton" onclick="DECK.save();" title="Save Changes"><img src="::path/images/save.svg" /></a>
-						<a class="imageButton" onclick="showDeckList();" title="Saved Decks"><img src="::path/images/open.svg" /></a>
-						<a class="imageButton" onclick="exportList( DECK );" title="Download Deck List"><img src="::path/images/down.svg" /></a>
-						<a class="imageButton" onclick="document.getElementById( 'fileSelect' ).click();" title="Import Deck List"><img src="::path/images/up.svg" />
+						<a class="imageButton" onclick="DECK.resetDeck();" title="New Deck"><img src="::rootPath/images/new.svg" /></a>
+						<a class="imageButton" onclick="DECK.save();" title="Save Changes"><img src="::rootPath/images/save.svg" /></a>
+						<a class="imageButton" onclick="showDeckList();" title="Saved Decks"><img src="::rootPath/images/open.svg" /></a>
+						<a class="imageButton" onclick="exportList( DECK );" title="Download Deck List"><img src="::rootPath/images/down.svg" /></a>
+						<a class="imageButton" onclick="document.getElementById( 'fileSelect' ).click();" title="Import Deck List"><img src="::rootPath/images/up.svg" />
 							<input style="display:none;" id="fileSelect" onchange="importWarn( this );" type="file" />
 						</a>
 						<a class="g-signin2 imageButton" id="login" data-onsuccess="onSignIn" data-theme="dark"></a>
