@@ -343,6 +343,7 @@ function DeckServer( callback ){
 	
 	this.users = {};
 	this.userids = {};
+	this.usernames = {};
 	this.decks = {};
 	this.cleanupAfter = 1000 * 60 * 60 * 24;	// Keep decks and users in memory this long (24h)
 	this.cleanupInterval = 1000 * 60 * 15;		// Purge older decks and users this often (15m)
@@ -404,6 +405,7 @@ function DeckServer( callback ){
 					if ( userData ){
 						context.users[ payload.email ] = userData;
 						context.userids[ userData.userid ] = userData;
+						context.usernames[ userData.username ] = userData;
 					}
 					// Create new user data if there isn't any
 					else{
@@ -415,6 +417,7 @@ function DeckServer( callback ){
 						};
 						context.users[ payload.email ] = userData;
 						context.userids[ userData.userid ] = userData;
+						context.usernames[ userData.username ] = userData;
 					}
 					
 					// Save the user's data in case anything changed
@@ -450,8 +453,8 @@ function DeckServer( callback ){
 			callback( false );
 			return;
 		}
-		if ( typeof user.name === "string" ){
-			if ( user.name.length < 5 && user.name != "" ){
+		if ( typeof user.username === "string" ){
+			if ( user.username.length < 5 && user.username != "" ){
 				log ( "User attempted to set an invalid user name.", 1 );
 				callback( false );
 				return;
@@ -561,6 +564,53 @@ function DeckServer( callback ){
 			}
 			else{
 				log( 'No user data found for user ' + user.userid + ' requesting user ' + userid, 2, context );
+				callback( false );
+			}
+		} );					
+		
+	}
+
+	this.getUsername = function ds_getUsername( username, callback ){
+
+		// Protect against bad parameters
+		if ( username === undefined || username === null ){
+			log( "Get Username request missing target username", 1 );
+			callback( false );
+			return;
+		}
+		if ( typeof callback !== "function" ){
+			log( "Get Username request missing callback function", -2 );
+			callback( false );
+			return;
+		}
+		if ( typeof username !== "string" ){
+			log( "Get Username request with malformed target username", 1 );
+			callback( false );
+			return;
+		}
+		user = ds_helper_conditionUser( {} );
+	
+		// Load up the data for the requested user
+		ds_helper_loadUser( "username", username, function( targetData ){
+			
+			if ( targetData ){
+				var data = {};
+
+				// Provide id and public deck lists to other users
+				data.userid = targetData.userid;
+				data.username = targetData.username;
+				data.prefs = targetData.prefs;
+				data.decks = {};
+				for ( var deck in targetData.decks ){
+					if ( !targetData.decks[ deck ].secret && !targetData.decks[ deck ].name != "AUTOSAVE" )
+						data.decks[ deck ] = targetData.decks[ deck ];
+				}
+				log( 'Getting public user data for username ' + username, 3, context );
+				callback( data );
+				
+			}
+			else{
+				log( 'No user data found for user ' + username, 2, context );
 				callback( false );
 			}
 		} );					
@@ -848,6 +898,7 @@ function DeckServer( callback ){
 		
 		// Store the user in server memory
 		user.lastUsed = Date.now();
+		context.usernames[ user.username ] = user;
 		context.userids[ user.userid ] = user;
 		context.users[ user.email ] = user;
 		
@@ -927,6 +978,30 @@ function DeckServer( callback ){
 				} );
 			}
 		}
+		else if ( key == "username" ){
+			if ( context.usernames[ value ] ){
+				context.usernames[ value ].lastUsed = Date.now();
+				callback( context.usernames[ value ] );
+				return;
+			}
+			else{
+				params.IndexName = "username-index";
+				params.ExpressionAttributeNames = { "#k_username":"username" };
+				params.ExpressionAttributeValues = { ":v_username":value };
+				params.KeyConditionExpression = "#k_username = :v_username";
+				db.query( params, function( err, data ){
+					if ( err ){
+						log( 'Unable to load user with username ' + value + '. Error JSON:' + JSON.stringify( err, null, 2 ), -2, context );
+						callback( false );
+					}
+					else{
+						if ( data.Items.length )
+							data.Item = data.Items[ 0 ];
+						handleEntry( data );
+					}
+				} );
+			}
+		}
 		else{
 			callback( false );
 			return;
@@ -949,7 +1024,7 @@ function DeckServer( callback ){
 				data.Item.lastUsed = Date.now();
 				context.users[ data.Item.email ] = data.Item;
 				context.userids[ data.Item.userid ] = data.Item;
-				
+				context.usernames[ data.Item.username ] = data.Item;				
 
 				log( 'Loaded user with ' + key + ' ' + value, 3, context );
 				callback( data.Item );
@@ -972,11 +1047,12 @@ function DeckServer( callback ){
 		buffer.sub = user.sub || null;
 		buffer.userid = user.userid || null;
 		buffer.session = user.session || null;
-		buffer.name = user.name || null;
+		buffer.username = user.username || null;
 		
 		// Copy supported pref properties
 		buffer.prefs = {};
 		if( user.prefs ){
+			buffer.prefs.displayName = user.prefs.displayName;
 			//buffer.prefs.PROP = user.prefs.PROP;
 		}
 		
