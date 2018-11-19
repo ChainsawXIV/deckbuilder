@@ -2578,17 +2578,21 @@ function DialogBox( container ){
 	this.title = container.querySelector( ".dialogTitle" );
 	this.body = container.querySelector( ".dialogBody" );
 	this.onClose = function(){};
+	this.autoClose = true;
 	
 	// Close the dialog whenever a button gets clicked
 	this.closeButton.addEventListener( "click", function(){
+		if ( !context.autoClose ) return;
 		context.container.style.display = "none";
 		context.onClose();
 	} );
 	this.cancelButton.addEventListener( "click", function(){
+		if ( !context.autoClose ) return;
 		context.container.style.display = "none";
 		context.onClose();
 	} );
 	this.confirmButton.addEventListener( "click", function(){
+		if ( !context.autoClose ) return;
 		context.container.style.display = "none";
 		context.onClose();
 	} );
@@ -2618,6 +2622,7 @@ function DialogBox( container ){
 		// Set the text of the dialog box
 		if ( options.title ) this.title.innerHTML = options.title;
 		if ( options.body ) this.body.innerHTML = options.body;
+		if ( options.autoClose !== undefined ) context.autoClose = options.autoClose;
 		
 		// Hide or show the close button
 		if ( options.allowClose !== undefined ){
