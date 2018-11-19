@@ -2579,6 +2579,8 @@ function DialogBox( container ){
 	this.body = container.querySelector( ".dialogBody" );
 	this.onClose = function(){};
 	this.autoClose = true;
+	this.queuedDialog = [];
+	this.visible = false;
 	
 	// Close the dialog whenever a button gets clicked
 	this.closeButton.addEventListener( "click", function(){
@@ -2618,6 +2620,17 @@ function DialogBox( container ){
 	
 	// Show the dialog box with the specified options
 	this.show = function show( options ){
+	
+		// If allowed, queue the dialog to show up next
+		if ( options.allowQueue ){
+			if ( context.visible ){
+				context.queuedDialog.push( options );
+				return;
+			}
+		}
+		
+		// Mark the dialog as visible
+		context.visible = true;
 	
 		// Set the text of the dialog box
 		if ( options.title ) this.title.innerHTML = options.title;
@@ -2686,7 +2699,10 @@ function DialogBox( container ){
 	// Hide the dialog box
 	this.hide = function hide(){
 		
+		context.visible = false;
 		context.container.style.display = 'none';
+		if ( context.queuedDialog.length )
+			context.show( context.queuedDialog.shift() );
 		
 	}
 	
