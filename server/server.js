@@ -186,7 +186,7 @@ DeckServer( function( DS ){
 							data.deckSlug = createSlug( deckData.name );
 							data.deckName = deckData.name;
 							data.deckId = deckData.deckid;
-							data.deckFormat = deckData.format;
+							data.deckFormat = deckData.format || "Magic: The Gathering";
 							
 							loadPage( 'pages/client.html', data, function( content ){
 								log( "Served deck page for " + data.deckId + " by " + data.userId, 3 );
