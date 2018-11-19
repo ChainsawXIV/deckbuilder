@@ -112,11 +112,18 @@ DeckServer( function( DS ){
 			return;
 		}
 		
+		// Assemble meta data about the page being loaded
+		var data = { 
+			rootPath:"https://deckmaven.com",
+			userPath:pathUser,
+			deckPath:pathDeck
+		};
+		
 		// Serve non-api page requests
-		var data = { path:"https://deckmaven.com" };
 		if ( !page && !command && !pathUser && !pathDeck ){
 			// TODO: default home page
 			// TODO: Get the static data for the home page
+			log( "Served site main page", 3 );
 			loadPage( 'pages/home.html', data, function( content ){
 				sendPage( content );
 			} );
@@ -125,23 +132,88 @@ DeckServer( function( DS ){
 		else if ( page ){
 			// TODO: other special pages (embed,search,edit,etc.)
 			// TODO: add these special keys to ALLOWED_PATHS
+			log( "Served special page " + page, 3 );
 			return;
 		}
-		else if ( !page && !command && pathUser && !pathDeck ){
-			// TODO: user profile page
-			// TODO: Get the static data for the user
-			loadPage( 'pages/user.html', data, function( content ){
-				sendPage( content );
-			} );
+		else if ( !page && !command && ( pathUser || pathDeck ) ){
+	
+			// Get and integrate user data if applicable
+			if ( pathUser ){
+				DS.getUsername( pathUser, function( userData ){
+					
+					// Error out if no such user was found
+					if ( !userData ){
+						log( "No user found with username " + pathUser, 3 );
+						sendError();
+						return;
+					}
+					
+					data.userName = userData.prefs.displayName;
+					data.userSlug = userData.username;
+					data.userDecks = userData.decks;
+					data.userId = userData.userid;
+					
+					// Fill and send the deck page if specified
+					if ( pathDeck ){
+
+						// Find a deck by that user with that name
+						var deckid = null;
+						for ( var id in data.userDecks ){
+							var slug = createSlug( data.userDecks[ id ].name );
+							if ( slug == pathDeck ){
+								deckid = id;
+								break;
+							}
+						}
+						
+						// Error out if there's no such deck by that user
+						if ( !deckid ){
+							log( "No deck found matching " + pathDeck + " by " + data.userId , 3 );
+							sendError();
+							return;
+						}
+						
+						// Load the deck data from the server
+						DS.getDeck( {}, deckid, function( deckData ){
+							
+							// Error out if no such deck was found
+							if ( !deckData ){
+								log( "Couldn't find deck data for deckid " + data.deckId, 3 );
+								sendError();
+								return;
+							}
+							
+							data.deckSlug = createSlug( deckData.name );
+							data.deckName = deckData.name;
+							data.deckId = deckData.deckid;
+							data.deckFormat = deckData.format;
+							
+							loadPage( 'pages/client.html', data, function( content ){
+								log( "Served deck page for " + data.deckId + " by " + data.userId, 3 );
+								sendPage( content );
+							} );
+							return;
+							
+						} );
+						
+					}
+					// Otherwise send the user's profile page
+					else{
+						
+						// TODO: Include the list of public decks for the user
+						loadPage( 'pages/user.html', data, function( content ){
+							log( "Served user profile for " + data.userName, 3 );
+							sendPage( content );
+						} );
+						return;
+						
+					}
+					
+				} );
+			}
+			
 			return;
-		}
-		else if ( !page && !command && pathUser && pathDeck ){
-			// TODO: deck page
-			// TODO: Get the static data for the deck
-			loadPage( 'pages/client.html', data, function( content ){
-				sendPage( content );
-			} );
-			return;
+			
 		}
 		
 		// Serve a similar response to requests without a POST
@@ -200,6 +272,14 @@ DeckServer( function( DS ){
 				callback( content );
 				
 			} );
+		}
+		function createSlug( string ){
+			
+			string = string.replace( /[^\w\s\d]+/g, "" );
+			string = string.replace( /[\s]+/g, "-" );
+			string = string.toLowerCase();
+			return string;
+			
 		}
 		
 		// Canned responses
