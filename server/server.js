@@ -992,7 +992,8 @@ function DeckServer( callback ){
 				'sub':user.sub,
 				'decks':JSON.stringify( user.decks ),
 				'prefs':JSON.stringify( user.prefs ),
-				'session':user.session
+				'session':user.session,
+				'username':user.username
 			} 
 		};
 		db.put( params, function( err, data ){
@@ -1127,7 +1128,7 @@ function DeckServer( callback ){
 		buffer.sub = user.sub || null;
 		buffer.userid = user.userid || null;
 		buffer.session = user.session || null;
-		buffer.username = user.username || null;
+		buffer.username = user.username || "DEFAULT";
 		
 		// Copy supported pref properties
 		buffer.prefs = {};
