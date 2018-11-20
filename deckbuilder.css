@@ -922,6 +922,30 @@ html,body,div,span,input,select,table,img{
 	font-size:1.5em;
 }
 
+.interstitial .dialogBox .validation{
+	display:inline-block;
+  width:1.5em;
+  height:1.5em;
+  cursor:default;
+  background-color:green;
+  border-radius:2em;
+  border:1px solid #00FF00;
+  float:right;
+  position:absolute;
+  right:12.5%;
+  bottom:3.9em;
+}
+.interstitial .dialogBox[validated=false] .validation{
+	background-color:#AA0000;
+  border:1px solid #FF0000;
+}
+.interstitial .dialogBox[validated=false] .confirmButton,
+.interstitial .dialogBox[validated=false] .confirmButton:hover{
+	cursor:default;
+	background-color:#282828;
+	color:#686868;	
+}
+
 /* About Section */
 
 .about{

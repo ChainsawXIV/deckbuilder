@@ -38,6 +38,7 @@ var ALLOWED_PATHS = [
 	/^\/api\/putdeck$/,
 	/^\/api\/getdeck$/,
 	/^\/api\/deletedeck$/,
+	/^\/api\/checkname$/,
 	/^\/[\w\d]{5,}$/,
 	/^\/[\w\d]{5,}\/[\w\d-]+$/,
 	/^[\/]?$/
@@ -136,6 +137,7 @@ DeckServer( function( DS ){
 			return;
 		}
 		else if ( !page && !command && ( pathUser || pathDeck ) ){
+			
 	
 			// Get and integrate user data if applicable
 			if ( pathUser ){
@@ -187,6 +189,7 @@ DeckServer( function( DS ){
 							data.deckName = deckData.name;
 							data.deckId = deckData.deckid;
 							data.deckFormat = deckData.format || "Magic: The Gathering";
+							// TODO: Use a card from the deck as the image
 							
 							loadPage( 'pages/client.html', data, function( content ){
 								log( "Served deck page for " + data.deckId + " by " + data.userId, 3 );
@@ -391,6 +394,12 @@ DeckServer( function( DS ){
 						sendJSON( deckData );
 					} );
 					break;
+					
+				case "checkname":
+					DS.checkName( user.username, function( outcome ){
+						sendJSON( { valid:outcome } );
+					} );
+					break;
 				
 				default:
 					response.writeHead( 404, {
@@ -534,7 +543,7 @@ function DeckServer( callback ){
 			return;
 		}
 		if ( typeof user.username === "string" ){
-			if ( user.username.length < 5 && user.username != "" ){
+			if ( ( user.username.length < 5 || user.username.match( /[^\w\d]+/ ) ) && user.username != "" ){
 				log ( "User attempted to set an invalid user name.", 1 );
 				callback( false );
 				return;
@@ -546,12 +555,38 @@ function DeckServer( callback ){
 		ds_helper_loadUser( "userid", user.userid, function( userData ){
 			
 			if ( userData ){
+				// Check session token before performing normal saves
 				if ( userData.session == user.session ){
-					
-					// Save the data
-					ds_helper_saveUser( user, callback );
-					return;
-					
+					// Perform extra validation for changes to username
+					if ( userData.username != user.username ){
+						// Don't allow changes to username once it's set
+						if ( userData.username != "DEFAULT" ){
+							log( "Blocked attempt to change username for user " + user.userid, -1 );
+							callback( false );
+							return;
+						}
+						// Check uniqueness before setting username the first time
+						else{
+							context.checkName( user.username, function( unique ){
+								
+								if ( unique ){
+									ds_helper_saveUser( user, callback );
+									return;
+								}
+								else{
+									log( "Blocked attempt to set username to duplicate name for " + user.userid, -1 );
+									callback( false );
+									return;
+								}
+								
+							} );
+						}
+					}
+					// Otherwise just go ahead and save changes
+					else{
+						ds_helper_saveUser( user, callback );
+						return;
+					}
 				}
 				else{
 					log( "Attempt to put user " + user.userid + " with invalid session", -1 );
@@ -694,6 +729,24 @@ function DeckServer( callback ){
 				callback( false );
 			}
 		} );					
+		
+	}
+	
+	this.checkName = function ds_checkName( username, callback ){
+		
+		// Load up the data for the requested user
+		ds_helper_loadUser( "username", username.toLowerCase(), function( targetData ){
+			
+			if ( targetData ){
+				log( "Uniqueness check failed for username " + username, 3 );
+				callback( false );				
+			}
+			else{
+				log( "Uniqueness check passed for username " + username, 3 );
+				callback( true );
+			}
+			
+		} );			
 		
 	}
 	
@@ -1030,7 +1083,7 @@ function DeckServer( callback ){
 						callback( false );
 					}
 					else{
-						handleEntry( data );
+						handleEntry( data, callback );
 					}
 				} );
 			}
@@ -1054,7 +1107,7 @@ function DeckServer( callback ){
 					else{
 						if ( data.Items.length )
 							data.Item = data.Items[ 0 ];
-						handleEntry( data );
+						handleEntry( data, callback );
 					}
 				} );
 			}
@@ -1078,7 +1131,7 @@ function DeckServer( callback ){
 					else{
 						if ( data.Items.length )
 							data.Item = data.Items[ 0 ];
-						handleEntry( data );
+						handleEntry( data, callback );
 					}
 				} );
 			}
@@ -1089,7 +1142,7 @@ function DeckServer( callback ){
 		}
 		
 		// Handle database returns
-		function handleEntry( data ){
+		function handleEntry( data, callback ){
 			if ( data.Item ){
 				
 				// Initialize and/or parse nested objects as needed

@@ -2336,6 +2336,8 @@ function Remote( deck ){
 			context.user = JSON.parse( user );
 			context.loggedIn = true;
 			
+			createUsername();
+			
 			// Download all the user's deck data
 			context.getAllDecks( function( remoteDecks ){
 				
@@ -2427,6 +2429,7 @@ function Remote( deck ){
 		post( "putuser", "user=" + JSON.stringify( context.user ), function( user ){
 			if ( user ){
 				context.user = JSON.parse( user );
+				createUsername();
 				callback( user );
 			}
 		} );
@@ -2438,6 +2441,7 @@ function Remote( deck ){
 		
 		post( "getuser", "user=" + JSON.stringify( context.user ) + "&target=" + userid, function( user ){
 			if ( user )
+				createUsername();
 				callback( user );
 		} );
 		
@@ -2560,6 +2564,93 @@ function Remote( deck ){
 		}
 		xhr.send( content );
 	
+	}
+	
+	// User prompt to establish a username
+	this.validateUsername = function validateUsername( field ){
+		
+		// Check minimum length of the username
+		if ( field.value.length < 5 ){
+			field.parentNode.parentNode.setAttribute( "validated", "false" );
+			field.nextSibling.title = "User name must be at least four characters.";
+			return;
+		}
+		
+		// Check character content of the username
+		if ( field.value.match( /[^\w\d]+/ ) ){
+			field.parentNode.parentNode.setAttribute( "validated", "false" );
+			field.nextSibling.title = "User name may only contain letters and numbers."
+			return;
+		}
+		
+		// Check uniqueness of name with the server
+		context.checkName( field.value, function( unique ){
+			
+			if ( unique ){
+				field.parentNode.parentNode.setAttribute( "validated", "true" );
+				field.nextSibling.title = "This user name is valid and available.";
+			}
+			else{
+				field.parentNode.parentNode.setAttribute( "validated", "false" );
+				field.nextSibling.title = "Another user already has this user name.";
+			}
+			
+		} );
+		
+	}
+
+	this.checkName = function checkName( name, callback ){
+		
+		post( "checkname", "user=" + JSON.stringify( { username:name } ), function( result ){
+			callback( JSON.parse( result ).valid );
+		} );
+		
+	}
+	
+	function createUsername(){
+		
+		// Don't prompt if the user already has a name
+		if ( DECK.remote.user.username != "DEFAULT" )
+			return;
+		
+		context.deck.dialog.show( {
+			allowClose:false,
+			autoClose:false,
+			allowQueue:true,
+			title:"Create Username",
+			body:'Create a user name. It will be seen by other users when they view your decks.<br><input type="text" class="nameInput" onKeyUp="DECK.remote.validateUsername( this )" /><span class="validation"></span>',
+			cancel:false,
+			confirm:{ text:"CREATE", callback:function(){
+				
+				// Don't allow the user to submit invalid usernames
+				if ( this.parentNode.parentNode.getAttribute( "validated" ) != "true" )
+					return;
+				
+				// Allow the dialog to close
+				context.deck.dialog.autoClose = true;
+				
+				// Clean up the validation attribute for later
+				this.parentNode.parentNode.removeAttribute( "validated" );
+				
+				// Injest the new user name and put it to the user's data
+				var name = this.parentNode.parentNode.querySelector( ".nameInput" ).value;
+				context.user.username = name.toLowerCase();
+				if ( context.user.prefs )
+					context.user.prefs.displayName = name;
+				else
+					context.user.prefs = { displayName:name };
+				
+				// Save the user's updated data to the server
+				context.saveUser( function(){
+					context.deck.dialog.hide();
+				} );
+				
+			} },
+			onLoad:function( dialog ){
+				dialog.querySelector( ".dialogBox" ).setAttribute( "validated", "false" );
+				dialog.querySelector( ".nameInput" ).focus();
+			}
+		} );		
 	}
 	
 }
