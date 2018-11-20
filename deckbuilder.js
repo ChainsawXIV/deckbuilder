@@ -758,7 +758,7 @@ function Deck( container, callback ){
 		
 		// Set the proper format in the format menu
 		context.setFormat( bundle.format, true );
-		var selection = bundle.format == "default" ? "" : bundle.format;
+		var selection = ( bundle.format == "default" || !bundle.format ) ? "" : bundle.format;
 		context.formatElement.querySelector( 'option[value="' + selection + '"]' ).selected = "selected";
 		
 		// Set the proper folder in the folder menu
