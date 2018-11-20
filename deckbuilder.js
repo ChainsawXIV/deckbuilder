@@ -2044,6 +2044,9 @@ function Storage( callback, deck ){
 						context.deck.version = remoteDeck.version;
 					}
 					
+					// Update the URL in the browser with user and deck slugs
+					updateURL();
+					
 					// Resave the deck locally with updates from the server
 					context.save( remoteDeck, function(){}, true, true );
 					
@@ -2150,6 +2153,9 @@ function Storage( callback, deck ){
 			// Invoke the callback, passing the deck data to it
 			callback( request.result );
 			
+			// Update the page's URL to match the loaded deck
+			updateURL();
+		
 		}
 	
 	};
@@ -2286,6 +2292,19 @@ function Storage( callback, deck ){
 		}, true );
 		
 	};
+	
+	// Updates the page's URL to corespond to the loaded deck
+	function updateURL(){
+
+		if ( DECK.remote.user.username && DECK.name ){
+			window.history.replaceState( 
+				{ user:DECK.remote.user.userid, deck:DECK.deckid }, 
+				DECK.name + " by " + DECK.remote.user.prefs.displayName, 
+				"/" + createSlug( DECK.remote.user.username ) + "/" + createSlug( DECK.name ) 
+			);
+		}
+		
+	}
 	
 	this.connect( callback );
 	
@@ -3030,5 +3049,13 @@ function onSignOut( confirmed ){
 	
 }
 
+// Simplifies a string to a formatted slug
+function createSlug( string ){
+	
+	string = string.replace( /[^\w\s\d]+/g, "" );
+	string = string.replace( /[\s]+/g, "-" );
+	string = string.toLowerCase();
+	return string;
 
+}
 
