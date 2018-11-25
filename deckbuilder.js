@@ -2603,6 +2603,7 @@ function Remote( deck ){
 		}
 		
 		// Check uniqueness of name with the server
+		// TODO: Rate limit this to avoid spamming the server
 		context.checkName( field.value, function( unique ){
 			
 			if ( unique ){
