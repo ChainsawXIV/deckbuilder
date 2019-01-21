@@ -272,7 +272,7 @@
 								if ( cards[ name ] ){
 									if ( !cards[ name ].price )
 										cards[ name ].price = price;
-									else if ( price < cards[ name ].price ){
+									else if ( price && price < cards[ name ].price ){
 										console.log( "Replaced price for " + name + ": " + cards[ name ].price + " -> " + price );
 										cards[ name ].price = price;
 									}
