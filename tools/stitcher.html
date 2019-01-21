@@ -106,9 +106,9 @@
 								var setCard = setCards[ c ];
 							
 								// If there's a multiverseid record it
-								if ( setCard.multiverseid ){
-									baseCard.mvids.push( setCard.multiverseid );
-									baseCard.multiverseid = setCard.multiverseid;
+								if ( setCard.multiverseId ){
+									baseCard.mvids.push( setCard.multiverseId );
+									baseCard.multiverseid = setCard.multiverseId;
 								}
 								
 								// Get the printing's rarity in numeric form
@@ -117,7 +117,7 @@
 								else if ( setCard.rarity == "Common" ) setRarity = 2;
 								else if ( setCard.rarity == "Uncommon" ) setRarity = 3;
 								else if ( setCard.rarity == "Rare" ) setRarity = 4;
-								else if ( setCard.rarity == "Mythic Rare" ) setRarity = 5;
+								else if ( setCard.rarity == "Mythic" ) setRarity = 5;
 								
 								// Record the card's lowest rarity and corresponding set
 								if ( !baseCard.rarity || setRarity < minRarity ){
