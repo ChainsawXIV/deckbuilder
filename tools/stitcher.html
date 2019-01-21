@@ -90,6 +90,13 @@
 					// For each card, look through all of its printings
 					for ( var s = 0; s < baseCard.printings.length; s++ ){
 						var set = baseCard.printings[ s ];
+						
+						// Check against missing sets
+						if ( !sets[ set ] ){
+							console.log( "Set not found for " + cardName + ": " + set );
+							continue;
+						}
+						
 						var setCards = sets[ set ].cards;
 						
 						// For each printing, find the card within that set's data
