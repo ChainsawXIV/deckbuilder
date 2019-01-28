@@ -176,10 +176,21 @@
 							baseCard[ key ] = extras[ cardName ][ key ];
 					}
 					
+					// Use a shorter key for CMC
+					if ( baseCard.convertedManaCost ){
+						baseCard.cmc = baseCard.convertedManaCost;
+						delete baseCard[ "convertedManaCost" ];
+					}
+					
 					// Remove unwanted data from the data set
 					delete baseCard[ "imageName" ];
 					delete baseCard[ "printings" ];
 					delete baseCard[ "rulings" ];
+					delete baseCard[ "foreignData" ];
+					delete baseCard[ "scryfallId" ];
+					delete baseCard[ "tcgplayerProductId" ];
+					delete baseCard[ "tcgplayerPurchaseUrl" ];
+					delete baseCard[ "uuid" ];
 					
 					// Convert card colors to same compact format as color identity
 					if ( baseCard.colors ){
@@ -191,17 +202,23 @@
 							else if ( baseCard.colors[ c ] == "Green" ) baseCard.colors[ c ] = "G";
 						}
 					}
+					
+					function capitalize( string ){
+						return string.replace( /\b\w+/g, function( text ){
+							return text.charAt( 0 ).toUpperCase() + text.substr( 1 ).toLowerCase();
+						} );
+					}
 
 					// Compact the card's legality information
 					if ( baseCard.legalities ){
-						for ( var f = 0; f < baseCard.legalities.length; f++ ){
-							if ( baseCard.legalities[ f ].legality == "Legal" || baseCard.legalities[ f ].legality == "Restricted" ){
+						for ( var format in baseCard.legalities ){
+							if ( baseCard.legalities[ format ] == "Legal" || baseCard.legalities[ format ] == "Restricted" ){
 								baseCard.formats = baseCard.formats || [];
-								baseCard.formats.push( baseCard.legalities[ f ].format );
+								baseCard.formats.push( capitalize( format ) );
 							}
-							if ( baseCard.legalities[ f ].legality == "Restricted" ){
+							if ( baseCard.legalities[ format ] == "Restricted" ){
 								baseCard.restricted = baseCard.restricted || [];
-								baseCard.restricted.push( baseCard.legalities[ f ].format );
+								baseCard.restricted.push( capitalize( format ) );
 							}
 						}
 						delete baseCard[ "legalities" ];
