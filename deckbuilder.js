@@ -92,8 +92,8 @@ function Deck( container, callback ){
 		}
 	};
 	request.onprogress = function downloadUpdate( e ){
-		//showLoad( "Doaloading card library...", e.loaded, e.total );
-		showLoad( "Doaloading card library...", e.loaded, 9386144 );
+		//showLoad( "Downloading card library...", e.loaded, e.total );
+		showLoad( "Downloading card library...", e.loaded, 10438970 );
 	}
 	request.open( "GET", "https://deckmaven.com/data.json", true );
 	request.send();	
