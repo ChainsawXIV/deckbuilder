@@ -169,6 +169,10 @@
 					// Clean up double card naming for Partners With characters
 					if ( baseCard.partnerWith )
 						delete baseCard[ "names" ];
+						
+					// Clean up empty names array the incorrectly appears for some cards
+					if ( baseCard.names.length == 0 )
+						delete baseCard[ "names" ];
 					
 					// If there's extra data for the card, integrate that
 					if ( extras[ cardName ] ){
