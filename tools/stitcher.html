@@ -181,6 +181,8 @@
 						baseCard.cmc = baseCard.convertedManaCost;
 						delete baseCard[ "convertedManaCost" ];
 					}
+					else
+						baseCard.cmc = 0;
 					
 					// Remove unwanted data from the data set
 					delete baseCard[ "imageName" ];
