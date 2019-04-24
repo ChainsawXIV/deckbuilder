@@ -90,6 +90,13 @@
 					// For each card, look through all of its printings
 					for ( var s = 0; s < baseCard.printings.length; s++ ){
 						var set = baseCard.printings[ s ];
+						
+						// Check against missing sets
+						if ( !sets[ set ] ){
+							console.log( "Set not found for " + cardName + ": " + set );
+							continue;
+						}
+						
 						var setCards = sets[ set ].cards;
 						
 						// For each printing, find the card within that set's data
@@ -99,18 +106,18 @@
 								var setCard = setCards[ c ];
 							
 								// If there's a multiverseid record it
-								if ( setCard.multiverseid ){
-									baseCard.mvids.push( setCard.multiverseid );
-									baseCard.multiverseid = setCard.multiverseid;
+								if ( setCard.multiverseId ){
+									baseCard.mvids.push( setCard.multiverseId );
+									baseCard.multiverseid = setCard.multiverseId;
 								}
 								
 								// Get the printing's rarity in numeric form
 								var setRarity = 101;
-								if ( setCard.rarity == "Basic Land" ) setRarity = 1;
-								else if ( setCard.rarity == "Common" ) setRarity = 2;
-								else if ( setCard.rarity == "Uncommon" ) setRarity = 3;
-								else if ( setCard.rarity == "Rare" ) setRarity = 4;
-								else if ( setCard.rarity == "Mythic Rare" ) setRarity = 5;
+								if ( setCard.rarity == "basic land" ) setRarity = 1;
+								else if ( setCard.rarity == "common" ) setRarity = 2;
+								else if ( setCard.rarity == "uncommon" ) setRarity = 3;
+								else if ( setCard.rarity == "rare" ) setRarity = 4;
+								else if ( setCard.rarity == "mythic" ) setRarity = 5;
 								
 								// Record the card's lowest rarity and corresponding set
 								if ( !baseCard.rarity || setRarity < minRarity ){
@@ -162,6 +169,12 @@
 					// Clean up double card naming for Partners With characters
 					if ( baseCard.partnerWith )
 						delete baseCard[ "names" ];
+						
+					// Clean up empty names array the incorrectly appears for some cards
+					if ( baseCard.names ){
+						if ( baseCard.names.length == 0 )
+							delete baseCard[ "names" ];
+					}
 					
 					// If there's extra data for the card, integrate that
 					if ( extras[ cardName ] ){
@@ -169,10 +182,23 @@
 							baseCard[ key ] = extras[ cardName ][ key ];
 					}
 					
+					// Use a shorter key for CMC
+					if ( baseCard.convertedManaCost ){
+						baseCard.cmc = baseCard.convertedManaCost;
+						delete baseCard[ "convertedManaCost" ];
+					}
+					else
+						baseCard.cmc = 0;
+					
 					// Remove unwanted data from the data set
 					delete baseCard[ "imageName" ];
 					delete baseCard[ "printings" ];
 					delete baseCard[ "rulings" ];
+					delete baseCard[ "foreignData" ];
+					delete baseCard[ "scryfallId" ];
+					delete baseCard[ "tcgplayerProductId" ];
+					delete baseCard[ "tcgplayerPurchaseUrl" ];
+					delete baseCard[ "uuid" ];
 					
 					// Convert card colors to same compact format as color identity
 					if ( baseCard.colors ){
@@ -184,17 +210,23 @@
 							else if ( baseCard.colors[ c ] == "Green" ) baseCard.colors[ c ] = "G";
 						}
 					}
+					
+					function capitalize( string ){
+						return string.replace( /\b\w+/g, function( text ){
+							return text.charAt( 0 ).toUpperCase() + text.substr( 1 ).toLowerCase();
+						} );
+					}
 
 					// Compact the card's legality information
 					if ( baseCard.legalities ){
-						for ( var f = 0; f < baseCard.legalities.length; f++ ){
-							if ( baseCard.legalities[ f ].legality == "Legal" || baseCard.legalities[ f ].legality == "Restricted" ){
+						for ( var format in baseCard.legalities ){
+							if ( baseCard.legalities[ format ] == "Legal" || baseCard.legalities[ format ] == "Restricted" ){
 								baseCard.formats = baseCard.formats || [];
-								baseCard.formats.push( baseCard.legalities[ f ].format );
+								baseCard.formats.push( capitalize( format ) );
 							}
-							if ( baseCard.legalities[ f ].legality == "Restricted" ){
+							if ( baseCard.legalities[ format ] == "Restricted" ){
 								baseCard.restricted = baseCard.restricted || [];
-								baseCard.restricted.push( baseCard.legalities[ f ].format );
+								baseCard.restricted.push( capitalize( format ) );
 							}
 						}
 						delete baseCard[ "legalities" ];
@@ -265,7 +297,7 @@
 								if ( cards[ name ] ){
 									if ( !cards[ name ].price )
 										cards[ name ].price = price;
-									else if ( price < cards[ name ].price ){
+									else if ( price && price < cards[ name ].price ){
 										console.log( "Replaced price for " + name + ": " + cards[ name ].price + " -> " + price );
 										cards[ name ].price = price;
 									}
@@ -398,6 +430,9 @@
 				
 				// Advance to the next card to scrape
 				var card = index[ cursor ];
+				if ( subcursor == 0 )
+					console.log( "Scraping " + card.name );
+
 				if ( subcursor >= card.mvids.length - 1 ){
 					cursor++;
 					subcursor = 0;
@@ -409,7 +444,6 @@
 				if ( subcursor == 0 ){
 					cards[ index[ cursor ].name ].userRating = 0;
 					cards[ index[ cursor ].name ].votes = 0;
-					console.log( "Scraping " + index[ cursor ].name );
 				}
 
 				// Fetch data for the card we're scraping
