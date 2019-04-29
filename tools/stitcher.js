@@ -257,6 +257,9 @@ var currentMvid = 0;
 
 var startTime = Date.now();
 
+var idRatings = {};
+var nameRatings = {};
+
 // Scrape ratings for each printing of each card
 function fetchNext(){
 	if ( queuedCards > 0 || queuedMvids > 0 || pending > 0 ){
@@ -305,7 +308,7 @@ function fetchRating( name, mvid ){
 			var votes = body.match( /class="totalVotesValue">([\d.]+)</ );
 			votes = parseFloat( votes[ 1 ] );
 			
-			integrateRating( { name:name, rating:rating, votes:votes } );
+			integrateRating( { mvid:mvid, name:name, rating:rating, votes:votes } );
 			
 		}
 		else
@@ -329,6 +332,9 @@ function integrateRating( payload ){
 
 		data[ payload.name ].userRating = totalVotes > 0 ? totalScore / totalVotes : 0;
 		data[ payload.name ].votes = totalVotes;
+		
+		idRatings[ payload.mvid ] = { rating:payload.rating, votes:payload.votes };
+		nameRatings[ payload.name ] = { rating:data[ payload.name ].userRating, votes:data[ payload.name ].votes };
 
 	}
 	
@@ -369,10 +375,22 @@ function finishStitch(){
 		console.log("Minified data.json saved.");
 	} ); 
 	
-	// Save the compact version of the file
+	// Save the human readable version of the file
 	fs.writeFile( "data-expanded.json", JSON.stringify( data, null, "\t" ), function( err ){
 		if( err ) return console.log( err );
 		console.log("Readable data-expanded.json saved.");
+	} );
+	
+	// Save the ratings by mvid dictionary
+	fs.writeFile( "ratings-by-mvid.json", JSON.stringify( idRatings, null, "\t" ), function( err ){
+		if( err ) return console.log( err );
+		console.log("Printing ratings ratings-by-mvid.json saved.");
+	} );
+
+	// Save the ratings by cardname dictionary
+	fs.writeFile( "ratings-by-name.json", JSON.stringify( nameRatings, null, "\t" ), function( err ){
+		if( err ) return console.log( err );
+		console.log("Card ratings ratings-by-name.json saved.");
 	} );
 	
 }
