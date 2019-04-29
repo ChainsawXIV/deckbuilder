@@ -142,8 +142,9 @@ for ( var cardName in cards ){
 		if ( base.prices.paper ){
 			var lastDate = 0;
 			for ( date in base.prices.paper ){
-				if ( date > lastDate ){
-					lastDate = date;
+				var thisDate = Date.parse( date );
+				if ( thisDate > lastDate ){
+					lastDate = thisDate;
 					card.price = base.prices.paper[ date ];
 				}
 			}
