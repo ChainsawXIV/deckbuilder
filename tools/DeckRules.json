@@ -1,0 +1,12 @@
+{
+	"Daretti, Scrap Savant":{ "legalCommander":true },
+	"Freyalise, Llanowar's Fury":{ "legalCommander":true },
+	"Nahiri, the Lithomancer":{ "legalCommander":true },
+	"Ob Nixilis of the Black Oath":{ "legalCommander":true },
+	"Teferi, Temporal Archmage":{ "legalCommander":true },
+	"Rowan Kenrith":{ "legalCommander":true },
+	"Will Kenrith":{ "legalCommander":true },
+	"Shadowborn Apostle":{ "deckLimit":-1 },
+	"Relentless Rats":{ "deckLimit":-1 },
+	"Once More with Feeling":{ "deckLimit":1 }
+}

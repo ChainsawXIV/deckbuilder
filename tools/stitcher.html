@@ -113,11 +113,11 @@
 								
 								// Get the printing's rarity in numeric form
 								var setRarity = 101;
-								if ( setCard.rarity == "Basic Land" ) setRarity = 1;
-								else if ( setCard.rarity == "Common" ) setRarity = 2;
-								else if ( setCard.rarity == "Uncommon" ) setRarity = 3;
-								else if ( setCard.rarity == "Rare" ) setRarity = 4;
-								else if ( setCard.rarity == "Mythic" ) setRarity = 5;
+								if ( setCard.rarity == "basic land" ) setRarity = 1;
+								else if ( setCard.rarity == "common" ) setRarity = 2;
+								else if ( setCard.rarity == "uncommon" ) setRarity = 3;
+								else if ( setCard.rarity == "rare" ) setRarity = 4;
+								else if ( setCard.rarity == "mythic" ) setRarity = 5;
 								
 								// Record the card's lowest rarity and corresponding set
 								if ( !baseCard.rarity || setRarity < minRarity ){
@@ -171,8 +171,10 @@
 						delete baseCard[ "names" ];
 						
 					// Clean up empty names array the incorrectly appears for some cards
-					if ( baseCard.names.length == 0 )
-						delete baseCard[ "names" ];
+					if ( baseCard.names ){
+						if ( baseCard.names.length == 0 )
+							delete baseCard[ "names" ];
+					}
 					
 					// If there's extra data for the card, integrate that
 					if ( extras[ cardName ] ){
