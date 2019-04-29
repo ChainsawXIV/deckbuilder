@@ -21,6 +21,11 @@ var rules = fs.readFileSync( "DeckRules.json", "utf8" );
 rules = JSON.parse( rules );
 console.log( " - Deck rules loaded" );
 
+// Load previously scraped ratings data to save re-scraping
+var ratings = fs.readFileSync( "ratings-by-name.json", "utf8" );
+ratings = JSON.parse( ratings );
+console.log( " - Card ratings loaded" );
+
 console.log( "\r\nBuilding local data..." );
 
 var count = Object.keys(cards).length;
@@ -129,8 +134,8 @@ for ( var cardName in cards ){
 	card.name = base.name;
 	
 	// Card alternate names [.names]
-	if ( card.names ){
-		if ( card.names.length > 0 )
+	if ( base.names ){
+		if ( base.names.length > 0 )
 			card.names = base.names;
 	}
 
@@ -238,11 +243,20 @@ for ( var cardName in cards ){
 	// Card types [.types]
 	card.types = base.types;
 	
+	// Add ratings data from storage
+	if ( ratings[ card.name ] ){
+		card.userRating = ratings[ card.name ].rating;
+		card.votes = ratings[ card.name ].votes;
+	}
+	
 	// Add the card to the finished data
 	data[ cardName ] = card;
 	
 }
 
+finishStitch();
+
+/*
 console.log( "\r\nScraping ratings data..." );
 
 const maxRequests = 64;
@@ -357,11 +371,14 @@ function integrateRating( payload ){
 	fetchNext();
 	
 }
+*/
 
 // Performs final cleanup and saves out the data files
 function finishStitch(){
 	
+	/*
 	console.log( "\r\n Time Elapsed: " + formatTime( Date.now() - startTime ) );
+	*/
 	
 	// Delete parameters we're finished with from data
 	console.log( "\r\nFinalizing data..." );
@@ -380,7 +397,8 @@ function finishStitch(){
 		if( err ) return console.log( err );
 		console.log("Readable data-expanded.json saved.");
 	} );
-	
+
+/*	
 	// Save the ratings by mvid dictionary
 	fs.writeFile( "ratings-by-mvid.json", JSON.stringify( idRatings, null, "\t" ), function( err ){
 		if( err ) return console.log( err );
@@ -392,7 +410,8 @@ function finishStitch(){
 		if( err ) return console.log( err );
 		console.log("Card ratings ratings-by-name.json saved.");
 	} );
-	
+*/
+
 }
 
 
