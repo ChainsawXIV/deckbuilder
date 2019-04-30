@@ -6,6 +6,7 @@
 	"Teferi, Temporal Archmage":{ "legalCommander":true },
 	"Rowan Kenrith":{ "legalCommander":true },
 	"Will Kenrith":{ "legalCommander":true },
+	"Persistent Petitioners":{ "deckLimit":-1 },
 	"Shadowborn Apostle":{ "deckLimit":-1 },
 	"Relentless Rats":{ "deckLimit":-1 },
 	"Once More with Feeling":{ "deckLimit":1 }
