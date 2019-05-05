@@ -129,7 +129,7 @@ function Deck( container, callback ){
 				if ( id ){
 					
 					// Show the floating card
-					context.hoverCard.src = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + id[ 1 ] + "&type=card";
+					context.hoverCard.src = "https://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + id[ 1 ] + "&type=card";
 					context.hoverCard.style.display = "inline-block";
 					
 					// Position the card near the cursor
@@ -181,7 +181,7 @@ function Deck( container, callback ){
 								cardb = context.cardData[ card.names[ 0 ] ];
 							
 							if ( cardb.multiverseid ){
-								context.companionCard.src = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + cardb.multiverseid + "&type=card";
+								context.companionCard.src = "https://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + cardb.multiverseid + "&type=card";
 								context.companionCard.style.display = "inline-block";
 								
 								// Move everything left if needed
@@ -220,7 +220,7 @@ function Deck( container, callback ){
 									context.companionCard.style.left = xb + "px";
 									context.meldCard.style.left = xc + "px";
 									
-									context.meldCard.src = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + cardc.multiverseid + "&type=card";
+									context.meldCard.src = "https://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=" + cardc.multiverseid + "&type=card";
 									context.meldCard.style.display = "inline-block";
 								}
 							}
@@ -1158,7 +1158,7 @@ function Deck( container, callback ){
 		var words = {W:"White",U:"Blue",B:"Black",R:"Red",G:"Green",C:"Colorless"};
 		for ( var color in mix ){
 			if ( mix[ color ] > 0 ){
-				var url = "http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + color + "&type=symbol";
+				var url = "https://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + color + "&type=symbol";
 				content += '<li class="' + color + '"><img src="' + url + '"> ' + mix[ color ] + " Cards (" + ( Math.round( mix[ color ] / spells * 100 ) ) + "% of Spells)</li>";
 			}
 		}
@@ -1167,7 +1167,7 @@ function Deck( container, callback ){
 		// Display the casting cost mix
 		content += "<u>Mana Curve</u><ul>";
 		for ( var cost in costs ){
-			var url = "http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + cost + "&type=symbol";
+			var url = "https://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + cost + "&type=symbol";
 			content += '<li><img src="' + url + '"> ' + costs[ cost ] + " Cards (" + ( Math.round( costs[ cost ] / spells * 100 ) ) + "% of Spells)</li>";
 		}
 		content += "</ul>";
@@ -1556,11 +1556,11 @@ function CardList( container, template, deck ){
 			if ( !count && card.names )
 				count = context.deck.cards[ card.names[ 0 ] ] ? context.deck.cards[ card.names[ 0 ] ].count : 0;
 			
-			var image = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
-			var link = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
+			var image = 'https://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + card.multiverseid + '&type=card';
+			var link = 'https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + card.multiverseid;
 			if ( !card.multiverseid ){
 				image = 'https://deckmaven.com/images/cardback.jpg';
-				link = 'http://gatherer.wizards.com/Pages/Default.aspx';
+				link = 'https://gatherer.wizards.com/Pages/Default.aspx';
 			}
 			if ( !card.text )
 				card.text = "";
@@ -1810,7 +1810,7 @@ function CardList( container, template, deck ){
 			p1 = p1.replace( /\//g, "" );
 			
 			// Typically the image name is just the string in the marker code
-			return '<img class="symbol" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=' + p1 + '&type=symbol" />';
+			return '<img class="symbol" src="https://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=' + p1 + '&type=symbol" />';
 			
 		} );
 	
@@ -2918,7 +2918,7 @@ function importList( fileInput ){
 // Show the app information and credits dialog
 function showCredits(){
 	
-	var credits = 'This Magic the Gathering deck building tool is built and maintained by Omnibus Games LLC, and hosted on <a href="https://github.com/ChainsawXIV/deckbuilder" target="_blank">GitHub</a>. Submit bug reports and feature requests on the issues page, <a href="https://github.com/ChainsawXIV/deckbuilder/issues" target="_blank">here</a>.<br><br>Card data for this project is provided by:<ul><li><a href="https://mtgjson.com/" target="_blank">https://mtgjson.com/</a></li><li><a href="http://gatherer.wizards.com/Pages/Default.aspx" target="_blank">http://gatherer.wizards.com/</a></li></ul>Magic the Gathering and all associated information and materials are the property of <a href="https://magic.wizards.com" target="_blank">Wizards of the Coast</a>, and this tool is not associated with Wizards of the Coast in any way.<br><br><b>Update History</b><br><br>';
+	var credits = 'This Magic the Gathering deck building tool is built and maintained by Omnibus Games LLC, and hosted on <a href="https://github.com/ChainsawXIV/deckbuilder" target="_blank">GitHub</a>. Submit bug reports and feature requests on the issues page, <a href="https://github.com/ChainsawXIV/deckbuilder/issues" target="_blank">here</a>.<br><br>Card data for this project is provided by:<ul><li><a href="https://mtgjson.com/" target="_blank">https://mtgjson.com/</a></li><li><a href="https://gatherer.wizards.com/Pages/Default.aspx" target="_blank">https://gatherer.wizards.com/</a></li></ul>Magic the Gathering and all associated information and materials are the property of <a href="https://magic.wizards.com" target="_blank">Wizards of the Coast</a>, and this tool is not associated with Wizards of the Coast in any way.<br><br><b>Update History</b><br><br>';
 	credits += '<u>Version 0.3.0 (August 7th, 2018)</u><ul><li>Added support for login with Google and cloud storage of decks by logged in users.</li></ul>';
 	credits += '<u>Version 0.2.3 (July 21st, 2018)</u><ul><li>Added support for the Brawl format (pending MTG JSON data up stream bug fixes).</li><li>Added support and deck validation for Partner and Partners With commanders.</li><li>Addressed serious layout issues with the deck lists in Internet Explorer and Firefox.</li></ul>';
 	credits += '<u>Version 0.2.2 (July 17th, 2018)</u><ul><li>Fixed additional filtering, deck and card validation, and layout related bugs.</li><li>Significantly improved card rating data by averaging across all printings of a particular card.</li></ul>';
