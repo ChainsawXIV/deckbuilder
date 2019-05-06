@@ -151,6 +151,7 @@ for ( var cardName in cards ){
 			continue;
 		
 		// Find the card in the set
+		var setCards = sets[ set ].cards;
 		for ( var c = 0; c < setCards.length; c++ ){
 			var setCard = setCards[ c ];
 			if ( setCard.name == cardName ){
@@ -158,7 +159,7 @@ for ( var cardName in cards ){
 				// Determine if there's price data there
 				if ( setCard.prices ){
 					if ( setCard.prices.paper ){
-						
+
 						// Look for the most recent price
 						var lastDate = 0;
 						var setPrice = undefined;
