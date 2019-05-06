@@ -143,17 +143,51 @@ for ( var cardName in cards ){
 	card.power = base.power;
 	
 	// Card purchase price [.price]
-	if ( base.prices ){
-		if ( base.prices.paper ){
-			var lastDate = 0;
-			for ( date in base.prices.paper ){
-				var thisDate = Date.parse( date );
-				if ( thisDate > lastDate ){
-					lastDate = thisDate;
-					card.price = base.prices.paper[ date ];
+	for ( var s = 0; s < base.printings.length; s++ ){
+		var set = base.printings[ s ];
+		
+		// Skip missing sets
+		if ( !sets[ set ] )
+			continue;
+		
+		// Find the card in the set
+		var setCards = sets[ set ].cards;
+		for ( var c = 0; c < setCards.length; c++ ){
+			var setCard = setCards[ c ];
+			if ( setCard.name == cardName ){
+				
+				// Determine if there's price data there
+				if ( setCard.prices ){
+					if ( setCard.prices.paper ){
+
+						// Look for the most recent price
+						var lastDate = 0;
+						var setPrice = undefined;
+						for ( date in setCard.prices.paper ){
+							var thisDate = Date.parse( date );
+							if ( thisDate > lastDate ){
+								lastDate = thisDate;
+								setPrice = setCard.prices.paper[ date ];
+							}
+						}
+						
+						// If there's no other price use this one
+						if ( setPrice !== undefined && card.price === undefined )
+							card.price = setPrice;
+						
+						// Record if this price is the lowest
+						else if ( setPrice !== undefined && setPrice < card.price )
+							card.price = setPrice;
+						
+					}
 				}
+				
+				// Done with this set for this card
+				break;
+			
 			}
 		}
+		
 	}
 	
 	// Partner commander data [.partner, .partnerWith]
