@@ -177,7 +177,7 @@ for ( var cardName in cards ){
 						
 						// Record if this price is the lowest
 						else if ( setPrice !== undefined && setPrice < card.price )
-							cardPrice = setPrice;
+							card.price = setPrice;
 						
 					}
 				}
