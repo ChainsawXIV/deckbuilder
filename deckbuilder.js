@@ -1189,7 +1189,7 @@ function Deck( container, callback ){
 	function showLoad( message, loaded, total ){
 		
 		// Calculate progress
-		var progress = total > 0 ? loaded / total : 1;
+		var progress = total > 0 ? Math.min( total, loaded ) / total : 1;
 		var pct = Math.round( progress * 100 ) + "%";
 		
 		// Construct dialog box contents
