@@ -1,9 +1,9 @@
 const fs = require( "fs" );
 const request = require( "request" );
 
-var source = "https://www.mtgjson.com/files/";
+var source = "https://www.mtgjson.com/api/v5/";
 var files = { 
-	cards:"AllCards.json",
+	cards:"AtomicCards.json",
 	sets:"AllPrintings.json",
 	prices:"AllPrices.json"
 };
@@ -35,9 +35,9 @@ function load( key ){
 
 function build(){
 	
-	var cards = loaded.cards;
-	var sets = loaded.sets;
-	var prices = loaded.prices;
+	var cards = loaded.cards.data;
+	var sets = loaded.sets.data;
+	var prices = loaded.prices.data;
 
 	// Load supplemental deck building data for certain cards
 	// This is manually created for special commanders and such
@@ -69,249 +69,277 @@ function build(){
 		if ( progress == count )
 			process.stdout.write( "\r\n" );
 		
-		// Create an easy reference to the base data
-		var base = cards[ cardName ];
+		// Process each side or part for multi-part cards
+		for ( var v = 0; v < cards[ cardName ].length; v++ ){
+			
+			// Create an easy reference to the base data
+			var base = cards[ cardName ][ 0 ];
+			
+			// Determine the name we'll store this under
+			var key = base.name;
+			if ( base.faceName ) key = base.faceName;
 		
-		// Initialize the card data
-		var card = {};
-		
-		// Converted mana cost [.cmc]
-		card.cmc = base.convertedManaCost || 0;
-		
-		// Color identity [.colorIdentity]
-		card.colorIdentity = base.colorIdentity;
-		
-		// Colors [.colors]
-		card.colors = base.colors;
-		if ( base.colors ){
-			for ( var c = 0; c < card.colors.length; c++ ){
-				if ( card.colors[ c ] == "White" ) card.colors[ c ] = "W";
-				else if ( card.colors[ c ] == "Black" ) card.colors[ c ] = "B";
-				else if ( card.colors[ c ] == "Red" ) card.colors[ c ] = "R";
-				else if ( card.colors[ c ] == "Blue" ) card.colors[ c ] = "U";
-				else if ( card.colors[ c ] == "Green" ) card.colors[ c ] = "G";
-			}
-		}
-		
-		// Deck building limit [.deckLimit]
-		if ( rules[ cardName ] ){
-			if ( rules[ cardName ].deckLimit )
-				card.deckLimit = rules[ cardName ].deckLimit;
-		}
-		
-		// Format legality [.formats]
-		if ( base.legalities ){
-			for ( var format in base.legalities ){
-				if ( base.legalities[ format ] == "Legal" || base.legalities[ format ] == "Restricted" ){
-					card.formats = card.formats || [];
-					card.formats.push( capitalize( format ) );
-				}
-				if ( base.legalities[ format ] == "Restricted" ){
-					card.restricted = card.restricted || [];
-					card.restricted.push( capitalize( format ) );
+			// Initialize the card data
+			var card = {};
+			
+			// Converted mana cost [.cmc]
+			card.cmc = base.convertedManaCost || 0;
+			
+			// Color identity [.colorIdentity]
+			card.colorIdentity = base.colorIdentity;
+			
+			// Colors [.colors]
+			card.colors = base.colors;
+			if ( base.colors ){
+				for ( var c = 0; c < card.colors.length; c++ ){
+					if ( card.colors[ c ] == "White" ) card.colors[ c ] = "W";
+					else if ( card.colors[ c ] == "Black" ) card.colors[ c ] = "B";
+					else if ( card.colors[ c ] == "Red" ) card.colors[ c ] = "R";
+					else if ( card.colors[ c ] == "Blue" ) card.colors[ c ] = "U";
+					else if ( card.colors[ c ] == "Green" ) card.colors[ c ] = "G";
 				}
 			}
-		}
-		
-		// Card layout type [.layout]
-		card.layout = base.layout;
-
-		// Commander legality override [.legalCommander]
-		if ( rules[ cardName ] ){
-			if ( rules[ cardName ].legalCommander )
-				card.legalCommander = rules[ cardName ].legalCommander;
-		}
-		
-		// Mana cost [.manaCost]
-		card.manaCost = base.manaCost;
-		
-		// Multiverse IDs [.multiversid, .mvids]
-		card.mvids = [];
-		for ( var s = 0; s < base.printings.length; s++ ){
-			var set = base.printings[ s ];
 			
-			// Skip missing sets
-			if ( !sets[ set ] )
-				continue;
+			// Deck building limit [.deckLimit]
+			// Check .hasAlternativeDeckLimit, but need to know what the limit is
+			if ( rules[ cardName ] ){
+				if ( rules[ cardName ].deckLimit )
+					card.deckLimit = rules[ cardName ].deckLimit;
+			}
 			
-			// Find the card in the set
-			var setCards = sets[ set ].cards;
-			for ( var c = 0; c < setCards.length; c++ ){
-				if ( setCards[ c ].name == base.name ){
-					var setCard = setCards[ c ];
-				
-					// If there's a multiverseid record it
-					if ( setCard.multiverseId ){
-						card.mvids.push( setCard.multiverseId );
-						card.multiverseid = setCard.multiverseId;
+			// Format legality [.formats]
+			if ( base.legalities ){
+				for ( var format in base.legalities ){
+					if ( base.legalities[ format ] == "Legal" || base.legalities[ format ] == "Restricted" ){
+						card.formats = card.formats || [];
+						card.formats.push( capitalize( format ) );
 					}
-					
-					// Done with this set for this card
-					break;
-				
+					if ( base.legalities[ format ] == "Restricted" ){
+						card.restricted = card.restricted || [];
+						card.restricted.push( capitalize( format ) );
+					}
 				}
 			}
 			
-		}	
-		
-		// Card name [.name]
-		card.name = base.name;
-		
-		// Card alternate names [.names]
-		if ( base.names ){
-			if ( base.names.length > 0 )
-				card.names = base.names;
-		}
+			// Card layout type [.layout]
+			card.layout = base.layout;
 
-		// Creature power [.power]
-		card.power = base.power;
-		
-		// Card purchase price [.price]
-		for ( var s = 0; s < base.printings.length; s++ ){
-			var set = base.printings[ s ];
+			// Commander legality override [.legalCommander]
+			if ( rules[ cardName ] ){
+				if ( rules[ cardName ].legalCommander )
+					card.legalCommander = rules[ cardName ].legalCommander;
+			}
 			
-			// Skip missing sets
-			if ( !sets[ set ] )
-				continue;
+			// Mana cost [.manaCost]
+			card.manaCost = base.manaCost;
 			
-			// Find the card in the set
-			var setCards = sets[ set ].cards;
-			for ( var c = 0; c < setCards.length; c++ ){
-				var setCard = setCards[ c ];
-				if ( setCard.name == cardName ){
+			// Multiverse IDs [.multiversid, .mvids]
+			card.mvids = [];
+			for ( var s = 0; s < base.printings.length; s++ ){
+				var set = base.printings[ s ];
+				
+				// Skip missing sets
+				if ( !sets[ set ] )
+					continue;
+				
+				// Find the card in the set
+				var setCards = sets[ set ].cards;
+				for ( var c = 0; c < setCards.length; c++ ){
+					if ( setCards[ c ].name == base.name ){
+						var setCard = setCards[ c ];
 					
-					// Get the price data from the price JSON
-					//setCard.prices = prices[ setCard.uuid ];
+						// If there's a multiverseid record it
+						if ( setCard.identifiers.multiverseId ){
+							card.mvids.push( setCard.identifiers.multiverseId );
+							card.multiverseid = setCard.identifiers.multiverseId;
+						}
+						
+						// Done with this set for this card
+						break;
 					
-					// Determine if there's price data there
-					if ( setCard.prices ){
-						if ( setCard.prices.paper ){
+					}
+				}
+				
+			}	
+			
+			// Card name [.name]
+			card.name = key;
+			
+			// Card alternate names [.names]
+			if ( base.names ){
+				if ( base.names.length > 0 )
+					card.names = base.names;
+			}
 
-							// Look for the most recent price
-							var lastDate = 0;
-							var setPrice = undefined;
-							for ( date in setCard.prices.paper ){
-								var thisDate = Date.parse( date );
-								if ( thisDate > lastDate ){
-									lastDate = thisDate;
-									setPrice = setCard.prices.paper[ date ];
+			// Creature power [.power]
+			card.power = base.power;
+			
+			// Card purchase price [.price]
+			for ( var s = 0; s < base.printings.length; s++ ){
+				var set = base.printings[ s ];
+				
+				// Skip missing sets
+				if ( !sets[ set ] )
+					continue;
+				
+				// Find the card in the set
+				var setCards = sets[ set ].cards;
+				for ( var c = 0; c < setCards.length; c++ ){
+					var setCard = setCards[ c ];
+					if ( setCard.name == cardName ){
+						
+						// Get the price data from the price JSON
+						setCard.prices = prices[ setCard.uuid ];
+						
+						// Determine if there's price data there
+						if ( setCard.prices ){
+							
+							// Make sure there are paper prices
+							if ( setCard.prices.paper ){
+
+								// Only use prices from TCGPlayer
+								if ( setCard.prices.paper.tcgplayer ){
+									
+									// Make sure there are retail prices available
+									if ( setCard.prices.paper.tcgplayer.retail ){
+										
+										// Use non-foil if possible, foil otherwise
+										var priceList = setCard.prices.paper.tcgplayer.retail.normal;
+										if ( !priceList ) priceList = setCard.prices.paper.tcgplayer.foil;
+										
+										// Skip ahead if there is no buy price available
+										if ( !priceList )
+											break;
+										
+										// Look for the most recent price
+										var lastDate = 0;
+										var setPrice = undefined;
+										for ( date in priceList ){
+											var thisDate = Date.parse( date );
+											if ( thisDate > lastDate ){
+												lastDate = thisDate;
+												setPrice = priceList[ date ];
+											}
+										}
+										
+										// If there's no other price use this one
+										if ( setPrice !== undefined && card.price === undefined )
+											card.price = setPrice;
+										
+										// Record if this price is the lowest
+										else if ( setPrice !== undefined && setPrice < card.price )
+											card.price = setPrice;
+										
+									}
 								}
 							}
-							
-							// If there's no other price use this one
-							if ( setPrice !== undefined && card.price === undefined )
-								card.price = setPrice;
-							
-							// Record if this price is the lowest
-							else if ( setPrice !== undefined && setPrice < card.price )
-								card.price = setPrice;
-							
 						}
-					}
+						
+						// Done with this set for this card
+						break;
 					
-					// Done with this set for this card
-					break;
-				
+					}
 				}
+				
 			}
 			
-		}
-		
-		// Partner commander data [.partner, .partnerWith]
-		if ( base.supertypes ){
-			if ( base.supertypes.indexOf( "Legendary" ) >= 0 ){
-				if ( base.text ){
-					
-					// Check for partner rules in card text
-					if ( base.text.match( /Partner/ ) ){
-						card.partner = true;
+			// Partner commander data [.partner, .partnerWith]
+			if ( base.supertypes ){
+				if ( base.supertypes.indexOf( "Legendary" ) >= 0 ){
+					if ( base.text ){
 						
-						// Check for partner name in case of partner with
-						var partnerWith = base.text.match( /Partner with ([\w\s,]+)[\(\n]/ );
-						if ( partnerWith ){
-							card.partnerWith = partnerWith[ 1 ].replace( /[\s]+$/, "" );
+						// Check for partner rules in card text
+						if ( base.text.match( /Partner/ ) ){
+							card.partner = true;
 							
-							// Clean up bogus name array with partner's name
-							delete card[ "names" ];
+							// Check for partner name in case of partner with
+							var partnerWith = base.text.match( /Partner with ([\w\s,]+)[\(\n]/ );
+							if ( partnerWith ){
+								card.partnerWith = partnerWith[ 1 ].replace( /[\s]+$/, "" );
+								
+								// Clean up bogus name array with partner's name
+								delete card[ "names" ];
+							}
+							
 						}
 						
 					}
-					
 				}
-			}
-		}	
-		
-		// Lowest printed rarity [.rarity]
-		for ( var s = 0; s < base.printings.length; s++ ){
-			var set = base.printings[ s ];
+			}	
 			
-			// Skip missing sets
-			if ( !sets[ set ] )
-				continue;
-			
-			// Find the card in the set
-			var minRarity = 100;
-			for ( var c = 0; c < setCards.length; c++ ){
-				if ( setCards[ c ].name == cardName ){
-					var setCard = setCards[ c ];
-					
-					// Get the printing's rarity in numeric form
-					var setRarity = 101;
-					if ( setCard.rarity == "basic land" ) setRarity = 1;
-					else if ( setCard.rarity == "common" ) setRarity = 2;
-					else if ( setCard.rarity == "uncommon" ) setRarity = 3;
-					else if ( setCard.rarity == "rare" ) setRarity = 4;
-					else if ( setCard.rarity == "mythic" ) setRarity = 5;
-					
-					// Record the card's lowest rarity and corresponding set
-					if ( !card.rarity || setRarity < minRarity ){
-						
-						// Update the minimum rarity number
-						minRarity = setRarity;
-						
-						// Save rarity in short form
-						if ( setRarity == 1 ) card.rarity = "L";
-						else if ( setRarity == 2 ) card.rarity = "C";
-						else if ( setRarity == 3 ) card.rarity = "U";
-						else if ( setRarity == 4 ) card.rarity = "R";
-						else if ( setRarity == 5 ) card.rarity = "M";
-						
-					}
-					
-					// Done with this set for this card
-					break;
+			// Lowest printed rarity [.rarity]
+			for ( var s = 0; s < base.printings.length; s++ ){
+				var set = base.printings[ s ];
 				
+				// Skip missing sets
+				if ( !sets[ set ] )
+					continue;
+				
+				// Find the card in the set
+				var minRarity = 100;
+				for ( var c = 0; c < setCards.length; c++ ){
+					if ( setCards[ c ].name == cardName ){
+						var setCard = setCards[ c ];
+						
+						// Get the printing's rarity in numeric form
+						var setRarity = 101;
+						if ( setCard.rarity == "basic land" ) setRarity = 1;
+						else if ( setCard.rarity == "common" ) setRarity = 2;
+						else if ( setCard.rarity == "uncommon" ) setRarity = 3;
+						else if ( setCard.rarity == "rare" ) setRarity = 4;
+						else if ( setCard.rarity == "mythic" ) setRarity = 5;
+						
+						// Record the card's lowest rarity and corresponding set
+						if ( !card.rarity || setRarity < minRarity ){
+							
+							// Update the minimum rarity number
+							minRarity = setRarity;
+							
+							// Save rarity in short form
+							if ( setRarity == 1 ) card.rarity = "L";
+							else if ( setRarity == 2 ) card.rarity = "C";
+							else if ( setRarity == 3 ) card.rarity = "U";
+							else if ( setRarity == 4 ) card.rarity = "R";
+							else if ( setRarity == 5 ) card.rarity = "M";
+							
+						}
+						
+						// Done with this set for this card
+						break;
+					
+					}
 				}
+				
+			}		
+			
+			// Card subtypes [.subtypes]
+			card.subtypes = base.subtypes;
+			
+			// Card supertypes [.supertypes]
+			card.supertypes = base.supertypes;
+			
+			// Rules text [.text]
+			card.text = base.text;
+			
+			// Creature toughness [.toughness]
+			card.toughness = base.toughness;
+			
+			// Card type [.type]
+			card.type = base.type;
+			
+			// Card types [.types]
+			card.types = base.types;
+			
+			// Add ratings data from storage
+			if ( ratings[ key ] ){
+				card.userRating = ratings[ key ].rating;
+				card.votes = ratings[ key ].votes;
 			}
 			
-		}		
-		
-		// Card subtypes [.subtypes]
-		card.subtypes = base.subtypes;
-		
-		// Card supertypes [.supertypes]
-		card.supertypes = base.supertypes;
-		
-		// Rules text [.text]
-		card.text = base.text;
-		
-		// Creature toughness [.toughness]
-		card.toughness = base.toughness;
-		
-		// Card type [.type]
-		card.type = base.type;
-		
-		// Card types [.types]
-		card.types = base.types;
-		
-		// Add ratings data from storage
-		if ( ratings[ card.name ] ){
-			card.userRating = ratings[ card.name ].rating;
-			card.votes = ratings[ card.name ].votes;
+			// Add the card to the finished data
+			data[ key ] = card;
+			
 		}
-		
-		// Add the card to the finished data
-		data[ cardName ] = card;
 		
 	}
 
