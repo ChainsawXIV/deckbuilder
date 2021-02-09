@@ -147,7 +147,7 @@ function build(){
 				// Find the card in the set
 				var setCards = sets[ set ].cards;
 				for ( var c = 0; c < setCards.length; c++ ){
-					if ( setCards[ c ].faceName == key ){
+					if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
 						var setCard = setCards[ c ];
 						
 						// See if the card has multiple faces
@@ -159,7 +159,10 @@ function build(){
 							for ( var n = 0; n < setCard.otherFaceIds.length; n++ ){
 								for ( var f = 0; f < setCards.length; f++ ){
 									if ( setCards[ f ].uuid == setCard.otherFaceIds[ n ] ){
-										card.names.push( setCards[ f ].faceName );
+										if ( setCards[ f ].faceName )
+											card.names.push( setCards[ f ].faceName );
+										else
+											card.names.push( setCards[ f ].name );
 										break;
 									}
 								}
@@ -183,7 +186,7 @@ function build(){
 				// Find the card in the set
 				var setCards = sets[ set ].cards;
 				for ( var c = 0; c < setCards.length; c++ ){
-					if ( setCards[ c ].faceName == key ){
+					if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
 						var setCard = setCards[ c ];
 					
 						// If there's a multiverseid record it
@@ -215,7 +218,7 @@ function build(){
 				var setCards = sets[ set ].cards;
 				for ( var c = 0; c < setCards.length; c++ ){
 					var setCard = setCards[ c ];
-					if ( setCard.faceName == key ){
+					if ( setCard.faceName == key || setCard.name == key ){
 						
 						// Get the price data from the price JSON
 						setCard.prices = prices[ setCard.uuid ];
@@ -307,7 +310,7 @@ function build(){
 				// Find the card in the set
 				var minRarity = 100;
 				for ( var c = 0; c < setCards.length; c++ ){
-					if ( setCards[ c ].faceName == key ){
+					if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
 						var setCard = setCards[ c ];
 						
 						// Get the printing's rarity in numeric form
