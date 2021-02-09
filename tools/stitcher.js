@@ -73,7 +73,7 @@ function build(){
 		for ( var v = 0; v < cards[ cardName ].length; v++ ){
 			
 			// Create an easy reference to the base data
-			var base = cards[ cardName ][ 0 ];
+			var base = cards[ cardName ][ v ];
 			
 			// Determine the name we'll store this under
 			var key = base.name;
