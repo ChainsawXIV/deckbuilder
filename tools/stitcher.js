@@ -166,9 +166,38 @@ function build(){
 			card.name = key;
 			
 			// Card alternate names [.names]
-			if ( base.names ){
-				if ( base.names.length > 0 )
-					card.names = base.names;
+			for ( var s = 0; s < base.printings.length; s++ ){
+				var set = base.printings[ s ];
+				
+				// Skip missing sets
+				if ( !sets[ set ] )
+					continue;
+				
+				// Find the card in the set
+				var setCards = sets[ set ].cards;
+				for ( var c = 0; c < setCards.length; c++ ){
+					if ( setCards[ c ].name == base.name ){
+						var setCard = setCards[ c ];
+						
+						// See if the card has multiple faces
+						if ( setCard.otherFaceIds ){
+							card.names = [];
+							card.names.push( key );
+							
+							// Get the names of the other faces
+							for ( var n = 0; n < setCard.otherFaceIds.length; n++ ){
+								for ( var f = 0; f < setCards.length; f++ ){
+									if ( setCards[ f ].uuid == setCard.otherFaceIds[ n ] ){
+										card.names.push( setCards[ f ].faceName );
+										break;
+									}
+								}
+							}
+						}
+						// Can stop once the card is found
+						break;
+					}
+				}
 			}
 
 			// Creature power [.power]
