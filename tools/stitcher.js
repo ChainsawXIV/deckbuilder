@@ -5,7 +5,7 @@ var source = "https://www.mtgjson.com/api/v5/";
 var files = { 
 	cards:"AtomicCards.json",
 	sets:"AllPrintings.json",
-	prices:"AllPrices.json"
+//	prices:"AllPrices.json"
 };
 var loaded = {};
 
@@ -37,7 +37,7 @@ function build(){
 	
 	var cards = loaded.cards.data;
 	var sets = loaded.sets.data;
-	var prices = loaded.prices.data;
+	//var prices = loaded.prices.data;
 
 	// Load supplemental deck building data for certain cards
 	// This is manually created for special commanders and such
@@ -205,7 +205,7 @@ function build(){
 
 			// Creature power [.power]
 			card.power = base.power;
-			
+/*			
 			// Card purchase price [.price]
 			for ( var s = 0; s < base.printings.length; s++ ){
 				var set = base.printings[ s ];
@@ -274,7 +274,7 @@ function build(){
 				}
 				
 			}
-			
+*/			
 			// Partner commander data [.partner, .partnerWith]
 			if ( base.supertypes ){
 				if ( base.supertypes.indexOf( "Legendary" ) >= 0 ){
