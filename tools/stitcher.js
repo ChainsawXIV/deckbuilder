@@ -5,7 +5,7 @@ var source = "https://www.mtgjson.com/api/v5/";
 var files = { 
 	cards:"AtomicCards.json",
 	sets:"AllPrintings.json",
-	prices:"AllPrices.json"
+//	prices:"AllPrices.json"
 };
 var loaded = {};
 
@@ -37,7 +37,7 @@ function build(){
 	
 	var cards = loaded.cards.data;
 	var sets = loaded.sets.data;
-	var prices = loaded.prices.data;
+	//var prices = loaded.prices.data;
 
 	// Load supplemental deck building data for certain cards
 	// This is manually created for special commanders and such
@@ -137,75 +137,79 @@ function build(){
 			card.name = key;
 			
 			// Card alternate names [.names]
-			for ( var s = 0; s < base.printings.length; s++ ){
-				var set = base.printings[ s ];
-				
-				// Skip missing sets
-				if ( !sets[ set ] )
-					continue;
-				
-				// Find the card in the set
-				var setCards = sets[ set ].cards;
-				for ( var c = 0; c < setCards.length; c++ ){
-					if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
-						var setCard = setCards[ c ];
-						
-						// See if the card has multiple faces
-						if ( setCard.otherFaceIds ){
-							card.names = [];
-							card.names.push( key );
+			if ( base.printings ){
+				for ( var s = 0; s < base.printings.length; s++ ){
+					var set = base.printings[ s ];
+					
+					// Skip missing sets
+					if ( !sets[ set ] )
+						continue;
+					
+					// Find the card in the set
+					var setCards = sets[ set ].cards;
+					for ( var c = 0; c < setCards.length; c++ ){
+						if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
+							var setCard = setCards[ c ];
 							
-							// Get the names of the other faces
-							for ( var n = 0; n < setCard.otherFaceIds.length; n++ ){
-								for ( var f = 0; f < setCards.length; f++ ){
-									if ( setCards[ f ].uuid == setCard.otherFaceIds[ n ] ){
-										if ( setCards[ f ].faceName )
-											card.names.push( setCards[ f ].faceName );
-										else
-											card.names.push( setCards[ f ].name );
-										break;
+							// See if the card has multiple faces
+							if ( setCard.otherFaceIds ){
+								card.names = [];
+								card.names.push( key );
+								
+								// Get the names of the other faces
+								for ( var n = 0; n < setCard.otherFaceIds.length; n++ ){
+									for ( var f = 0; f < setCards.length; f++ ){
+										if ( setCards[ f ].uuid == setCard.otherFaceIds[ n ] ){
+											if ( setCards[ f ].faceName )
+												card.names.push( setCards[ f ].faceName );
+											else
+												card.names.push( setCards[ f ].name );
+											break;
+										}
 									}
 								}
 							}
+							// Can stop once the card is found
+							break;
 						}
-						// Can stop once the card is found
-						break;
 					}
 				}
 			}
 			
 			// Multiverse IDs [.multiversid, .mvids]
 			card.mvids = [];
-			for ( var s = 0; s < base.printings.length; s++ ){
-				var set = base.printings[ s ];
-				
-				// Skip missing sets
-				if ( !sets[ set ] )
-					continue;
-				
-				// Find the card in the set
-				var setCards = sets[ set ].cards;
-				for ( var c = 0; c < setCards.length; c++ ){
-					if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
-						var setCard = setCards[ c ];
+			if ( base.printings ){
+				for ( var s = 0; s < base.printings.length; s++ ){
+					var set = base.printings[ s ];
 					
-						// If there's a multiverseid record it
-						if ( setCard.identifiers.multiverseId ){
-							card.mvids.push( setCard.identifiers.multiverseId );
-							card.multiverseid = setCard.identifiers.multiverseId;
-						}
+					// Skip missing sets
+					if ( !sets[ set ] )
+						continue;
+					
+					// Find the card in the set
+					var setCards = sets[ set ].cards;
+					for ( var c = 0; c < setCards.length; c++ ){
+						if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
+							var setCard = setCards[ c ];
 						
-						// Done with this set for this card
-						break;
-					
+							// If there's a multiverseid record it
+							if ( setCard.identifiers.multiverseId ){
+								card.mvids.push( setCard.identifiers.multiverseId );
+								card.multiverseid = setCard.identifiers.multiverseId;
+							}
+							
+							// Done with this set for this card
+							break;
+						
+						}
 					}
-				}
-				
-			}	
+					
+				}	
+			}
 
 			// Creature power [.power]
 			card.power = base.power;
-			
+/*			
 			// Card purchase price [.price]
 			for ( var s = 0; s < base.printings.length; s++ ){
 				var set = base.printings[ s ];
@@ -274,7 +278,7 @@ function build(){
 				}
 				
 			}
-			
+*/			
 			// Partner commander data [.partner, .partnerWith]
 			if ( base.supertypes ){
 				if ( base.supertypes.indexOf( "Legendary" ) >= 0 ){
@@ -300,49 +304,51 @@ function build(){
 			}	
 			
 			// Lowest printed rarity [.rarity]
-			for ( var s = 0; s < base.printings.length; s++ ){
-				var set = base.printings[ s ];
-				
-				// Skip missing sets
-				if ( !sets[ set ] )
-					continue;
-				
-				// Find the card in the set
-				var minRarity = 100;
-				for ( var c = 0; c < setCards.length; c++ ){
-					if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
-						var setCard = setCards[ c ];
-						
-						// Get the printing's rarity in numeric form
-						var setRarity = 101;
-						if ( setCard.rarity == "basic land" ) setRarity = 1;
-						else if ( setCard.rarity == "common" ) setRarity = 2;
-						else if ( setCard.rarity == "uncommon" ) setRarity = 3;
-						else if ( setCard.rarity == "rare" ) setRarity = 4;
-						else if ( setCard.rarity == "mythic" ) setRarity = 5;
-						
-						// Record the card's lowest rarity and corresponding set
-						if ( !card.rarity || setRarity < minRarity ){
-							
-							// Update the minimum rarity number
-							minRarity = setRarity;
-							
-							// Save rarity in short form
-							if ( setRarity == 1 ) card.rarity = "L";
-							else if ( setRarity == 2 ) card.rarity = "C";
-							else if ( setRarity == 3 ) card.rarity = "U";
-							else if ( setRarity == 4 ) card.rarity = "R";
-							else if ( setRarity == 5 ) card.rarity = "M";
-							
-						}
-						
-						// Done with this set for this card
-						break;
+			if ( base.printings ){
+				for ( var s = 0; s < base.printings.length; s++ ){
+					var set = base.printings[ s ];
 					
+					// Skip missing sets
+					if ( !sets[ set ] )
+						continue;
+					
+					// Find the card in the set
+					var minRarity = 100;
+					for ( var c = 0; c < setCards.length; c++ ){
+						if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
+							var setCard = setCards[ c ];
+							
+							// Get the printing's rarity in numeric form
+							var setRarity = 101;
+							if ( setCard.rarity == "basic land" ) setRarity = 1;
+							else if ( setCard.rarity == "common" ) setRarity = 2;
+							else if ( setCard.rarity == "uncommon" ) setRarity = 3;
+							else if ( setCard.rarity == "rare" ) setRarity = 4;
+							else if ( setCard.rarity == "mythic" ) setRarity = 5;
+							
+							// Record the card's lowest rarity and corresponding set
+							if ( !card.rarity || setRarity < minRarity ){
+								
+								// Update the minimum rarity number
+								minRarity = setRarity;
+								
+								// Save rarity in short form
+								if ( setRarity == 1 ) card.rarity = "L";
+								else if ( setRarity == 2 ) card.rarity = "C";
+								else if ( setRarity == 3 ) card.rarity = "U";
+								else if ( setRarity == 4 ) card.rarity = "R";
+								else if ( setRarity == 5 ) card.rarity = "M";
+								
+							}
+							
+							// Done with this set for this card
+							break;
+						
+						}
 					}
-				}
-				
-			}		
+					
+				}	
+			}			
 			
 			// Card subtypes [.subtypes]
 			card.subtypes = base.subtypes;
