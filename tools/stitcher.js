@@ -73,7 +73,7 @@ function build(){
 		for ( var v = 0; v < cards[ cardName ].length; v++ ){
 			
 			// Create an easy reference to the base data
-			var base = cards[ cardName ][ 0 ];
+			var base = cards[ cardName ][ v ];
 			
 			// Determine the name we'll store this under
 			var key = base.name;
@@ -102,9 +102,9 @@ function build(){
 			
 			// Deck building limit [.deckLimit]
 			// Check .hasAlternativeDeckLimit, but need to know what the limit is
-			if ( rules[ cardName ] ){
-				if ( rules[ cardName ].deckLimit )
-					card.deckLimit = rules[ cardName ].deckLimit;
+			if ( rules[ key ] ){
+				if ( rules[ key ].deckLimit )
+					card.deckLimit = rules[ key ].deckLimit;
 			}
 			
 			// Format legality [.formats]
@@ -125,13 +125,54 @@ function build(){
 			card.layout = base.layout;
 
 			// Commander legality override [.legalCommander]
-			if ( rules[ cardName ] ){
-				if ( rules[ cardName ].legalCommander )
-					card.legalCommander = rules[ cardName ].legalCommander;
+			if ( rules[ key ] ){
+				if ( rules[ key ].legalCommander )
+					card.legalCommander = rules[ key ].legalCommander;
 			}
 			
 			// Mana cost [.manaCost]
 			card.manaCost = base.manaCost;
+						
+			// Card name [.name]
+			card.name = key;
+			
+			// Card alternate names [.names]
+			for ( var s = 0; s < base.printings.length; s++ ){
+				var set = base.printings[ s ];
+				
+				// Skip missing sets
+				if ( !sets[ set ] )
+					continue;
+				
+				// Find the card in the set
+				var setCards = sets[ set ].cards;
+				for ( var c = 0; c < setCards.length; c++ ){
+					if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
+						var setCard = setCards[ c ];
+						
+						// See if the card has multiple faces
+						if ( setCard.otherFaceIds ){
+							card.names = [];
+							card.names.push( key );
+							
+							// Get the names of the other faces
+							for ( var n = 0; n < setCard.otherFaceIds.length; n++ ){
+								for ( var f = 0; f < setCards.length; f++ ){
+									if ( setCards[ f ].uuid == setCard.otherFaceIds[ n ] ){
+										if ( setCards[ f ].faceName )
+											card.names.push( setCards[ f ].faceName );
+										else
+											card.names.push( setCards[ f ].name );
+										break;
+									}
+								}
+							}
+						}
+						// Can stop once the card is found
+						break;
+					}
+				}
+			}
 			
 			// Multiverse IDs [.multiversid, .mvids]
 			card.mvids = [];
@@ -145,7 +186,7 @@ function build(){
 				// Find the card in the set
 				var setCards = sets[ set ].cards;
 				for ( var c = 0; c < setCards.length; c++ ){
-					if ( setCards[ c ].name == base.name ){
+					if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
 						var setCard = setCards[ c ];
 					
 						// If there's a multiverseid record it
@@ -161,15 +202,6 @@ function build(){
 				}
 				
 			}	
-			
-			// Card name [.name]
-			card.name = key;
-			
-			// Card alternate names [.names]
-			if ( base.names ){
-				if ( base.names.length > 0 )
-					card.names = base.names;
-			}
 
 			// Creature power [.power]
 			card.power = base.power;
@@ -186,7 +218,7 @@ function build(){
 				var setCards = sets[ set ].cards;
 				for ( var c = 0; c < setCards.length; c++ ){
 					var setCard = setCards[ c ];
-					if ( setCard.name == cardName ){
+					if ( setCard.faceName == key || setCard.name == key ){
 						
 						// Get the price data from the price JSON
 						setCard.prices = prices[ setCard.uuid ];
@@ -278,7 +310,7 @@ function build(){
 				// Find the card in the set
 				var minRarity = 100;
 				for ( var c = 0; c < setCards.length; c++ ){
-					if ( setCards[ c ].name == cardName ){
+					if ( setCards[ c ].faceName == key || setCards[ c ].name == key ){
 						var setCard = setCards[ c ];
 						
 						// Get the printing's rarity in numeric form

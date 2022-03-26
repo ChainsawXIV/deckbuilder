@@ -173,7 +173,7 @@ function Deck( container, callback ){
 						}
 						
 						// Show companion cards if any
-						if ( card.names && ( card.layout == "meld" || card.layout == "transform" || card.layout == "flip" ) ){
+						if ( card.names && ( card.layout == "meld" || card.layout == "transform" || card.layout == "flip" || card.layout == "modal_dfc" ) ){
 							
 							// Get the other card in the pair
 							var cardb = context.cardData[ card.names[ 1 ] ];
