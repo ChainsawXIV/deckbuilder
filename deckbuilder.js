@@ -92,8 +92,8 @@ function Deck( container, callback ){
 		}
 	};
 	request.onprogress = function downloadUpdate( e ){
-		//showLoad( "Doaloading card library...", e.loaded, e.total );
-		showLoad( "Doaloading card library...", e.loaded, 9386144 );
+		//showLoad( "Downloading card library...", e.loaded, e.total );
+		showLoad( "Downloading card library...", e.loaded, 18709829 );
 	}
 	request.open( "GET", "https://deckmaven.com/data.json", true );
 	request.send();	
@@ -1158,7 +1158,7 @@ function Deck( container, callback ){
 		var words = {W:"White",U:"Blue",B:"Black",R:"Red",G:"Green",C:"Colorless"};
 		for ( var color in mix ){
 			if ( mix[ color ] > 0 ){
-				var url = "https://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + color + "&type=symbol";
+				var url = "images/mana" + color + ".png";
 				content += '<li class="' + color + '"><img src="' + url + '"> ' + mix[ color ] + " Cards (" + ( Math.round( mix[ color ] / spells * 100 ) ) + "% of Spells)</li>";
 			}
 		}
@@ -1167,7 +1167,7 @@ function Deck( container, callback ){
 		// Display the casting cost mix
 		content += "<u>Mana Curve</u><ul>";
 		for ( var cost in costs ){
-			var url = "https://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=" + cost + "&type=symbol";
+			var url = "images/mana" + cost + ".png";
 			content += '<li><img src="' + url + '"> ' + costs[ cost ] + " Cards (" + ( Math.round( costs[ cost ] / spells * 100 ) ) + "% of Spells)</li>";
 		}
 		content += "</ul>";
@@ -1189,12 +1189,12 @@ function Deck( container, callback ){
 	function showLoad( message, loaded, total ){
 		
 		// Calculate progress
-		var progress = total > 0 ? loaded / total : 1;
+		var progress = total > 0 ? Math.min(1, loaded / total) : 1;
 		var pct = Math.round( progress * 100 ) + "%";
 		
 		// Construct dialog box contents
 		var content = message + '<span style="float:right;">' + pct + '</span><br>';
-		content += '<div class="loadBar"><div class="progress"style="width:' + pct + ';"></div></div>';
+		content += '<div class="loadBar"><div class="progress" style="width:' + pct + ';"></div></div>';
 		
 		context.dialog.show( { title:"Loading", body:content , allowClose:false } );
 		
@@ -1798,19 +1798,19 @@ function CardList( container, template, deck ){
 		return text.replace( /\{([\w\d\/]+)\}/g, function( match, p1 ){
 			
 			// The image name for the tap symbol doesn't follow the normal pattern
-			if ( p1 == "T" ) p1 = "tap";
+			//if ( p1 == "T" ) p1 = "tap";
 			
 			// The image name for the snow symbol doesn't follow the normal pattern
-			if ( p1 == "S" ) p1 = "snow";
+			//if ( p1 == "S" ) p1 = "snow";
 			
 			// The image name for the untap symbol doesn't follow the normal pattern
-			if ( p1 == "Q" ) p1 = "untap";
+			//if ( p1 == "Q" ) p1 = "untap";
 			
 			// Remove the slashes form hybrid mana symbols
 			p1 = p1.replace( /\//g, "" );
 			
 			// Typically the image name is just the string in the marker code
-			return '<img class="symbol" src="https://gatherer.wizards.com/Handlers/Image.ashx?size=small&name=' + p1 + '&type=symbol" />';
+			return '<img class="symbol" src="images/mana' + p1 + '.png" />';
 			
 		} );
 	

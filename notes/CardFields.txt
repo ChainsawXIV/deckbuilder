@@ -1,0 +1,6 @@
+"edhrecRank": 1007,
+"mtgstocksId": 12931,
+"multiverseId": 130483,
+"scryfallId": "46184f97-d5c9-4a98-9fd9-e19057ce9b7e",
+"tcgplayerProductId": 15023,
+"uuid": "1669af17-d287-5094-b005-4b143441442f"

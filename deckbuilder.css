@@ -197,6 +197,11 @@ html,body,div,span,input,select,table,img{
 .filterSection .bottomTab.show{
 	display:none;
 }
+.filterSection .symbol{
+	height:1em;
+	position:relative;
+	top:0.0em;
+}
 .hideFilters .filterSection .bottomTab.show{
 	display:block;
 	bottom:-1.5em;
