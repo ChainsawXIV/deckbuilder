@@ -650,7 +650,7 @@ html,body,div,span,input,select,table,img{
 	height:1.9em;
 	width:1.9em;
 	position:relative;
-	top:-0.3em;
+	top:0.1em;
 	margin-right:0.00em;
 }
 .deckProperties .imageButton:hover{
