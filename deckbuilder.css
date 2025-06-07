@@ -286,7 +286,7 @@ html,body,div,span,input,select,table,img{
 	overflow-y:scroll;
 	box-sizing:content-box;
 	z-index:5;
-	margin-top:0.4em;
+	margin-top:0.0em;
 	background-color:#383838;
 }
 .hideFilters .listSection{
@@ -999,7 +999,7 @@ html,body,div,span,input,select,table,img{
 /* Loading Dialog */
 .loadBar{
 	width:100%;
-	height:1.5em;
+	height:1.45em;
 	border-radius:0.2em;
 	border:1px solid black;
 	background-color:rgba(0,0,0,0.5);
@@ -1007,7 +1007,7 @@ html,body,div,span,input,select,table,img{
 }
 .loadBar .progress{
 	height:1.1em;
-	border-radius:0.2em;
+	border-radius:0.15em;
 	border:1px solid rgba(0,160,0,1.0);
 	background-color:rgba(0,128,0,1.0);
 }
