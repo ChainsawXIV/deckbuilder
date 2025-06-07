@@ -195,7 +195,7 @@ html,body,div,span,input,select,table,img{
 .filterSection .symbol{
 	height:1em;
 	position:relative;
-	top:-0.1em;
+	top:-0.05em;
 }
 .hideFilters .filterSection .bottomTab.hide{
 	display:none;
