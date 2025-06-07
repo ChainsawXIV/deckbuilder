@@ -5,3 +5,4 @@ tools/AllSets.json
 tools/data.json
 tools/inventory.txt
 tools/node_modules/
+.idea/workspace.xml
