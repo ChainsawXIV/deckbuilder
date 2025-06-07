@@ -191,6 +191,11 @@ html,body,div,span,input,select,table,img{
 	padding:0.0em 1em 0.2em 1em;
 	cursor:pointer;
 }
+.filterSection .symbol{
+	height:1em;
+	position:relative;
+	top:0.0em;
+}
 .hideFilters .filterSection .bottomTab.hide{
 	display:none;
 }
@@ -385,7 +390,12 @@ html,body,div,span,input,select,table,img{
 .listTable .symbol{
 	height:1em;
 	position:relative;
-	top:0.25em;
+	top:0.1875em;
+}
+.listTable .cardText .symbol{
+	height:1em;
+	position:relative;
+	top:0.125em;
 }
 .listTable .cardImage{
 	width:95px;
