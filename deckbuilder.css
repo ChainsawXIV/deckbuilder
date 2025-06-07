@@ -93,6 +93,9 @@ html,body,div,span,input,select,table,img{
 	border-radius:0.2em;
 	margin:0.2em 0em 0.1em 0em;
 }
+.filterGroup input[type=text]{
+	padding-left:0.35em;
+}
 .filterGroup option{
 	background-color:rgba(0,0,0,0.6);
 }
@@ -452,7 +455,7 @@ html,body,div,span,input,select,table,img{
 .masterTable .listTable td:nth-of-type(3) a.commanderFlag span img{
 	height:1em;
 	position: relative;
-	top: 0.1em;
+	top: 0.17em;
 	left: 0.03em;
 }
 .masterTable .listTable tr[commander="1"] td:nth-of-type(3) a.commanderFlag{
@@ -930,8 +933,8 @@ html,body,div,span,input,select,table,img{
 }
 .interstitial .folderList .deleteDeck span{
 	position:relative;
-	top:-0.43em;
-	left:0.03em;
+	top:-0.373em;
+	left:0.055em;
 	font-weight:700;
 	font-size:1.5em;
 }
