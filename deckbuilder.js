@@ -1158,7 +1158,7 @@ function Deck( container, callback ){
 		var words = {W:"White",U:"Blue",B:"Black",R:"Red",G:"Green",C:"Colorless"};
 		for ( var color in mix ){
 			if ( mix[ color ] > 0 ){
-				var url = "images/mana" + color + ".png";
+				var url = "images/mana" + color.toLowerCase() + ".png";
 				content += '<li class="' + color + '"><img src="' + url + '"> ' + mix[ color ] + " Cards (" + ( Math.round( mix[ color ] / spells * 100 ) ) + "% of Spells)</li>";
 			}
 		}
@@ -1167,7 +1167,7 @@ function Deck( container, callback ){
 		// Display the casting cost mix
 		content += "<u>Mana Curve</u><ul>";
 		for ( var cost in costs ){
-			var url = "images/mana" + cost + ".png";
+			var url = "images/mana" + cost.toLowerCase() + ".png";
 			content += '<li><img src="' + url + '"> ' + costs[ cost ] + " Cards (" + ( Math.round( costs[ cost ] / spells * 100 ) ) + "% of Spells)</li>";
 		}
 		content += "</ul>";
@@ -1810,7 +1810,7 @@ function CardList( container, template, deck ){
 			p1 = p1.replace( /\//g, "" );
 			
 			// Typically the image name is just the string in the marker code
-			return '<img class="symbol" src="images/mana' + p1 + '.png" />';
+			return '<img class="symbol" src="images/mana' + p1.toLowerCase() + '.png" />';
 			
 		} );
 	
