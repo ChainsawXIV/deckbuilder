@@ -72,7 +72,7 @@ html,body,div,span,input,select,table,img{
 	position:relative;
 	background-color:#444;
 	z-index:10;
-	padding:0.4em 0em 0.3em 0.3em;
+	padding:0.2em 0em 0.3em 0.3em;
 	border-bottom:1px solid black;
 	background-color:#444;
 }
@@ -91,7 +91,7 @@ html,body,div,span,input,select,table,img{
 	background-color:rgba(0,0,0,0.3);
 	border:1px solid rgba(0,0,0,0.5);
 	border-radius:0.2em;
-	margin:0.1em 0em 0.1em 0em;
+	margin:0.2em 0em 0.1em 0em;
 }
 .filterGroup option{
 	background-color:rgba(0,0,0,0.6);
@@ -142,6 +142,7 @@ html,body,div,span,input,select,table,img{
 }
 .filterGroup.formats select{
 	width:17.5%;
+	margin-top:0.2em;
 }
 
 .filterGroup.text .filterLabel{
@@ -149,7 +150,6 @@ html,body,div,span,input,select,table,img{
 }
 .filterGroup.text input{
 	margin-top:0.2em;
-	margin-bottom:0.25em;
 	width:59%;
 }
 .filterGroup.cmc .filterLabel{
@@ -174,6 +174,7 @@ html,body,div,span,input,select,table,img{
 .filterGroup.colors select,
 .filterGroup.colorIdentity select{
 	width:14.4%;
+	margin-top:0.2em;
 	margin-bottom:0.15em;
 }
 
@@ -569,10 +570,10 @@ html,body,div,span,input,select,table,img{
 	position:absolute;
 	top:0em;
 	width:100%;
-	height:9.35em;
+	height:8.95em;
 	background-color:#444;
 	border-bottom:1px solid black;
-	padding:0.4em 0em 0.3em 0.3em;
+	padding:0.2em 0em 0.3em 0.3em;
 }
 .deckProperties .filterLabel{
 	width:30%;
@@ -590,7 +591,7 @@ html,body,div,span,input,select,table,img{
 	position:relative;
 	top:0.60em;
 	margin-top:-0.5em;
-	margin-left:0.2em;
+	margin-left:0.25em;
 	display:inline-block;
 	height:1.33em;
 	width:1.33em;
@@ -608,8 +609,8 @@ html,body,div,span,input,select,table,img{
 .deckProperties .deckFolder a span,
 .deckProperties .deckName a span{
 	position:relative;
-	top:-0.30em;
-	left:0.15em;
+	top:-0.275em;
+	left:0.175em;
 	font-size:1.5em;
 	font-weight:700;
 }
@@ -628,16 +629,16 @@ html,body,div,span,input,select,table,img{
 	left:0em;
 }
 .deckProperties .deckName a span img{
-	height:0.9em;
+	height:0.85em;
 	position:relative;
-	left:0.05em;
-	top:0.2em;
+	left:0.1em;
+	top:0.13em;
 }
 
 .deckProperties .buttonHolder{
 	text-align:center;
 	font-size:1.5em;
-	padding-top:0.2em;
+	padding-top:0.1em;
 
 }
 .deckProperties .imageButton{
@@ -649,7 +650,7 @@ html,body,div,span,input,select,table,img{
 	height:1.9em;
 	width:1.9em;
 	position:relative;
-	top:0.09em;
+	top:-0.3em;
 	margin-right:0.00em;
 }
 .deckProperties .imageButton:hover{
@@ -669,6 +670,9 @@ html,body,div,span,input,select,table,img{
 .deckProperties #login path{
 	stroke:black;
 	stroke-width:0.3px;
+}
+.deckProperties #login {
+	top:0.1em;
 }
 .deckProperties #login path:nth-of-type(5){
 	stroke-width:0px;
