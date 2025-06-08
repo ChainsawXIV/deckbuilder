@@ -1,0 +1,50 @@
+
+1. INSTALL NODE JS
+
+	sudo apt-get install -y curl
+	curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
+	sudo -E bash nodesource_setup.sh
+	sudo apt-get install -y nodejs
+
+2. INSTALL GITHUB CLI
+
+	(type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y))    && sudo mkdir -p -m 755 /etc/apt/keyrings         && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg         && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null       && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null       && sudo apt update      && sudo apt install gh -y
+	sudo apt update
+	sudo apt install gh
+
+3. CLONE THE REPO
+
+	gh auth login
+	gh repo clone https://github.com/ChainsawXIV/deckbuilder.git
+
+4. INSTALL DEPENDENCIES
+
+	cd deckbuilder
+	npm update
+	npm install
+
+5. SET UP THE DB FOLDER
+
+	mkdir db
+	sudo chmod 777 -R db
+
+6. SET UP THE .ENV FILE
+
+	sudo nano .env
+	[paste in env file]
+
+7. TURN OFF EXISTING SERVERS
+
+	sudo service nginx stop
+
+8. SET UP THE SERVICE
+
+	sudo nano /etc/systemd/system/deckbuilder.service
+	[paste in service file]
+	sudo systemctl enable deckbuilder.service
+	sudo systemctl daemon-reload
+	sudo systemctl start deckbuilder.service
+
+9. CHECK RESULTS
+
+	sudo systemctl status deckbuilder.service

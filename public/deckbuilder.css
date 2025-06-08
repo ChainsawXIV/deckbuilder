@@ -650,6 +650,7 @@ html,body,div,span,input,select,table,img{
 	position:relative;
 	top:0.1em;
 	margin-right:0.00em;
+	overflow:hidden;
 }
 .deckProperties .imageButton:hover{
 	background-color:#AAA;
@@ -658,8 +659,13 @@ html,body,div,span,input,select,table,img{
 	width:1.5em;
 	position:relative;
 	top:0.20em;
-	left:0.01em;
+	left:0.00em;
 	border-radius:2em;
+}
+.deckProperties .imageButton img.loggedIn{
+	width:1.84em;
+	position:relative;
+	top:0.03em;
 }
 .deckProperties .imageButton.disabled{
 	opacity:0.3;

@@ -1,0 +1,17 @@
+[Unit]
+Description=App Chassis
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/admin/app-chassis
+ExecStart=/usr/bin/node /home/admin/app-chassis/index.js
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=app-chassis
+Environment=NODE_ENV=production PORT=80
+
+[Install]
+WantedBy=multi-user.target

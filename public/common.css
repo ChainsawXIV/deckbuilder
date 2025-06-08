@@ -1,0 +1,45 @@
+body {
+	background-color: #444444;
+	padding-top:3em;
+}
+
+/* COMMON HEADER */
+
+header {
+	height:3em;
+	position:fixed;
+	top:0em;
+	left:0em;
+	right:0em;
+	z-index:100;
+}
+
+header .user-chip {
+	display:inline-block;
+	height:3em;
+	position:absolute;
+	right:1em;
+	text-align:right;
+}
+
+header .user-chip .user-text {
+	display:inline-block;
+	position:relative;
+	top:-0.375em;
+	margin-right:0.25em;
+}
+
+header .user-chip .user-icon {
+	position:relative;
+	top:0.125em;
+	height:2.5em;
+}
+
+header .user-chip .user-name {
+	font-weight:600;
+	margin-bottom:-0.125em;
+}
+
+header .user-chip .user-link {
+	font-size:0.8em;
+}

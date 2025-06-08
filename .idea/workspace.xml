@@ -5,8 +5,127 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="89a2fac7-ded4-484f-9cbb-b847f671028a" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/pages/deck-editor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deckbuilder.css" beforeDir="false" afterPath="$PROJECT_DIR$/deckbuilder.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CNAME" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/deckbuilder.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/deckbuilder.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/filesaver.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/cardback.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/cart.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/commander.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/down.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/first.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/hide.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/last.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana0.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana100.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana1000000.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana1000000a.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana1000000b.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana1000000c.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana1000000d.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana100a.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana100b.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana11.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana12.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana13.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana14.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana15.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana16.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana17.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana18.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana19.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana20.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana2b.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana2g.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana2r.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana2u.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana2w.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/mana9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manaa.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manab.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manabg.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manabgp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manabp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manabr.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manabrp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manac.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manacb.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manacg.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manachaos.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manacp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manacr.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manacu.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manacw.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manad.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manae.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manag.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/managp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/managu.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/managup.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/managw.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/managwp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manah.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manahalf.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manahr.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manahw.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manainfinity.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manal.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manap.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manapw.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manaq.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manar.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manarg.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manargp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manarp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manarw.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manarwp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manas.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manat.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manatk.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manau.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manaub.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manaubp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manaup.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manaur.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manaurp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manaw.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manawb.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manawbp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manawp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manawu.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manawup.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manax.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manay.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/manaz.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/new.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/next.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/open.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/previous.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/save.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/up.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notes/analytics.url" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notes/google.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/endpoint-tests.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/pages/client.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/pages/home.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/pages/user.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/start-localhost.bat" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,6 +200,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="HTML File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -100,9 +220,9 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectFrameBounds" extendedState="1">
     <option name="x" value="264" />
     <option name="y" value="37" />
@@ -155,10 +275,12 @@
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/Dash/Dropbox/Git/deckbuilder",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "C:\\Users\\Dash\\AppData\\Local\\Programs\\WebStorm\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -183,6 +305,7 @@
       <workItem from="1520805726886" duration="10886000" />
       <workItem from="1527378950083" duration="67000" />
       <workItem from="1749324107319" duration="331000" />
+      <workItem from="1749387566114" duration="5108000" />
     </task>
     <servers />
   </component>

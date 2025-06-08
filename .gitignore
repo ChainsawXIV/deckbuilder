@@ -7,3 +7,7 @@ tools/inventory.txt
 tools/node_modules/
 .idea/workspace.xml
 /.idea
+/node_modules
+.env
+.idea/workspace.xml
+/.idea
